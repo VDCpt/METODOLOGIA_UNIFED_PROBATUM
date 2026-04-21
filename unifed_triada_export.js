@@ -685,5 +685,36 @@
     }
     
     executar();
-    
+
+    // ── Exposição global para hook pós-interface ──────────────────────────────
+    // Chamado pelo evento 'unifed:interfaceShown' em index.html
+    // após showMainInterface() tornar #mainContainer visível.
+    window.UNIFED_TRIADA_REINJETAR = injetarBotoes;
+
+    // ── MutationObserver: fallback robusto sem dependência de eventos custom ──
+    // Observa o atributo style de #mainContainer. Quando deixa de ter
+    // display:none (i.e., showMainInterface() actua), reinjecta os botões.
+    (function() {
+        var _fired = false;
+        var _mc    = document.getElementById('mainContainer');
+        if (_mc && typeof MutationObserver !== 'undefined') {
+            var _obs = new MutationObserver(function(mutations) {
+                if (_fired) return;
+                mutations.forEach(function(m) {
+                    if (m.attributeName === 'style') {
+                        var s = _mc.getAttribute('style') || '';
+                        if (s.indexOf('display: none') === -1 && s.indexOf('display:none') === -1) {
+                            _fired = true;
+                            _obs.disconnect();
+                            setTimeout(injetarBotoes, 120);
+                            console.log('[UNIFED-TRIADA] ✅ Observer: #mainContainer visível — botões reinjectados.');
+                        }
+                    }
+                });
+            });
+            _obs.observe(_mc, { attributes: true, attributeFilter: ['style'] });
+            console.log('[UNIFED-TRIADA] ✅ MutationObserver instalado em #mainContainer.');
+        }
+    })();
+
 })();

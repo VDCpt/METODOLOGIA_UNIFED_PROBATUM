@@ -3337,6 +3337,10 @@ function showMainInterface() {
             main.style.display = 'block';
             setTimeout(() => main.style.opacity = '1', 50);
             ForensicLogger.addEntry('MAIN_INTERFACE_SHOWN');
+            // ── Notifica módulos externos (Tríade Documental, etc.) ──────────
+            // O MutationObserver em unifed_triada_export.js também detecta esta
+            // alteração de estilo — este evento é um reforço explícito.
+            window.dispatchEvent(new CustomEvent('unifed:interfaceShown'));
         }, 500);
     }
     logAudit('SISTEMA UNIFED - PROBATUM v13.5.0-PURE · DORA COMPLIANT · MODO PROFISSIONAL ATIVADO · EXTRAÇÃO PRECISA · CSC ONLINE', 'success');
