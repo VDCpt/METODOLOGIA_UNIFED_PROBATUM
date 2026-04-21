@@ -3745,3 +3745,84 @@ body.dual-screen .stat-card p {
 }
 
 /* ══ FIM DOS PATCHES v13.5.0-PURE · UNIFED - PROBATUM · CODE FREEZE ══════ */
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   UNIFED - PROBATUM · PATCHES v13.5.0-PURE — Fase 6
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── PATCH C1: Toolbar de botões — alinhamento horizontal forçado ────────────
+   Substitui o grid implícito por flex-wrap para garantir que os botões
+   'Relatório Pericial', 'Minuta Word', 'Tendência ATF', 'Exportar JSON'
+   e 'Pacote Advogado' aparecem na mesma linha horizontal sem quebras abruptas.
+   flex-wrap:wrap permite que em viewports estreitos os botões quebrem de forma
+   controlada em vez de colidirem ou ficarem cortados.                         */
+
+.toolbar-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    align-items: center !important;
+}
+
+.toolbar-grid .btn-tool {
+    flex: 0 0 auto;          /* cada botão mantém a sua largura natural */
+    white-space: nowrap;
+    min-width: max-content;
+}
+
+/* ── PATCH C2: Contentor inline do gráfico ATF (pureATFCard) ─────────────────
+   #atfTrendChartContainer é o div injectado no panel.html como fallback para
+   renderATFChart(). Deve ter altura mínima de 0 no estado vazio para não
+   criar espaço em branco, e expandir quando o canvas é inserido pelo JS.     */
+
+#atfTrendChartContainer {
+    width: 100%;
+    min-height: 0;
+    transition: min-height 0.3s ease;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+#atfTrendChartContainer canvas {
+    display: block;
+    width: 100% !important;
+    max-height: 260px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.02);
+}
+
+/* Quando o container tem um canvas filho, adicionar separador visual */
+#atfTrendChartContainer:not(:empty) {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0,229,255,0.04);
+    border: 1px solid rgba(0,229,255,0.15);
+}
+
+/* ── PATCH C3: pure-atf-chart-host (classe alternativa do contentor) ─────── */
+.pure-atf-chart-host {
+    width: 100%;
+    min-height: 0;
+}
+
+.pure-atf-chart-host:not(:empty) {
+    margin-top: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    background: rgba(0,229,255,0.03);
+    border: 1px solid rgba(0,229,255,0.12);
+}
+
+/* ── PATCH C4: Botões ATF e Pacote no panel.html — flex side-by-side ─────── */
+.pure-card #pureATFCard > div[style*="text-align:center"],
+#pureATFCard > div[style*="text-align:center"],
+#pureATFCard > div[style*="justify-content:center"] {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+/* ══ FIM PATCHES FASE 6 ════════════════════════════════════════════════════ */

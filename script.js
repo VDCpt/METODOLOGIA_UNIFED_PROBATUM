@@ -1886,7 +1886,7 @@ const translations = {
         
         // Botões de Navegação
         navDemo: "CASO REAL (ANONIMIZADO)",
-        langBtn: "EN",
+        langBtn: "US",
         
         // Header
         headerSubtitle: "ISO/IEC 27037 | NIST SP 800-86 | INTERPOL · CSC | BIG DATA",

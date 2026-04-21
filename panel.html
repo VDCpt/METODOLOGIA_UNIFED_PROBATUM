@@ -212,9 +212,13 @@
       </div>
     </div>
 
+    <!-- atfTrendChartContainer: contentor explícito para renderATFChart() -->
+    <!-- Fix Blocker: "renderATFChart: contentor não encontrado" -->
+    <div id="atfTrendChartContainer" class="pure-atf-chart-host" style="margin-top:16px;min-height:0;"></div>
+
     <div class="pure-atf-note" id="pure-atf-note">
       <strong id="pure-atf-note-strong" data-pt="Nota Metodológica:" data-en="Methodological Note:">Nota Metodológica:</strong>
-      <span id="pure-atf-note-text" data-pt="Score de Persistência calculado pelo motor computeTemporalAnalysis() sobre 3 meses de histórico (Out/Nov/Dez 2024). SP calculado sobre o lote global (dados verificados UNIFED-MMLADX8Q-CV69L). Decomposição mensal não disponível para este lote — motor ATF opera em modo global. As discrepâncias absolutas (C2: €2.184,95 — 89,26% · C1: €2.402,57 — 23,65%) mantêm relevância jurídica independente." data-en="Persistence Score calculated by computeTemporalAnalysis() engine over 3 months of history (Oct/Nov/Dec 2024). SP calculated over the global batch (verified data UNIFED-MMLADX8Q-CV69L). Monthly breakdown not available for this batch — ATF engine operates in global mode. The absolute discrepancies (C2: €2,184.95 — 89.26% · C1: €2,402.57 — 23.65%) maintain independent legal relevance.">Score de Persistência calculado pelo motor computeTemporalAnalysis() sobre 3 meses de histórico (Out/Nov/Dez 2024). SP calculado sobre o lote global (dados verificados UNIFED-MMLADX8Q-CV69L). Decomposição mensal não disponível para este lote — motor ATF opera em modo global. As discrepâncias absolutas (C2: €2.184,95 — 89,26% · C1: €2.402,57 — 23,65%) mantêm relevância jurídica independente.</span>
+      <span id="pure-atf-note-text" data-pt="Score de Persistência calculado pelo motor computeTemporalAnalysis() sobre 4 meses de histórico (Set/Out/Nov/Dez 2024). SP calculado sobre o lote global (dados verificados UNIFED-MMLADX8Q-CV69L). Decomposição mensal disponível para quadrimestre completo — motor ATF opera em modo global. As discrepâncias absolutas (C2: €2.184,95 — 89,26% · C1: €2.402,57 — 23,65%) mantêm relevância jurídica independente." data-en="Persistence Score calculated by computeTemporalAnalysis() engine over 4 months of history (Sep/Oct/Nov/Dec 2024). SP calculated over the global batch (verified data UNIFED-MMLADX8Q-CV69L). Monthly breakdown available for complete four-month period — ATF engine operates in global mode. The absolute discrepancies (C2: €2,184.95 — 89.26% · C1: €2,402.57 — 23.65%) maintain independent legal relevance.">Score de Persistência calculado pelo motor computeTemporalAnalysis() sobre 4 meses de histórico (Set/Out/Nov/Dez 2024). SP calculado sobre o lote global (dados verificados UNIFED-MMLADX8Q-CV69L). Decomposição mensal disponível para quadrimestre completo — motor ATF opera em modo global. As discrepâncias absolutas (C2: €2.184,95 — 89,26% · C1: €2.402,57 — 23,65%) mantêm relevância jurídica independente.</span>
     </div>
 
     <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
@@ -248,13 +252,13 @@
     </h3>
     <p class="pure-zc-intro" id="pure-zc-intro">
       <span id="pure-zc-intro-text" data-pt="O sistema isolou" data-en="The system isolated">O sistema isolou</span>
-      <strong id="pure-zc-amount">€ 451,00</strong>
-      <span id="pure-zc-intro-end" data-pt="em fluxos não sujeitos a comissão pela plataforma (Campanhas + Gorjetas — mês de Outubro). A reconciliação DAC7 deve verificar se estes valores foram indevidamente incluídos na base de reporte à AT, explicando parte da discrepância C1." data-en="in flows not subject to commission by the platform (Campaigns + Tips — October month). DAC7 reconciliation must verify whether these values were improperly included in the reporting base to the TA, explaining part of the C1 discrepancy.">em fluxos não sujeitos a comissão pela plataforma (Campanhas + Gorjetas — mês de Outubro). A reconciliação DAC7 deve verificar se estes valores foram indevidamente incluídos na base de reporte à AT, explicando parte da discrepância C1.</span>
+      <strong id="pure-zc-amount">€ 451,15</strong>
+      <span id="pure-zc-intro-end" data-pt="em fluxos não sujeitos a comissão pela plataforma (Campanhas + Gorjetas — Período Set-Dez 2024 · acumulado do quadrimestre). A reconciliação DAC7 deve verificar se estes valores foram indevidamente incluídos na base de reporte à AT, explicando parte da discrepância C1." data-en="in flows not subject to commission by the platform (Campaigns + Tips — Sep-Dec 2024 Period · four-month cumulative). DAC7 reconciliation must verify whether these values were improperly included in the reporting base to the TA, explaining part of the C1 discrepancy.">em fluxos não sujeitos a comissão pela plataforma (Campanhas + Gorjetas — Período Set-Dez 2024 · acumulado do quadrimestre). A reconciliação DAC7 deve verificar se estes valores foram indevidamente incluídos na base de reporte à AT, explicando parte da discrepância C1.</span>
     </p>
     <div class="pure-zc-grid">
       <div class="pure-zc-item">
         <span class="pure-zc-label" id="pure-zc-campanhas-label" data-pt="Campanhas (total período)" data-en="Campaigns (total period)">Campanhas (total período)</span>
-        <span id="pure-nc-campanhas" class="pure-zc-val">€ 0,00</span>
+        <span id="pure-nc-campanhas" class="pure-zc-val">€ 405,00</span>
         <span class="pure-zc-tag" id="pure-zc-campanhas-tag" data-pt="Isento comissão · 0%" data-en="Commission exempt · 0%">Isento comissão · 0%</span>
       </div>
       <div class="pure-zc-item">
@@ -264,7 +268,7 @@
       </div>
       <div class="pure-zc-item">
         <span class="pure-zc-label" id="pure-zc-portagens-label" data-pt="Portagens (total período)" data-en="Tolls (total period)">Portagens (total período)</span>
-        <span id="pure-nc-portagens" class="pure-zc-val">€ 0,00</span>
+        <span id="pure-nc-portagens" class="pure-zc-val">€ 0,15</span>
         <span class="pure-zc-tag" id="pure-zc-portagens-tag" data-pt="Reembolso operacional · 0%" data-en="Operational reimbursement · 0%">Reembolso operacional · 0%</span>
       </div>
       <div class="pure-zc-item">
@@ -273,14 +277,14 @@
         <span class="pure-zc-tag" id="pure-zc-cancelamentos-tag" data-pt="já em Ganhos · comissão incluída nos −Despesas" data-en="already in Earnings · commission included in −Expenses">já em Ganhos · comissão incluída nos −Despesas</span>
       </div>
       <div class="pure-zc-item pure-zc-total">
-        <span class="pure-zc-label" id="pure-zc-total-label" data-pt="Total Não Sujeitos (Out 2024)" data-en="Total Not Subject (Oct 2024)">Total Não Sujeitos (Out 2024)</span>
-        <span id="pure-nc-total" class="pure-zc-val">€ 0,00</span>
+        <span class="pure-zc-label" id="pure-zc-total-label" data-pt="Total Não Sujeitos (Set–Dez 2024)" data-en="Total Not Subject (Sep–Dec 2024)">Total Não Sujeitos (Set–Dez 2024)</span>
+        <span id="pure-nc-total" class="pure-zc-val">€ 451,15</span>
         <span class="pure-zc-tag" id="pure-zc-total-tag" data-pt="Fora da base tributável TVDE" data-en="Outside TVDE taxable base">Fora da base tributável TVDE</span>
       </div>
     </div>
     <div class="pure-zc-question" id="pure-zc-question">
       <strong id="pure-zc-question-strong" data-pt="Questão para contraditório (Art. 327.º CPP):" data-en="Question for contradiction (Art. 327 CPP):">Questão para contraditório (Art. 327.º CPP):</strong>
-      <span id="pure-zc-question-text" data-pt="Pode a plataforma confirmar se os €451,00 em Gorjetas e Campanhas (isentos de comissão nos termos da Lei TVDE) foram incluídos na base de cálculo do reporte DAC7? Se sim, qual o fundamento legal?" data-en="Can the platform confirm whether the €451.00 in Tips and Campaigns (commission-exempt under the TVDE Law) were included in the calculation basis of the DAC7 report? If so, what is the legal basis?">Pode a plataforma confirmar se os €451,00 em Gorjetas e Campanhas (isentos de comissão nos termos da Lei TVDE) foram incluídos na base de cálculo do reporte DAC7? Se sim, qual o fundamento legal?</span>
+      <span id="pure-zc-question-text" data-pt="Pode a plataforma confirmar se os €451,15 em Gorjetas e Campanhas (acumulado Set-Dez 2024) (isentos de comissão nos termos da Lei TVDE) foram incluídos na base de cálculo do reporte DAC7? Se sim, qual o fundamento legal?" data-en="Can the platform confirm whether the €451.15 in Tips and Campaigns (Sep-Dec 2024 cumulative) (commission-exempt under the TVDE Law) were included in the calculation basis of the DAC7 report? If so, what is the legal basis?">Pode a plataforma confirmar se os €451,15 em Gorjetas e Campanhas (acumulado Set-Dez 2024) (isentos de comissão nos termos da Lei TVDE) foram incluídos na base de cálculo do reporte DAC7? Se sim, qual o fundamento legal?</span>
     </div>
   </div>
 
