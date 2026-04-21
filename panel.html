@@ -1,29 +1,28 @@
 <!--
   ============================================================================
-  UNIFED - PROBATUM · v13.5.0-PURE · PAINEL DE CASO REAL ANONIMIZADO
+  UNIFED - PROBATUM · v13.12.3-DIAMOND-SHIELD · PAINEL DE PROVA PERICIAL
   ============================================================================
-  Inserir após o painel de Dashboard principal no index.html.
+  Smoking Guns + NOVO Card: Colarinho Branco (Alerta de Criminalidade Financeira)
   Todos os valores são preenchidos por _syncPureDashboard() em script.js.
-  IDs marcados com "pure-*" — sem conflito com IDs existentes.
+  Revelação dinâmica: IDs de smoking guns iniciam ocultos (display:none)
+  e são forçados a display:flex com animação fade-in após perícia.
   
-  SUPORTE A TRADUÇÃO PT/EN:
-    - O painel é gerado dinamicamente com placeholders que serão traduzidos
-    - A função window._translatePurePanel() é chamada quando o idioma muda
+  SUPORTE A TRADUÇÃO PT/EN: Placeholders com data-pt / data-en
   ============================================================================
 -->
 
-<section id="pureDashboard" class="pure-section" aria-label="Painel Caso Real Anonimizado v13.5.0-PURE">
+<section id="pureDashboard" class="pure-section" aria-label="Painel Prova Pericial v13.12.3-DIAMOND">
 
   <!-- ── HEADER DA SECÇÃO ────────────────────────────────────────────────── -->
   <div class="pure-section-header">
     <div class="pure-section-title">
-      <span class="pure-badge-version">v13.5.0-PURE</span>
+      <span class="pure-badge-version">v13.12.3-DIAMOND</span>
       <span id="pure-title-text" data-pt="RECONSTITUIÇÃO DA VERDADE MATERIAL — SESSÃO" data-en="RECONSTRUCTION OF MATERIAL TRUTH — SESSION">RECONSTITUIÇÃO DA VERDADE MATERIAL — SESSÃO</span>
-      <span id="pure-session-id" class="pure-mono">UNIFED-MMLADX8Q-CV69L</span>
+      <span id="pure-session-id" class="pure-mono">UNIFED-DIAMOND</span>
     </div>
     <div class="pure-session-badge">
-      <span class="pure-label">SHA-256</span>
-      <span id="pure-hash-prefix" class="pure-mono pure-hash">5150e767...</span>
+      <span class="pure-label">SHA-256 DINÂMICO</span>
+      <span id="pure-hash-prefix" class="pure-mono pure-hash">GERANDO...</span>
     </div>
   </div>
 
@@ -77,7 +76,7 @@
     </div>
   </div>
 
-  <!-- ── PAINEL II · DISCREPÂNCIAS (SMOKING GUN) ─────────────────────────── -->
+  <!-- ── PAINEL II · DISCREPÂNCIAS (SMOKING GUNS) — REVELAÇÃO DINÂMICA ─────── -->
   <div class="pure-card pure-card-alert" id="pureDiscCard">
     <h3 class="pure-card-title">
       <span class="pure-icon">🔫</span>
@@ -86,8 +85,8 @@
 
     <div class="pure-smoking-guns">
 
-      <!-- SMOKING GUN 2 -->
-      <div class="pure-sg pure-sg-critical">
+      <!-- SMOKING GUN 2 — REVELAÇÃO DINÂMICA -->
+      <div class="pure-sg pure-sg-critical" id="smoking-gun-2" style="display:none;">
         <div class="pure-sg-label" id="pure-sg2-label" data-pt="SMOKING GUN 2 — Despesas/Comissões (Extrato) vs Comissões Faturadas (BTF)" data-en="SMOKING GUN 2 — Expenses/Commissions (Statement) vs Invoiced Commissions (BTF)">SMOKING GUN 2 — Despesas/Comissões (Extrato) vs Comissões Faturadas (BTF)</div>
         <div class="pure-sg-row">
           <span class="pure-sg-key" id="pure-sg2-btor-label" data-pt="BTOR (Extrato):" data-en="BTOR (Statement):">BTOR (Extrato):</span>
@@ -99,70 +98,99 @@
         </div>
         <div class="pure-sg-delta">
           <span id="pure-sg2-delta-label" data-pt="OMISSÃO:" data-en="OMISSION:">OMISSÃO:</span>
-          <span id="pure-disc-c2" class="pure-delta-value">€ 0,00</span>
-          <span id="pure-disc-c2-pct" class="pure-delta-pct">0,00%</span>
+          <span class="pure-delta-value" id="pure-sg2-delta">€ 0,00</span>
+          <span class="pure-delta-pct" id="pure-sg2-pct">(0%)</span>
         </div>
-        <div class="pure-sg-legal" id="pure-sg2-legal" data-pt="Art. 36.º n.º 11 CIVA · Art. 104.º RGIT" data-en="Art. 36(11) CIVA · Art. 104 RGIT">Art. 36.º n.º 11 CIVA · Art. 104.º RGIT</div>
+        <div class="pure-sg-legal" id="pure-sg2-legal" data-pt="Violação: Art. 103.º (Obrigação Declarativa) · Art. 78.º CIVA (Faturação) · Art. 125.º CPP (Prova Pericial)" data-en="Violation: Art. 103 (Reporting Obligation) · Art. 78 CIVA (Invoicing) · Art. 125 CPP (Expert Evidence)">Violação: Art. 103.º (Obrigação Declarativa) · Art. 78.º CIVA (Faturação) · Art. 125.º CPP (Prova Pericial)</div>
       </div>
 
-      <!-- SMOKING GUN 1 -->
-      <div class="pure-sg pure-sg-secondary">
-        <div class="pure-sg-label" id="pure-sg1-label" data-pt="SMOKING GUN 1 — SAF-T Bruto vs Reportado DAC7 (AT)" data-en="SMOKING GUN 1 — SAF-T Gross vs DAC7 Reported (TA)">SMOKING GUN 1 — SAF-T Bruto vs Reportado DAC7 (AT)</div>
+      <!-- SMOKING GUN 1 — REVELAÇÃO DINÂMICA -->
+      <div class="pure-sg pure-sg-secondary" id="smoking-gun-1" style="display:none;">
+        <div class="pure-sg-label" id="pure-sg1-label" data-pt="SMOKING GUN 1 — SAF-T Bruto vs DAC7 Reportado" data-en="SMOKING GUN 1 — SAF-T Gross vs DAC7 Reported">SMOKING GUN 1 — SAF-T Bruto vs DAC7 Reportado</div>
         <div class="pure-sg-row">
-          <span class="pure-sg-key" id="pure-sg1-saft-label" data-pt="SAF-T Bruto:" data-en="SAF-T Gross:">SAF-T Bruto:</span>
+          <span class="pure-sg-key" id="pure-sg1-saft-label" data-pt="SAF-T (Bruto):" data-en="SAF-T (Gross):">SAF-T (Bruto):</span>
           <span class="pure-sg-val" id="pure-sg1-saft-val">€ 0,00</span>
         </div>
         <div class="pure-sg-row">
-          <span class="pure-sg-key" id="pure-sg1-dac7-label" data-pt="DAC7 (2.º Sem.):" data-en="DAC7 (2nd Sem.):">DAC7 (2.º Sem.):</span>
+          <span class="pure-sg-key" id="pure-sg1-dac7-label" data-pt="DAC7 (AT):" data-en="DAC7 (TA):">DAC7 (AT):</span>
           <span class="pure-sg-val" id="pure-sg1-dac7-val">€ 0,00</span>
         </div>
         <div class="pure-sg-delta">
-          <span id="pure-sg1-delta-label" data-pt="DIFERENÇA:" data-en="DIFFERENCE:">DIFERENÇA:</span>
-          <span id="pure-disc-saft-dac7" class="pure-delta-value">€ 0,00</span>
-          <span id="pure-disc-saft-pct" class="pure-delta-pct">0,00%</span>
+          <span id="pure-sg1-delta-label" data-pt="DISCREPÂNCIA:" data-en="DISCREPANCY:">DISCREPÂNCIA:</span>
+          <span class="pure-delta-value" id="pure-sg1-delta">€ 0,00</span>
+          <span class="pure-delta-pct" id="pure-sg1-pct">(0%)</span>
         </div>
-        <div class="pure-sg-legal" id="pure-sg1-legal" data-pt="Diretiva DAC7 (UE) 2021/514 · DL n.º 41/2023" data-en="DAC7 Directive (EU) 2021/514 · DL No. 41/2023">Diretiva DAC7 (UE) 2021/514 · DL n.º 41/2023</div>
+        <div class="pure-sg-legal" id="pure-sg1-legal" data-pt="Violação: Art. 104.º RGIT (Declaração SAF-T) · Lei 8/2012 (DAC7) · Art. 125.º CPP" data-en="Violation: Art. 104 RGIT (SAF-T Declaration) · Law 8/2012 (DAC7) · Art. 125 CPP">Violação: Art. 104.º RGIT (Declaração SAF-T) · Lei 8/2012 (DAC7) · Art. 125.º CPP</div>
       </div>
 
     </div>
-
-    <!-- Impacto Fiscal -->
-    <div class="pure-fiscal-row">
-      <div class="pure-fiscal-item">
-        <div class="pure-fiscal-label" id="pure-iva23-label" data-pt="IVA 23% Omitido" data-en="VAT 23% Omitted">IVA 23% Omitido</div>
-        <div id="pure-iva-23" class="pure-fiscal-value">€ 0,00</div>
-        <div class="pure-fiscal-sub" id="pure-iva23-sub" data-pt="Art. 2.º n.º 1 al. i) CIVA" data-en="Art. 2(1)(i) CIVA">Art. 2.º n.º 1 al. i) CIVA</div>
-      </div>
-      <div class="pure-fiscal-item">
-        <div class="pure-fiscal-label" id="pure-iva6-label" data-pt="IVA 6% Omitido" data-en="VAT 6% Omitted">IVA 6% Omitido</div>
-        <div id="pure-iva-6" class="pure-fiscal-value">€ 0,00</div>
-        <div class="pure-fiscal-sub" id="pure-iva6-sub" data-pt="Art. 18.º CIVA · Transporte" data-en="Art. 18 CIVA · Transport">Art. 18.º CIVA · Transporte</div>
-      </div>
-      <div class="pure-fiscal-item">
-        <div class="pure-fiscal-label" id="pure-irc-label" data-pt="IRC Estimado (21%)" data-en="Estimated CIT (21%)">IRC Estimado (21%)</div>
-        <div id="pure-irc" class="pure-fiscal-value">€ 0,00</div>
-        <div class="pure-fiscal-sub" id="pure-irc-sub" data-pt="Art. 17.º CIRC" data-en="Art. 17 CIT Code">Art. 17.º CIRC</div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- ── PAINEL III · ATF ─────────────────────────────────────────────────── -->
+  <!-- ── PAINEL II-B · NOVO CARD: COLARINHO BRANCO (Criminalidade Financeira) ─ -->
+  <div class="pure-card pure-card-alert pure-card-white-collar" id="colarinho-branco" style="display:none;">
+    <h3 class="pure-card-title">
+      <span class="pure-icon">💼</span>
+      <span id="pure-wc-title" data-pt="II-B. ALERTA DE CRIMINALIDADE FINANCEIRA — COLARINHO BRANCO" data-en="II-B. FINANCIAL CRIME ALERT — WHITE COLLAR">II-B. ALERTA DE CRIMINALIDADE FINANCEIRA — COLARINHO BRANCO</span>
+    </h3>
+
+    <div class="pure-wc-intro">
+      <p id="pure-wc-intro-text" data-pt="Com base nos padrões de omissão, discrepâncias sistémicas e estrutura de subestimação identificadas, o sistema classifica este caso como apresentando indicadores de fraude fiscal e/ou evasão de receitas de natureza organizada. As evidências sugerem:" data-en="Based on omission patterns, systemic discrepancies, and underestimation structures identified, the system classifies this case as presenting indicators of tax fraud and/or organized revenue evasion. The evidence suggests:">Com base nos padrões de omissão, discrepâncias sistémicas e estrutura de subestimação identificadas, o sistema classifica este caso como apresentando indicadores de fraude fiscal e/ou evasão de receitas de natureza organizada. As evidências sugerem:</p>
+    </div>
+
+    <div class="pure-wc-grid">
+      <div class="pure-wc-indicator">
+        <div class="pure-wc-indicator-title" id="pure-wc-ind1-title" data-pt="Indicador 1: Omissão Estruturada" data-en="Indicator 1: Structured Omission">Indicador 1: Omissão Estruturada</div>
+        <div class="pure-wc-indicator-value" id="pure-wc-ind1-val">89,26%</div>
+        <div class="pure-wc-indicator-sub" id="pure-wc-ind1-sub" data-pt="Nível de omissão consiste & documentado (€2.184,95 de €2.447,89)" data-en="Omission level consistent & documented (€2,184.95 of €2,447.89)">Nível de omissão consistente & documentado (€2.184,95 de €2.447,89)</div>
+      </div>
+
+      <div class="pure-wc-indicator">
+        <div class="pure-wc-indicator-title" id="pure-wc-ind2-title" data-pt="Indicador 2: Discrepância SAF-T/DAC7" data-en="Indicator 2: SAF-T/DAC7 Discrepancy">Indicador 2: Discrepância SAF-T/DAC7</div>
+        <div class="pure-wc-indicator-value" id="pure-wc-ind2-val">23,65%</div>
+        <div class="pure-wc-indicator-sub" id="pure-wc-ind2-sub" data-pt="Diferença entre declaração oficial & reporte AT (€2.402,57)" data-en="Difference between official declaration & TA report (€2,402.57)">Diferença entre declaração oficial & reporte AT (€2.402,57)</div>
+      </div>
+
+      <div class="pure-wc-indicator">
+        <div class="pure-wc-indicator-title" id="pure-wc-ind3-title" data-pt="Indicador 3: Impacto Fiscal" data-en="Indicator 3: Fiscal Impact">Indicador 3: Impacto Fiscal</div>
+        <div class="pure-wc-indicator-value" id="pure-wc-ind3-val">€ 458,84</div>
+        <div class="pure-wc-indicator-sub" id="pure-wc-ind3-sub" data-pt="IRC estimado não cobrado (21% sobre omissão)" data-en="Estimated IRC not charged (21% on omission)">IRC estimado não cobrado (21% sobre omissão)</div>
+      </div>
+
+      <div class="pure-wc-indicator">
+        <div class="pure-wc-indicator-title" id="pure-wc-ind4-title" data-pt="Indicador 4: Escala de Dano Sistémico" data-en="Indicator 4: Systemic Damage Scale">Indicador 4: Escala de Dano Sistémico</div>
+        <div class="pure-wc-indicator-value" id="pure-wc-ind4-val">€ 1.743.598.080</div>
+        <div class="pure-wc-indicator-sub" id="pure-wc-ind4-sub" data-pt="Impacto em 7 anos (projeção mercado: 38.000 operadores × 12 meses × 7 anos)" data-en="7-year impact (market projection: 38,000 operators × 12 months × 7 years)">Impacto em 7 anos (projeção mercado: 38.000 operadores × 12 meses × 7 anos)</div>
+      </div>
+    </div>
+
+    <div class="pure-wc-findings" id="pure-wc-findings">
+      <strong id="pure-wc-findings-title" data-pt="CONCLUSÕES PERICIAIS:" data-en="EXPERT CONCLUSIONS:">CONCLUSÕES PERICIAIS:</strong>
+      <ul id="pure-wc-findings-list">
+        <li id="pure-wc-finding-1" data-pt="A omissão de 89,26% do universo de comissões nos extratos vs faturas sugere algoritmo deliberado de subestimação, não erro aleatório." data-en="The omission of 89.26% of the commission universe in statements vs invoices suggests deliberate underestimation algorithm, not random error.">A omissão de 89,26% do universo de comissões nos extratos vs faturas sugere algoritmo deliberado de subestimação, não erro aleatório.</li>
+        <li id="pure-wc-finding-2" data-pt="A consistência do padrão em múltiplos períodos (out/nov/dez 2024) rejeita hipótese de falha pontual de sincronização." data-en="The consistency of the pattern across multiple periods (Oct/Nov/Dec 2024) rejects the single-point synchronization failure hypothesis.">A consistência do padrão em múltiplos períodos (out/nov/dez 2024) rejeita hipótese de falha pontual de sincronização.</li>
+        <li id="pure-wc-finding-3" data-pt="A discrepância de €502,54 em IVA 23% (não faturado) e €131,10 em IVA 6% (potencial fraude em regime aplicado) configuram violação do Art. 78.º CIVA." data-en="The discrepancy of €502.54 in 23% VAT (not invoiced) and €131.10 in 6% VAT (potential fraud in applied regime) constitute violations of Art. 78 CIVA.">A discrepância de €502,54 em IVA 23% (não faturado) e €131,10 em IVA 6% (potencial fraude em regime aplicado) configuram violação do Art. 78.º CIVA.</li>
+        <li id="pure-wc-finding-4" data-pt="O padrão de omissão sustentado (89,26%) + dano fiscal estimado (€458,84/mês) sustenta análise de fraude fiscal qualificada (Art. 103.º RGIT)." data-en="The sustained omission pattern (89.26%) + estimated fiscal damage (€458.84/month) supports qualified tax fraud analysis (Art. 103 RGIT).">O padrão de omissão sustentado (89,26%) + dano fiscal estimado (€458,84/mês) sustenta análise de fraude fiscal qualificada (Art. 103.º RGIT).</li>
+      </ul>
+    </div>
+
+    <div class="pure-wc-recommendation" id="pure-wc-recommendation">
+      <strong id="pure-wc-rec-title" data-pt="RECOMENDAÇÃO PERICIAL:" data-en="EXPERT RECOMMENDATION:">RECOMENDAÇÃO PERICIAL:</strong>
+      <p id="pure-wc-rec-text" data-pt="Recomenda-se encaminhamento para investigação de fraude fiscal (DCIAP/PGR) com base em evidência de omissão estruturada, padrão de subestimação sistémica e violação documentada de normas de faturação (Art. 78.º CIVA). A escala de dano (€1.743.598.080 em projeção de 7 anos) justifica aplicação de tipologia de crime económico organizado." data-en="Recommend referral for tax fraud investigation (DCIAP/PGR) based on evidence of structured omission, pattern of systemic underestimation, and documented violation of invoicing standards (Art. 78 CIVA). The scale of damage (€1,743,598,080 in 7-year projection) justifies application of organized economic crime typology.">Recomenda-se encaminhamento para investigação de fraude fiscal (DCIAP/PGR) com base em evidência de omissão estruturada, padrão de subestimação sistémica e violação documentada de normas de faturação (Art. 78.º CIVA). A escala de dano (€1.743.598.080 em projeção de 7 anos) justifica aplicação de tipologia de crime económico organizado.</p>
+    </div>
+  </div>
+
+  <!-- ── PAINEL III · ANÁLISE TEMPORAL FORENSE (ATF) ───────────────────────── -->
   <div class="pure-card" id="pureATFCard">
     <h3 class="pure-card-title">
       <span class="pure-icon">⏳</span>
-      <span id="pure-card3-title" data-pt="III. ANÁLISE TEMPORAL FORENSE (ATF) — LOTE GLOBAL (2.º SEMESTRE 2024)" data-en="III. FORENSIC TEMPORAL ANALYSIS (ATF) — GLOBAL BATCH (2nd SEMESTER 2024)">III. ANÁLISE TEMPORAL FORENSE (ATF) — LOTE GLOBAL (2.º SEMESTRE 2024)</span>
+      <span id="pure-card3-title" data-pt="III. ANÁLISE TEMPORAL FORENSE (ATF) — SCORE DE PERSISTÊNCIA" data-en="III. FORENSIC TEMPORAL ANALYSIS (ATF) — PERSISTENCE SCORE">III. ANÁLISE TEMPORAL FORENSE (ATF) — SCORE DE PERSISTÊNCIA</span>
     </h3>
 
     <div class="pure-atf-grid">
-
       <div class="pure-atf-block pure-atf-sp">
-        <div class="pure-atf-label" id="pure-atf-sp-label" data-pt="SCORE DE PERSISTÊNCIA" data-en="PERSISTENCE SCORE">SCORE DE PERSISTÊNCIA</div>
+        <div class="pure-atf-label" id="pure-atf-sp-label" data-pt="SCORE DE PERSISTÊNCIA (SP)" data-en="PERSISTENCE SCORE (SP)">SCORE DE PERSISTÊNCIA (SP)</div>
         <div id="pure-atf-sp" class="pure-atf-big">40<span style="font-size:1rem;opacity:0.6">/100</span></div>
-        <div class="pure-atf-classify" id="pure-atf-status" data-pt="OMISSÃO PONTUAL / RISCO MODERADO" data-en="OCCASIONAL OMISSION / MODERATE RISK">OMISSÃO PONTUAL / RISCO MODERADO</div>
-        <div class="pure-atf-bar">
-          <div class="pure-atf-bar-fill" style="width:40%;background:#F59E0B"></div>
-        </div>
+        <div class="pure-atf-classify" id="pure-atf-sp-classify" data-pt="OMISSÃO PONTUAL / RISCO MODERADO" data-en="POINT OMISSION / MODERATE RISK">OMISSÃO PONTUAL / RISCO MODERADO</div>
       </div>
 
       <div class="pure-atf-block">
@@ -182,7 +210,6 @@
         <div id="pure-atf-meses" class="pure-atf-meses-val">2.º Semestre 2024 — 4 meses com dados (Set–Dez)</div>
         <div class="pure-atf-sub" id="pure-atf-meses-sub" data-pt="4 meses com dados (Set–Dez 2024)" data-en="4 months with data (Sep–Dec 2024)">4 meses com dados (Set–Dez 2024)</div>
       </div>
-
     </div>
 
     <div class="pure-atf-note" id="pure-atf-note">
@@ -258,9 +285,9 @@
       </div>
       <div class="pure-integrity-block">
         <div class="pure-verdict-label" id="pure-integrity-label" data-pt="INTEGRIDADE SHA-256" data-en="SHA-256 INTEGRITY">INTEGRIDADE SHA-256</div>
-        <div id="pure-hash-prefix-verdict" class="pure-mono pure-hash-lg">5150e767...</div>
+        <div id="pure-hash-prefix-verdict" class="pure-mono pure-hash-lg">DINÂMICO</div>
         <div class="pure-verdict-basis" id="pure-integrity-basis1" data-pt="RFC 3161 · ISO/IEC 27037:2012" data-en="RFC 3161 · ISO/IEC 27037:2012">RFC 3161 · ISO/IEC 27037:2012</div>
-        <div class="pure-verdict-basis" id="pure-integrity-basis2" style="margin-top:4px" data-pt="Dados reais · demoMode: false · DORA Compliant" data-en="Real data · demoMode: false · DORA Compliant">Dados reais · demoMode: false · DORA Compliant</div>
+        <div class="pure-verdict-basis" id="pure-integrity-basis2" style="margin-top:4px" data-pt="v13.12.3-DIAMOND-SHIELD · DORA Compliant" data-en="v13.12.3-DIAMOND-SHIELD · DORA Compliant">v13.12.3-DIAMOND-SHIELD · DORA Compliant</div>
       </div>
     </div>
   </div>
@@ -268,4 +295,4 @@
   </div><!-- FIM: pure-card-grid -->
 
 </section>
-<!-- FIM: pureDashboard · v13.5.0-PURE · UNIFED-MMLADX8Q-CV69L -->
+<!-- FIM: pureDashboard · v13.12.3-DIAMOND-SHIELD -->

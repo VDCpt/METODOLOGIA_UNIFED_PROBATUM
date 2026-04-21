@@ -518,6 +518,135 @@
 }
 
 /* ============================================================================
-   FIM: style.css additions · v13.5.0-PURE · UNIFED-PROBATUM
-   Escopo: #pureDashboard · Sem colisões com CSS base.
+   UNIFED - PROBATUM · v13.12.3-DIAMOND-SHIELD · ESTILOS COLARINHO BRANCO
+   ============================================================================
+   Card de Alerta de Criminalidade Financeira — Revelação Dinâmica
+   Indicadores de fraude fiscal com métricas quantificadas
    ============================================================================ */
+
+/* ── Card Colarinho Branco (Criminalidade Financeira) ────────────────────── */
+.pure-card-white-collar {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+}
+
+.pure-wc-intro {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.pure-wc-intro strong {
+    color: var(--pure-accent);
+}
+
+/* ── Grid de Indicadores ────────────────────────────────────────────────── */
+.pure-wc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.pure-wc-indicator {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-left: 4px solid #EF4444;
+    border-radius: 6px;
+    padding: 12px 14px;
+}
+
+.pure-wc-indicator-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #EF4444;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.pure-wc-indicator-value {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #EF4444;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.pure-wc-indicator-sub {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.5;
+}
+
+/* ── Secção de Conclusões Periciais ────────────────────────────────────── */
+.pure-wc-findings {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin-bottom: 1rem;
+}
+
+.pure-wc-findings strong {
+    color: #EF4444;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 10px;
+}
+
+#pure-wc-findings-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#pure-wc-findings-list li {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.7;
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+#pure-wc-findings-list li::before {
+    content: '▪';
+    position: absolute;
+    left: 4px;
+    color: #EF4444;
+    font-weight: bold;
+}
+
+/* ── Secção de Recomendação ────────────────────────────────────────────── */
+.pure-wc-recommendation {
+    background: rgba(239, 68, 68, 0.08);
+    border-left: 4px solid #EF4444;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 1rem;
+}
+
+.pure-wc-recommendation strong {
+    color: #EF4444;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+}
+
+#pure-wc-rec-text {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.8;
+}
+
+/* ============================================================================
+   FIM: style_additions.css · v13.12.3-DIAMOND-SHIELD · UNIFED-PROBATUM
+   Estilos para Painel PURE v13.5.0 + Colarinho Branco v13.12.3
+   ============================================================================ */
+

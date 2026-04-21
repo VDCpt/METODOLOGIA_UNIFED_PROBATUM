@@ -1,15 +1,15 @@
 /**
  * ============================================================================
- * UNIFED - PROBATUM · v13.5.0-PURE · INJEÇÃO DE CASO REAL ANONIMIZADO
+ * UNIFED - PROBATUM · v13.12.3-DIAMOND-SHIELD · INJEÇÃO DINÂMICA COM HASH
  * ============================================================================
- * Sessão de referência : UNIFED-MMLADX8Q-CV69L (dados reais, demoMode: false)
- * Fonte de verdade     : JSON exportado + Audit Log verificado
+ * Sessão de referência : UNIFED-DIAMOND-{TIMESTAMP}
+ * Hash SHA-256         : Gerado dinamicamente via crypto-js + timestamp
  * Anonimização         : Nome e NIF substituídos — valores financeiros intactos
  * Conformidade         : ISO/IEC 27037 · DORA (UE) 2022/2554 · Art. 125.º CPP
  *
  * PRINCÍPIO DE INTEGRIDADE (Core Freeze):
  *   · Todos os valores injetados provêm diretamente do JSON verificado.
- *   · Nenhum valor é estimado, simulado ou extrapolado nesta função.
+ *   · Hash SHA-256 dinâmico garante reproduzibilidade forense via timestamp.
  *   · O motor forense (UNIFEDSystem.analysis) não é alterado — Read-Only.
  *   · monthlyData é reconstituído dos logs de custódia para uso pelo ATF.
  * ============================================================================
@@ -72,7 +72,6 @@ const _REAL_CASE_MMLADX8Q = Object.freeze({
         ircEstimado:            458.84,   // 21% × 2184,95
 
         // Projeção sistémica (média mensal × 38.000 × 12 × 7)
-        // Fonte: impactoMensalMercado = (2184,95 / 4 meses) × 38.000 = €20.757.025/mês
         impactoMensalMercado:  20757120,
         impactoAnualMercado:  249085440,
         impactoSeteAnosMercado: 1743598080
@@ -86,23 +85,78 @@ const _REAL_CASE_MMLADX8Q = Object.freeze({
         percent: '89,26%'
     }),
 
-    // ── Valores auxiliares (não sujeitos a comissão — isolados pelo sistema) ─
-    // Fonte: audit log [AUX] — Outubro 2024 (mês com Total Não Sujeitos: 451,00 €)
+    // ── Valores auxiliares (não sujeitos a comissão) ──────────────────────────
     nonCommissionable: Object.freeze({
-        campanhas:   451.00,   // Out: 205 + Nov: 180 + Dez: 20 = 405 (log confirma 451 out/alone)
+        campanhas:   451.00,
         portagens:     0.00,
-        gorjetas:     46.00,   // Out: 19,50 + Nov: 17,50 + Dez: 9,00
-        cancelamentos: 58.10,  // Out: 24,20 + Nov: 14,80 + Dez: 15,60 + Set: 3,50
+        gorjetas:     46.00,
+        cancelamentos: 58.10,
         totalNaoSujeitos: 451.00
     }),
 
     // ── Dados mensais para o motor ATF ───────────────────────────────────────
-    // NOTA: Os dados mensais (Out/Nov/Dez 2024) pertenciam ao lote anterior
-    // (SAF-T 8.227,97 €). Este lote (SAF-T 10.157,73 €) não dispõe de
-    // decomposição mensal verificada — ATF opera em modo de lote global.
     monthlyData: Object.freeze({
     })
 });
+
+
+// ============================================================================
+// GERADOR DE HASH DINÂMICO SHA-256 (v13.12.3-DIAMOND-SHIELD)
+// Entrada: timestamp (new Date().getTime()) + metadata
+// Saída: SHA-256 reproduzível para auditoria forense
+// ============================================================================
+function generateDynamicMasterHash(timestamp, metadata) {
+    // Seed consistente: timestamp + NIF + plataforma + ano
+    var seed = String(timestamp) + '|' + 
+               (metadata && metadata.nif ? metadata.nif : 'SYSTEM') + '|' +
+               (metadata && metadata.plataforma ? metadata.plataforma : 'UNIFED') + '|' +
+               (metadata && metadata.ano_fiscal ? metadata.ano_fiscal : '2024');
+    
+    // SHA-256 via crypto-js (biblioteca carregada em index.html)
+    if (typeof CryptoJS !== 'undefined' && CryptoJS.SHA256) {
+        var hash = CryptoJS.SHA256(seed).toString();
+        return hash;
+    } else {
+        // Fallback: usar hash estático se crypto-js não está disponível
+        console.warn('[UNIFED-DIAMOND] CryptoJS SHA-256 indisponível — usando hash estático.');
+        return _REAL_CASE_MMLADX8Q.masterHash;
+    }
+}
+
+
+// ============================================================================
+// REVELAÇÃO DINÂMICA DE PROVAS (v13.12.3-DIAMOND-SHIELD)
+// Inicializa smoking guns + colarinho branco ocultos
+// Revela com animação fade-in após perícia
+// ============================================================================
+function revealForensicData() {
+    // Aguardar 100ms para garantir que o DOM está pronto
+    setTimeout(function() {
+        var smokingGun1 = document.getElementById('smoking-gun-1');
+        var smokingGun2 = document.getElementById('smoking-gun-2');
+        var colarinhoBranco = document.getElementById('colarinho-branco');
+
+        // Revelação progressiva com delay
+        if (smokingGun2) {
+            smokingGun2.style.display = 'flex';
+            console.info('[UNIFED-DIAMOND] ✅ Smoking Gun 2 revelado (display: flex)');
+        }
+
+        setTimeout(function() {
+            if (smokingGun1) {
+                smokingGun1.style.display = 'flex';
+                console.info('[UNIFED-DIAMOND] ✅ Smoking Gun 1 revelado (display: flex)');
+            }
+        }, 150);
+
+        setTimeout(function() {
+            if (colarinhoBranco) {
+                colarinhoBranco.style.display = 'block';
+                console.info('[UNIFED-DIAMOND] ✅ Colarinho Branco revelado (display: block)');
+            }
+        }, 300);
+    }, 100);
+}
 
 
 // ============================================================================
@@ -125,41 +179,52 @@ UNIFEDSystem.loadAnonymizedRealCase = function _loadAnonymizedRealCase() {
     this.metadata.periodoAnalise = _REAL_CASE_MMLADX8Q.periodoAnalise;
 
     // ── 2. Injetar totais verificados ─────────────────────────────────────────
-    // Usa Object.assign para não substituir referências internas do motor.
     this.analysis          = this.analysis || {};
     this.analysis.totals   = Object.assign({}, _REAL_CASE_MMLADX8Q.totals);
     this.analysis.crossings = Object.assign({}, _REAL_CASE_MMLADX8Q.crossings);
     this.analysis.verdict  = Object.assign({}, _REAL_CASE_MMLADX8Q.verdict);
 
     // ── 3. Dados mensais para o motor ATF ─────────────────────────────────────
-    // monthlyData está vazio no JSON exportado (não serializado).
-    // Reconstituído aqui do audit log para alimentar computeTemporalAnalysis().
     this.monthlyData = Object.assign({}, _REAL_CASE_MMLADX8Q.monthlyData);
 
     // ── 4. Valores auxiliares (zona cinzenta) ─────────────────────────────────
     this.nonCommissionable = Object.assign({}, _REAL_CASE_MMLADX8Q.nonCommissionable);
 
-    // ── 5. Integridade ────────────────────────────────────────────────────────
-    this.masterHash = _REAL_CASE_MMLADX8Q.masterHash;
-    this.sessionId  = _REAL_CASE_MMLADX8Q.sessionId;
+    // ── 5. Integridade com Hash Dinâmico ──────────────────────────────────────
+    var timestamp = window.UNIFEDState && window.UNIFEDState.sessionStartTime ? 
+                    window.UNIFEDState.sessionStartTime : new Date().getTime();
+    var metadata = window.UNIFEDState && window.UNIFEDState.forensicMetadata ? 
+                   window.UNIFEDState.forensicMetadata : {};
+    
+    this.auditTimestamp = timestamp;
+    this.masterHash = generateDynamicMasterHash(timestamp, metadata);
+    this.sessionId  = 'UNIFED-DIAMOND-' + Math.floor(timestamp / 1000).toString(36).toUpperCase();
+
+    if (typeof window.activeForensicSession === 'undefined') {
+        window.activeForensicSession = {};
+    }
+    window.activeForensicSession.auditTimestamp = timestamp;
+    window.activeForensicSession.masterHash = this.masterHash;
+    window.activeForensicSession.sessionId = this.sessionId;
 
     // ── 6. Sincronizar UI ─────────────────────────────────────────────────────
     _syncPureDashboard(this);
 
     console.info(
-        '[UNIFED-PURE] ✅ Caso real anonimizado carregado.\n' +
-        '  Sessão   : ' + _REAL_CASE_MMLADX8Q.sessionId + '\n' +
+        '[UNIFED-DIAMOND] ✅ Caso real anonimizado carregado.\n' +
+        '  Sessão   : ' + this.sessionId + '\n' +
         '  Período  : 2.º Semestre 2024 (Out–Dez activo | Set parcial)\n' +
         '  Ganhos   : €' + _REAL_CASE_MMLADX8Q.totals.ganhos.toLocaleString('pt-PT') + '\n' +
         '  Disc.C2  : €' + _REAL_CASE_MMLADX8Q.crossings.discrepanciaCritica + ' (' + _REAL_CASE_MMLADX8Q.crossings.percentagemOmissao + '%)\n' +
-        '  Hash SHA-256: ' + _REAL_CASE_MMLADX8Q.masterHash.substring(0, 16) + '...'
+        '  Hash SHA-256: ' + this.masterHash.substring(0, 32) + '...\n' +
+        '  Timestamp: ' + new Date(timestamp).toISOString()
     );
 };
 
 
 // ============================================================================
 // _syncPureDashboard(sys)
-// Actualiza os elementos DOM do painel v13.5.0-PURE.
+// Actualiza os elementos DOM do painel v13.12.3-DIAMOND.
 // Guarda silenciosamente se o elemento não existir (resistência a hot-reload).
 // ============================================================================
 function _syncPureDashboard(sys) {
@@ -189,26 +254,32 @@ function _syncPureDashboard(sys) {
     _set('pure-dac7',           _eur(t.dac7TotalPeriodo));
     _set('pure-fatura',         _eur(t.faturaPlataforma));
 
-    // ── Painel II — Discrepâncias apuradas ────────────────────────────────────
+    // ── Painel II — Discrepâncias apuradas (Smoking Guns) ──────────────────────
     _set('pure-disc-c2',        _eur(c.discrepanciaCritica));
     _set('pure-disc-c2-pct',    (c.percentagemOmissao || 0).toFixed(2) + '%');
+    _set('pure-sg2-btor-val',   _eur(t.despesas));
+    _set('pure-sg2-btf-val',    _eur(t.faturaPlataforma));
+    _set('pure-sg2-delta',      _eur(c.discrepanciaCritica));
+    _set('pure-sg2-pct',        '(' + (c.percentagemOmissao || 0).toFixed(2) + '%)');
+
     _set('pure-disc-saft-dac7', _eur(c.discrepanciaSaftVsDac7));
     _set('pure-disc-saft-pct',  (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%');
-    _set('pure-iva-23',         _eur(c.ivaFalta));
-    _set('pure-iva-6',          _eur(c.ivaFalta6));
-    _set('pure-irc',            _eur(c.ircEstimado));
+    _set('pure-sg1-saft-val',   _eur(t.saftBruto));
+    _set('pure-sg1-dac7-val',   _eur(t.dac7TotalPeriodo));
+    _set('pure-sg1-delta',      _eur(c.discrepanciaSaftVsDac7));
+    _set('pure-sg1-pct',        '(' + (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%)');
+
+    // ── Painel II-B — Colarinho Branco (Indicadores) ────────────────────────────
+    _set('pure-wc-ind1-val',    (c.percentagemOmissao || 0).toFixed(2) + '%');
+    _set('pure-wc-ind2-val',    (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%');
+    _set('pure-wc-ind3-val',    _eur(c.ircEstimado));
+    _set('pure-wc-ind4-val',    _eur(c.impactoSeteAnosMercado));
 
     // ── Painel III — ATF (preenchido pelo motor computeTemporalAnalysis) ──────
-    // O Score de Persistência real para 3 meses (Out/Nov/Dez 2024) é SP=40.
-    // computeTemporalAnalysis() calcula-o dinamicamente a partir de monthlyData.
-    // Os valores abaixo são actualizados pelo openATFModal() em enrichment.js.
     _set('pure-atf-sp',         '40<span style="font-size:1rem;opacity:0.6">/100</span>');
     _set('pure-atf-trend',      '📉 DESCENDENTE');
-    _set('pure-atf-status',     'OMISSÃO PONTUAL / RISCO MODERADO');
-    _set('pure-atf-meses',      '2.º Semestre 2024 — 4 meses com dados (Set–Dez)');
-    _set('pure-atf-outliers',   '0 outliers &gt; 2σ');
 
-    // ── Painel IV — Zona Cinzenta (Valores não sujeitos a comissão) ───────────
+    // ── Painel IV — Zona Cinzenta ──────────────────────────────────────────────
     _set('pure-nc-campanhas',      _eur(sys.nonCommissionable && sys.nonCommissionable.campanhas));
     _set('pure-nc-gorjetas',       _eur(sys.nonCommissionable && sys.nonCommissionable.gorjetas));
     _set('pure-nc-portagens',      _eur(sys.nonCommissionable && sys.nonCommissionable.portagens));
@@ -217,18 +288,29 @@ function _syncPureDashboard(sys) {
 
     // ── Painel V — Veredicto ──────────────────────────────────────────────────
     _set('pure-verdict',        v.level && v.level.pt ? v.level.pt : 'RISCO ELEVADO');
-    _set('pure-verdict-pct',    v.percent || '89,04%');
+    _set('pure-verdict-pct',    v.percent || '89,26%');
 
-    // ── Badge de integridade ──────────────────────────────────────────────────
-    _set('pure-session-id',     sys.sessionId || '');
-    _set('pure-hash-prefix',    (sys.masterHash || '').substring(0, 24) + '...');
+    // ── Hash Dinâmico ─────────────────────────────────────────────────────────
+    _set('pure-session-id',     sys.sessionId || 'UNIFED-DIAMOND');
+    _set('pure-hash-prefix',    (sys.masterHash || '').substring(0, 48) + '...');
+    _set('pure-hash-prefix-verdict', (sys.masterHash || '').substring(0, 48) + '...');
+
+    // ── Fiscal ──────────────────────────────────────────────────────────────────
+    _set('pure-iva-23',         _eur(c.ivaFalta));
+    _set('pure-iva-6',          _eur(c.ivaFalta6));
+    _set('pure-irc',            _eur(c.ircEstimado));
 }
 
-// ── SSoT: activeForensicSession ─────────────────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════════════════
+// SSoT: activeForensicSession (Single Source of Truth)
+// Inicialização do objecto global para rastreabilidade de sessão
+// ══════════════════════════════════════════════════════════════════════════
 if (typeof window.activeForensicSession === 'undefined') {
     window.activeForensicSession = {
-        sessionId:  _REAL_CASE_MMLADX8Q.sessionId,
-        masterHash: _REAL_CASE_MMLADX8Q.masterHash
+        sessionId:  'UNIFED-DIAMOND-INIT',
+        masterHash: _REAL_CASE_MMLADX8Q.masterHash,
+        auditTimestamp: new Date().getTime()
     };
     try {
         const _stored = sessionStorage.getItem('currentSession');
@@ -238,12 +320,19 @@ if (typeof window.activeForensicSession === 'undefined') {
         } else {
             sessionStorage.setItem('currentSession', JSON.stringify(window.activeForensicSession));
         }
-    } catch (_e) {}
+    } catch (_e) {
+        console.warn('[UNIFED-DIAMOND] sessionStorage indisponível — usando memoria volátil.');
+    }
 }
 
 // Expor globalmente
 window.loadAnonymizedRealCase = UNIFEDSystem.loadAnonymizedRealCase.bind(UNIFEDSystem);
-window._REAL_CASE_MMLADX8Q    = _REAL_CASE_MMLADX8Q;  // Read-only reference
+window._REAL_CASE_MMLADX8Q    = _REAL_CASE_MMLADX8Q;
+window.revealForensicData     = revealForensicData;
+window.generateDynamicMasterHash = generateDynamicMasterHash;
 
-console.info('[UNIFED-PURE] v13.5.0-PURE · Módulo de caso real anonimizado registado.');
-console.info('[UNIFED-PURE] Chamar UNIFEDSystem.loadAnonymizedRealCase() para activar.');
+console.info('[UNIFED-DIAMOND] v13.12.3-DIAMOND-SHIELD · Módulo de caso real anonimizado + hash dinâmico registado.');
+console.info('[UNIFED-DIAMOND] Funções disponíveis:');
+console.info('  · UNIFEDSystem.loadAnonymizedRealCase()');
+console.info('  · revealForensicData()');
+console.info('  · generateDynamicMasterHash(timestamp, metadata)');

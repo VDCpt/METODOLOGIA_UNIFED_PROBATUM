@@ -34,6 +34,7 @@
 
     --font-main: 'Inter', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --font-orbitron: 'Orbitron', sans-serif; /* NOVO v13.12.3-DIAMOND: Títulos tácticos */
 
     --shadow-glow-cyan: 0 0 15px rgba(0, 229, 255, 0.4);
     --shadow-glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
@@ -53,6 +54,13 @@
     --pure-accent:  #00E5FF;
     --pure-warn:    #EF4444;
     --pure-version: "v13.5.0-PURE";
+
+    /* ── v13.12.3-DIAMOND-SHIELD — Novas variáveis tácticas ────────────────── */
+    --diamond-font-title:  'Orbitron', sans-serif;
+    --diamond-font-mono:   'JetBrains Mono', monospace;
+    --diamond-led-cyan:    #00E5FF;
+    --diamond-led-red:     #EF4444;
+    --diamond-max-width:   98vw;
 }
 
 *,
@@ -3545,6 +3553,350 @@ body.dual-screen .stat-card p {
     transform: translateY(0);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   UNIFED - PROBATUM v13.12.3-DIAMOND-SHIELD
+   ANIMAÇÕES LED FORENSE · LAYOUT PANORÂMICO · TIPOGRAFIA ORBITRON
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── LAYOUT PANORÂMICO (98vw) ─────────────────────────────────────────────── */
+#pureDashboardWrapper {
+    max-width: 98vw;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.pure-section {
+    max-width: 98vw !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.dashboard-content {
+    max-width: 98vw;
+    margin: 0 auto;
+}
+
+/* ── TIPOGRAFIA ORBITRON (Títulos Tácticos v13.12.3-DIAMOND) ────────────────── */
+.pure-section-title,
+.pure-card-title,
+#pure-title-text {
+    font-family: var(--diamond-font-title, 'Orbitron', sans-serif);
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.session-modal-title {
+    font-family: var(--diamond-font-title, 'Orbitron', sans-serif);
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+h1, h2, h3 {
+    font-family: var(--diamond-font-title, 'Orbitron', sans-serif);
+}
+
+/* ── DADOS MONOESPACIAIS (JetBrains Mono) ──────────────────────────────────── */
+.pure-data-value,
+.pure-mono,
+.pure-hash,
+#custodySessionId {
+    font-family: var(--diamond-font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.05em;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANIMAÇÃO LED FORENSE v13.12.3-DIAMOND
+   Varrimento ciano (normal) + Pulsação vermelha (alerta crítico)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── LED Forense Ciano (Dados normais) ──────────────────────────────────────── */
+@keyframes led-forense-cyan {
+    0% {
+        box-shadow: inset 0 -4px 0 var(--diamond-led-cyan),
+                    0 0 8px var(--diamond-led-cyan);
+    }
+    50% {
+        box-shadow: inset 0 -4px 0 var(--diamond-led-cyan),
+                    0 0 20px var(--diamond-led-cyan),
+                    0 0 40px rgba(0, 229, 255, 0.3);
+    }
+    100% {
+        box-shadow: inset 0 -4px 0 var(--diamond-led-cyan),
+                    0 0 8px var(--diamond-led-cyan);
+    }
+}
+
+/* ── LED Forense Vermelho Pulsante (Smoking guns) ────────────────────────────── */
+@keyframes led-forense-red {
+    0% {
+        box-shadow: inset 0 -4px 0 var(--diamond-led-red),
+                    0 0 8px var(--diamond-led-red);
+    }
+    50% {
+        box-shadow: inset 0 -4px 0 var(--diamond-led-red),
+                    0 0 25px var(--diamond-led-red),
+                    0 0 50px rgba(239, 68, 68, 0.5);
+    }
+    100% {
+        box-shadow: inset 0 -4px 0 var(--diamond-led-red),
+                    0 0 8px var(--diamond-led-red);
+    }
+}
+
+/* ── SMOKING GUNS — Revelação Dinâmica com Animação Fade-In + LED Red ──────────── */
+.pure-sg-critical {
+    animation: led-forense-red 2s infinite, animate-fbi-reveal 0.8s ease-out;
+}
+
+.pure-card-alert {
+    animation: led-forense-red 2.5s infinite;
+}
+
+.pure-card {
+    animation: led-forense-cyan 3s infinite;
+}
+
+/* ── Animação de Revelação FBI (Fade-in dos Smoking Guns) ──────────────────────── */
+@keyframes animate-fbi-reveal {
+    0% {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Card Colarinho Branco (Criminalidade Financeira) — Vermelho Intenso ──────── */
+.pure-card-white-collar {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    animation: led-forense-red 1.8s infinite;
+}
+
+/* ── Indicadores de Colarinho Branco ──────────────────────────────────────────── */
+.pure-wc-indicator {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-left: 4px solid #EF4444;
+    padding: 12px 14px;
+    border-radius: 6px;
+    animation: led-forense-red 2s infinite;
+}
+
+.pure-wc-indicator-title {
+    font-family: var(--diamond-font-title, 'Orbitron', sans-serif);
+    font-size: 0.75rem;
+    color: #EF4444;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.pure-wc-indicator-value {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #EF4444;
+    margin-top: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODAL FORENSE (Sessão com 15 Campos)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+#startSessionModal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+}
+
+.session-modal-box {
+    background: var(--bg-secondary, #0f172a);
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 60px rgba(0, 229, 255, 0.2);
+}
+
+.session-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.session-modal-title {
+    font-size: 1.4rem;
+    color: #00E5FF;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.session-close-btn {
+    background: none;
+    border: none;
+    color: #00E5FF;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.session-close-btn:hover {
+    opacity: 0.8;
+}
+
+.session-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.session-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.session-form-row.full {
+    grid-template-columns: 1fr;
+}
+
+.session-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.session-form-group.checkbox {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.8rem;
+}
+
+.session-form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #00E5FF;
+    letter-spacing: 0.05em;
+}
+
+.session-form-group input,
+.session-form-group select,
+.session-form-group textarea {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(0, 229, 255, 0.2);
+    color: #f1f5f9;
+    padding: 0.7rem 0.9rem;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+.session-form-group input:focus,
+.session-form-group select:focus,
+.session-form-group textarea:focus {
+    outline: none;
+    border-color: #00E5FF;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+
+.session-form-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+}
+
+.session-form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.session-form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0, 229, 255, 0.2);
+}
+
+.session-btn {
+    padding: 0.8rem 1.6rem;
+    border: 1px solid #00E5FF;
+    border-radius: 4px;
+    background: rgba(0, 229, 255, 0.12);
+    color: #00E5FF;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.2s ease;
+}
+
+.session-btn:hover {
+    background: rgba(0, 229, 255, 0.25);
+    box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+.session-btn.confirm {
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.12);
+    color: #10B981;
+}
+
+.session-btn.confirm:hover {
+    background: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+}
+
+.session-btn.cancel {
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.12);
+    color: #EF4444;
+}
+
+.session-btn.cancel:hover {
+    background: rgba(239, 68, 68, 0.25);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+}
+
+.session-modal-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 229, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.65rem;
+}
+
+/* ── Dashboard Principal ───────────────────────────────────────────────────── */
+.main-dashboard {
+    max-width: 98vw;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.dashboard-content {
+    width: 100%;
+}
+
+/* ══ FIM — v13.12.3-DIAMOND-SHIELD CSS Integration · UNIFED - PROBATUM ══════════════ */
 /* ── Blink class para SP ≥ 90% (v13.5.0-PURE não atinge — reservado) ─────── */
 .led-pure-amber {
     animation: pure-amber-blink 1.8s infinite;
