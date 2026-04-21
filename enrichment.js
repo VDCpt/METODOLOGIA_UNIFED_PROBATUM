@@ -1436,9 +1436,156 @@ function _activateATFPanel() {
                 atf.persistenceScore >= 55 ? '#F59E0B' : '#10B981';
         }
 
+        }
+
         console.log('[UNIFED-ATF] \u2705 Painel ATF actualizado — SP:', atf.persistenceScore, '| trend:', atf.trend);
+
+        // Renderizar gráfico inline no pureATFCard (se houver dados mensais)
+        renderATFChart(atf, 'pureATFCard');
     }
 }
+
+// ============================================================================
+// renderATFChart(atf, containerId)
+// Injeta um canvas Chart.js inline no pureATFCard.
+// Selector primário: #pureATFCard  (panel.html)
+// Selector fallback: .pure-atf-section, #atfPanel
+// NÃO usa openATFModal() — renderiza inline no painel estático.
+// ============================================================================
+function renderATFChart(atf, containerId) {
+    // Resolver contentor — ordem de prioridade conforme arquitectura do panel.html
+    var host = document.getElementById(containerId || 'pureATFCard')
+            || document.querySelector('.pure-atf-section')
+            || document.getElementById('atfPanel');
+
+    if (!host) {
+        console.warn('[UNIFED-ATF] renderATFChart: contentor não encontrado.');
+        return;
+    }
+
+    if (typeof Chart === 'undefined') {
+        console.warn('[UNIFED-ATF] renderATFChart: Chart.js não disponível.');
+        return;
+    }
+
+    var months = (atf && atf.months) || [];
+
+    // Sem dados mensais — painel estático já tem SP/trend/outliers preenchidos
+    if (months.length === 0) {
+        console.info('[UNIFED-ATF] renderATFChart: sem dados mensais — painel estático suficiente.');
+        return;
+    }
+
+    // Remover canvas anterior se existir (evitar acumulação de contextos WebGL)
+    var _existingCanvas = document.getElementById('pureATFInlineCanvas');
+    if (_existingCanvas) {
+        var _prev = Chart.getChart(_existingCanvas);
+        if (_prev) _prev.destroy();
+        _existingCanvas.remove();
+    }
+
+    // Criar e injectar canvas inline
+    var canvas = document.createElement('canvas');
+    canvas.id             = 'pureATFInlineCanvas';
+    canvas.style.cssText  = 'width:100%;max-height:280px;margin-top:16px;';
+    canvas.setAttribute('aria-label', 'Gráfico ATF — Análise Temporal Forense');
+    host.appendChild(canvas);
+
+    // Garantir visibilidade do host
+    host.style.display = host.style.display === 'none' ? 'block' : host.style.display;
+    host.style.opacity = '1';
+
+    var monthLabels = months.map(function(m) {
+        return m.length === 6 ? m.substring(0, 4) + '/' + m.substring(4) : m;
+    });
+
+    var mean2s = (atf.mean || 0) + 2 * (atf.stdDev || 0);
+
+    try {
+        new Chart(canvas, {
+            type: 'line',
+            data: {
+                labels: monthLabels,
+                datasets: [
+                    {
+                        label: 'Ganhos',
+                        data: atf.ganhosSeries || [],
+                        borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.08)',
+                        borderWidth: 2, tension: 0.3, pointRadius: 4
+                    },
+                    {
+                        label: 'Despesas',
+                        data: atf.despesasSeries || [],
+                        borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.08)',
+                        borderWidth: 2, tension: 0.3, pointRadius: 4
+                    },
+                    {
+                        label: 'Discrepância',
+                        data: atf.discrepancySeries || [],
+                        borderColor: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.12)',
+                        borderWidth: 3, tension: 0.3,
+                        pointRadius: (atf.discrepancySeries || []).map(function(v, i) {
+                            return (atf.outlierMonths || []).indexOf(months[i]) !== -1 ? 9 : 5;
+                        }),
+                        pointBackgroundColor: (atf.discrepancySeries || []).map(function(v, i) {
+                            return (atf.outlierMonths || []).indexOf(months[i]) !== -1 ? '#EF4444' : '#F59E0B';
+                        }),
+                        pointBorderColor: (atf.discrepancySeries || []).map(function(v, i) {
+                            return (atf.outlierMonths || []).indexOf(months[i]) !== -1 ? '#FFFFFF' : '#F59E0B';
+                        }),
+                        pointBorderWidth: (atf.discrepancySeries || []).map(function(v, i) {
+                            return (atf.outlierMonths || []).indexOf(months[i]) !== -1 ? 2 : 1;
+                        })
+                    },
+                    {
+                        label: 'Limiar 2σ',
+                        data: Array(months.length).fill(mean2s),
+                        borderColor: 'rgba(239,68,68,0.45)', borderDash: [5, 5],
+                        borderWidth: 1.5, pointRadius: 0, fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: 'rgba(255,255,255,0.65)', font: { family: 'JetBrains Mono, Courier New' } } },
+                    tooltip: {
+                        backgroundColor: 'rgba(8,18,36,0.96)', titleColor: '#00E5FF',
+                        bodyColor: 'rgba(255,255,255,0.8)',
+                        callbacks: {
+                            label: function(c) {
+                                return ' ' + c.dataset.label + ': ' +
+                                    new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(c.raw || 0);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: 'rgba(255,255,255,0.45)', font: { family: 'JetBrains Mono, Courier New', size: 10 } },
+                        grid:  { color: 'rgba(255,255,255,0.04)' }
+                    },
+                    y: {
+                        ticks: {
+                            color: 'rgba(255,255,255,0.45)',
+                            font:  { family: 'JetBrains Mono, Courier New', size: 10 },
+                            callback: function(v) {
+                                return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v);
+                            }
+                        },
+                        grid: { color: 'rgba(255,255,255,0.04)' }
+                    }
+                }
+            }
+        });
+        console.log('[UNIFED-ATF] \u2705 renderATFChart inline — meses:', months.length, '| canvas: #pureATFInlineCanvas');
+    } catch (chartErr) {
+        console.warn('[UNIFED-ATF] \u26a0 Erro ao renderizar gráfico ATF inline:', chartErr.message);
+    }
+}
+
+window.renderATFChart = renderATFChart;
 
 // ── Listener Principal ────────────────────────────────────────────────────────
 window.addEventListener('UNIFED_ANALYSIS_COMPLETE', function(evt) {
@@ -1452,16 +1599,39 @@ window.addEventListener('UNIFED_ANALYSIS_COMPLETE', function(evt) {
         // 2. Sincronizar twoAxis nos IDs PURE e nativos
         _syncTwoAxisToPure(analysis, sys);
 
-        // 3. Activar e actualizar painel ATF
+        // 3. Activar e actualizar painel ATF + renderizar gráfico inline
         _activateATFPanel();
 
-        // 4. Se pureDashboardWrapper visível, forçar opacidade total
+        // 4. Sincronizar pure-impact-total (Impacto 7 anos · constante verificada)
+        // Valor: €1.743.598.080 conforme _REAL_CASE_MMLADX8Q.crossings.impactoSeteAnosMercado
+        // Fonte dinâmica: UNIFEDSystem.analysis.crossings se disponível, fallback à constante
+        var _impacto = (analysis.crossings && analysis.crossings.impactoSeteAnosMercado)
+                    || (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.crossings.impactoSeteAnosMercado)
+                    || 1743598080;
+        var _impactoEl = document.getElementById('pure-impact-total');
+        if (_impactoEl) {
+            _impactoEl.innerHTML = new Intl.NumberFormat('pt-PT', {
+                style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2
+            }).format(_impacto);
+            console.log('[UNIFED-SYNC] \u2705 pure-impact-total sincronizado:', _impacto);
+        }
+
+        // 6. Re-sincronizar todos os IDs do panel.html com os dados reais da perícia
+        // _syncPureDashboard foi exposta globalmente por script_injection.js.
+        // Cobre o caso em que panel.html foi carregado com dados do caso demo
+        // e a perícia real sobrepõe os valores via performAudit().
+        if (typeof window._syncPureDashboard === 'function' && sys.analysis && sys.analysis.totals) {
+            window._syncPureDashboard(sys);
+            console.log('[UNIFED-SYNC] \u2705 _syncPureDashboard re-executada com dados reais.');
+        }
+
+        // 5. Se pureDashboardWrapper visível, forçar opacidade total
         var wrapper = document.getElementById('pureDashboardWrapper');
         if (wrapper && wrapper.style.display !== 'none') {
             wrapper.style.opacity = '1';
         }
 
-        console.log('[UNIFED-ENRICHMENT] \u2705 UNIFED_ANALYSIS_COMPLETE processado — módulos ATF + PURE activados.');
+        console.log('[UNIFED-ENRICHMENT] \u2705 UNIFED_ANALYSIS_COMPLETE processado — módulos ATF + PURE + Impact activados.');
     } catch (syncErr) {
         // Isolamento total: erro no enrichment não propaga para o motor forense
         console.warn('[UNIFED-ENRICHMENT] \u26a0 Erro no listener UNIFED_ANALYSIS_COMPLETE:', syncErr.message);

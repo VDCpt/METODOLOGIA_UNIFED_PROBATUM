@@ -1115,6 +1115,104 @@
 
 
 // ============================================================================
+// NEXUS · M5 — FULL-DISCLOSURE PROTOCOL
+// Transição Zero-State → Full-Disclosure dos painéis PURE.
+// Gatilho duplo:
+//   (A) evento UNIFED_ANALYSIS_COMPLETE (perícia real concluída)
+//   (B) validação de activeForensicSession (carregamento de caso demo)
+// Acção: remove display:none e opacity:0 de todos os .pure-card
+//        e revela os elementos com prefixo pure- que estejam ocultos.
+// ISOLAMENTO: Read-Only. Não altera UNIFEDSystem.analysis nem constantes.
+// Conformidade: DORA (UE) 2022/2554 · ISO/IEC 27037:2012
+// ============================================================================
+(function() {
+    'use strict';
+
+    /**
+     * _nexusFullDisclose()
+     * Remove estados Zero-Knowledge (display:none, opacity:0, class .hidden)
+     * de todos os contentores PURE após validação de sessão.
+     */
+    function _nexusFullDisclose() {
+        try {
+            // ── 1. Revelar todos os .pure-card ──────────────────────────────────
+            var cards = document.querySelectorAll('.pure-card, .pure-card-alert, .pure-card-verdict');
+            cards.forEach(function(el) {
+                if (el.style.display === 'none') el.style.display = '';
+                if (el.style.opacity  === '0')   el.style.opacity  = '1';
+                el.classList.remove('hidden', 'zero-state', 'locked');
+            });
+
+            // ── 2. Revelar smoking-gun-2 (display:none no HTML estático) ────────
+            var sg2 = document.getElementById('smoking-gun-2');
+            if (sg2) { sg2.style.display = 'block'; sg2.style.opacity = '1'; }
+
+            // ── 3. Revelar pureATFCard explicitamente ────────────────────────────
+            var atfCard = document.getElementById('pureATFCard');
+            if (atfCard) {
+                atfCard.style.display  = 'block';
+                atfCard.style.opacity  = '1';
+            }
+
+            // ── 4. Revelar pureDashboardWrapper se sessão activa ─────────────────
+            var wrapper = document.getElementById('pureDashboardWrapper');
+            if (wrapper) {
+                wrapper.style.display = 'block';
+                wrapper.style.opacity = '1';
+            }
+
+            // ── 5. Remover quaisquer overlays Zero-Knowledge residuais ────────────
+            var zkOverlays = document.querySelectorAll('[data-zero-knowledge], .zk-overlay, .pure-locked');
+            zkOverlays.forEach(function(el) { el.remove(); });
+
+            console.info('[NEXUS·M5] \u2705 Full-Disclosure activado — pure-cards visíveis · Zero-State removido.');
+        } catch (discErr) {
+            console.warn('[NEXUS·M5] \u26a0 Erro no Full-Disclosure:', discErr.message);
+        }
+    }
+
+    // ── Gatilho A: Evento UNIFED_ANALYSIS_COMPLETE (perícia real) ──────────────
+    window.addEventListener('UNIFED_ANALYSIS_COMPLETE', function() {
+        setTimeout(_nexusFullDisclose, 80);  // 80ms após o dispatch — garante que o DOM actualizou
+        console.info('[NEXUS·M5] Full-Disclosure disparado por UNIFED_ANALYSIS_COMPLETE.');
+    });
+
+    // ── Gatilho B: Validação de activeForensicSession (caso demo / injeção) ────
+    // Polling leve (500ms × 10 tentativas) — não bloqueia o carregamento.
+    // Encerra assim que activeForensicSession.sessionId for válido.
+    (function _watchSession() {
+        var _attempts = 0;
+        var _maxAttempts = 20;
+        var _interval = setInterval(function() {
+            _attempts++;
+            var afs = window.activeForensicSession;
+            if (afs && afs.sessionId && afs.sessionId.length > 4) {
+                clearInterval(_interval);
+                // Aguardar 300ms para que panel.html seja injectado (fetch async)
+                setTimeout(_nexusFullDisclose, 300);
+                console.info('[NEXUS·M5] Sessão validada (' + afs.sessionId + ') — Full-Disclosure em 300ms.');
+                return;
+            }
+            if (_attempts >= _maxAttempts) {
+                clearInterval(_interval);
+                console.info('[NEXUS·M5] [i] Timeout session watch — Full-Disclosure adiado para evento UNIFED_ANALYSIS_COMPLETE.');
+            }
+        }, 500);
+    })();
+
+    // ── Gatilho C: Evento 'unifed:interfaceShown' (mainContainer visível) ──────
+    window.addEventListener('unifed:interfaceShown', function() {
+        setTimeout(_nexusFullDisclose, 400);
+        console.info('[NEXUS·M5] Full-Disclosure disparado por unifed:interfaceShown.');
+    });
+
+    // Expor para chamada manual via consola F12
+    window.nexusFullDisclose = _nexusFullDisclose;
+
+})();
+
+
+// ============================================================================
 // NEXUS · EXPOSIÇÃO GLOBAL E LOG DE ARRANQUE
 // ============================================================================
 console.info(
@@ -1123,6 +1221,7 @@ console.info(
     '  M2 · RAG Jurisprudencial DOCX         — Hook exportDOCX() instalado\n' +
     '  M3 · Motor Preditivo ATF (6M)         — Hook openATFModal() instalado\n' +
     '  M4 · Blockchain Evidence Explorer     — MutationObserver #custodyModal ativo\n' +
+    '  M5 · Full-Disclosure Protocol         — Zero-State → Full-Disclosure activado\n' +
     '  Modo: Read-Only · DORA (UE) 2022/2554 · ISO/IEC 27037:2012 · Art. 125.o CPP',
     'color:#00E5FF;font-family:Courier New,monospace;font-weight:700;font-size:0.9em;',
     'color:rgba(0,229,255,0.65);font-family:Courier New,monospace;font-size:0.8em;'
