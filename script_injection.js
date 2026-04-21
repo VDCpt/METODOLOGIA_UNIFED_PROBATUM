@@ -190,21 +190,42 @@ function _syncPureDashboard(sys) {
     _set('pure-fatura',         _eur(t.faturaPlataforma));
 
     // ── Painel II — Discrepâncias apuradas ────────────────────────────────────
-    _set('pure-disc-c2',        _eur(c.discrepanciaCritica));
-    _set('pure-disc-c2-pct',    (c.percentagemOmissao || 0).toFixed(2) + '%');
-    _set('pure-disc-saft-dac7', _eur(c.discrepanciaSaftVsDac7));
-    _set('pure-disc-saft-pct',  (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%');
-    _set('pure-iva-23',         _eur(c.ivaFalta));
-    _set('pure-iva-6',          _eur(c.ivaFalta6));
-    _set('pure-irc',            _eur(c.ircEstimado));
+    // Regra de resolução de fonte: UNIFEDSystem.analysis.crossings tem prioridade
+    // quando os valores foram calculados por performAudit() (real ou demo).
+    // Fallback explícito para _REAL_CASE_MMLADX8Q quando crossings ainda em zero
+    // (race condition: _syncPureDashboard chamada antes de performForensicCrossings).
+    var _rc  = (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.crossings) || {};
+    var _rt  = (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.totals)    || {};
+
+    var _discC2     = (c.discrepanciaCritica    > 0.01) ? c.discrepanciaCritica    : (_rc.discrepanciaCritica    || 0);
+    var _pctC2      = (c.percentagemOmissao     > 0.01) ? c.percentagemOmissao     : (_rc.percentagemOmissao     || 0);
+    var _discSaftD7 = (c.discrepanciaSaftVsDac7 > 0.01) ? c.discrepanciaSaftVsDac7 : (_rc.discrepanciaSaftVsDac7 || 0);
+    var _pctSaftD7  = (c.percentagemSaftVsDac7  > 0.01) ? c.percentagemSaftVsDac7  : (_rc.percentagemSaftVsDac7  || 0);
+    var _iva23      = (c.ivaFalta    > 0.01) ? c.ivaFalta    : (_rc.ivaFalta    || 0);
+    var _iva6       = (c.ivaFalta6   > 0.01) ? c.ivaFalta6   : (_rc.ivaFalta6   || 0);
+    var _irc        = (c.ircEstimado > 0.01) ? c.ircEstimado : (_rc.ircEstimado  || 0);
+
+    // Fonte SG2: BTOR = despesas extrato, BTF = fatura plataforma
+    var _btor = (t.despesas         > 0.01) ? t.despesas         : (_rt.despesas         || 0);
+    var _btf  = (t.faturaPlataforma > 0.01) ? t.faturaPlataforma : (_rt.faturaPlataforma || 0);
+    var _saft = (t.saftBruto        > 0.01) ? t.saftBruto        : (_rt.saftBruto        || 0);
+    var _dac7 = (t.dac7TotalPeriodo > 0.01) ? t.dac7TotalPeriodo : (_rt.dac7TotalPeriodo || 0);
+
+    _set('pure-disc-c2',        _eur(_discC2));
+    _set('pure-disc-c2-pct',    _pctC2.toFixed(2) + '%');
+    _set('pure-disc-saft-dac7', _eur(_discSaftD7));
+    _set('pure-disc-saft-pct',  _pctSaftD7.toFixed(2) + '%');
+    _set('pure-iva-23',         _eur(_iva23));
+    _set('pure-iva-6',          _eur(_iva6));
+    _set('pure-irc',            _eur(_irc));
 
     // ── Painel II — Smoking Guns: valores desagregados nos IDs panel.html ─────
-    // pure-sg2-*: Despesas/Comissões (BTOR) vs Faturadas (BTF)
-    _set('pure-sg2-btor-val',   _eur(t.despesas));
-    _set('pure-sg2-btf-val',    _eur(t.faturaPlataforma));
-    // pure-sg1-*: SAF-T Bruto vs DAC7 reportado
-    _set('pure-sg1-saft-val',   _eur(t.saftBruto));
-    _set('pure-sg1-dac7-val',   _eur(t.dac7TotalPeriodo));
+    // SG2: BTOR (Extrato) vs BTF (Fatura) → omissão = pure-disc-c2 (já acima)
+    _set('pure-sg2-btor-val',   _eur(_btor));
+    _set('pure-sg2-btf-val',    _eur(_btf));
+    // SG1: SAF-T Bruto vs DAC7 reportado
+    _set('pure-sg1-saft-val',   _eur(_saft));
+    _set('pure-sg1-dac7-val',   _eur(_dac7));
 
     // ── Impacto Sistémico 7 anos (projecção mercado — constante verificada) ───
     // Valor: €1.743.598.080 = (discrepanciaCritica / 4 meses) × 38.000 × 12 × 7
@@ -262,6 +283,40 @@ if (typeof window.activeForensicSession === 'undefined') {
 // Expor globalmente
 window.loadAnonymizedRealCase = UNIFEDSystem.loadAnonymizedRealCase.bind(UNIFEDSystem);
 window._REAL_CASE_MMLADX8Q    = _REAL_CASE_MMLADX8Q;  // Read-only reference
+
+// ── Rasto de Custódia — Sessão ULOOO ─────────────────────────────────────────
+// Registo imutável da transição de hash para o Log de Custódia UNIFED-PROBATUM.
+// Conforme Art. 125.º CPP · ISO/IEC 27037:2012 · DORA (UE) 2022/2554.
+// NÃO altera _REAL_CASE_MMLADX8Q — apenas regista a transição de sessão.
+(function _registarRastoCustodia() {
+    var _HASH_ANTERIOR   = '8fce70e3276f90f6966cc0e4e84b97186c7b3f5c99acf47e';
+    var _HASH_ATUAL      = '5150e7674b891d5d07ca990e4c7124fc66af40488452759aeebdf84976eaa8f6';
+    var _MASTER_HASH_SYS = 'c267745a421f4223df06dc2c18ced11f0c965474d886c0dee573624d30918b26';
+    var _SESSAO          = 'ULOOO';
+
+    // Verificar integridade: hash actual coincide com _REAL_CASE_MMLADX8Q.masterHash
+    var _masterHashConfirmado = (_REAL_CASE_MMLADX8Q.masterHash === _HASH_ATUAL);
+
+    if (typeof ForensicLogger !== 'undefined') {
+        ForensicLogger.addEntry('HASH_CHAIN_TRANSITION', {
+            sessao:         _SESSAO,
+            hashAnterior:   _HASH_ANTERIOR,
+            hashAtual:      _HASH_ATUAL,
+            masterHashSys:  _MASTER_HASH_SYS,
+            integridadeOK:  _masterHashConfirmado,
+            modulo:         'script_injection.js · v13.12.3-DIAMOND',
+            conformidade:   'Art. 125.º CPP · ISO/IEC 27037:2012'
+        });
+    }
+
+    console.info(
+        '[UNIFED-CUSTÓDIA] Rasto de Sessão ' + _SESSAO + ':',
+        '\n  Hash Anterior : ' + _HASH_ANTERIOR + '...',
+        '\n  Hash Atual    : ' + _HASH_ATUAL,
+        '\n  Master Hash   : ' + _MASTER_HASH_SYS,
+        '\n  Integridade   : ' + (_masterHashConfirmado ? '✅ CONFIRMADA' : '⚠️ VERIFICAR')
+    );
+})();
 
 console.info('[UNIFED-PURE] v13.5.0-PURE · Módulo de caso real anonimizado registado.');
 console.info('[UNIFED-PURE] Chamar UNIFEDSystem.loadAnonymizedRealCase() para activar.');
