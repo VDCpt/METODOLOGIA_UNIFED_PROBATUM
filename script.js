@@ -4340,6 +4340,7 @@ function simulateUpload(type, count) {
 // 22. MOTOR DE PERÍCIA FORENSE (v12.8.9) COM CORREÇÕES
 // ============================================================================
 function performAudit() {
+    window._unifedAnalysisPending = true;  // Sinaliza análise em curso aos módulos externos
     if (!UNIFEDSystem.client) return showToast('Registe o sujeito passivo primeiro.', 'error');
 
     ForensicLogger.addEntry('AUDIT_STARTED');
@@ -4472,6 +4473,17 @@ function performAudit() {
             });
 
             forensicDataSynchronization();
+
+            // ── PATCH v13.12.3: DESPACHO GLOBAL DE CONCLUSÃO ─────────────────
+            // Acorda os módulos dependentes (ATF, PURE Dashboard, Tríade)
+            // após consolidação completa de UNIFEDSystem.analysis.
+            // NÃO altera cálculos — apenas sinaliza o estado de completude.
+            window._unifedAnalysisPending = false;
+            window.dispatchEvent(new CustomEvent('UNIFED_ANALYSIS_COMPLETE', {
+                detail: UNIFEDSystem.analysis
+            }));
+            console.log('[UNIFED-SYNC] ✅ UNIFED_ANALYSIS_COMPLETE despachado.');
+            // ── FIM PATCH ─────────────────────────────────────────────────────
 
         } catch(error) {
             console.error('Erro na perícia:', error);

@@ -1278,6 +1278,223 @@ function generateBurdenOfProofSection(discrepancyValue) {
 
 window.generateBurdenOfProofSection = generateBurdenOfProofSection;
 
+
+// ============================================================================
+// 9. PATCH v13.12.3 — LISTENER UNIFED_ANALYSIS_COMPLETE
+//    Acorda o módulo ATF e revela os painéis PURE após performAudit().
+//    PRINCÍPIO DE ISOLAMENTO: Read-Only sobre UNIFEDSystem.analysis.
+//    NÃO altera taxas, fórmulas nem variáveis do motor de cálculo.
+// ============================================================================
+
+/**
+ * _revealPureCards(analysis)
+ * Força a visibilidade dos elementos do painel PURE com display:none.
+ * Activa especificamente: smoking-gun-2, pure-sg-*, pure-card-*.
+ */
+function _revealPureCards(analysis) {
+    var cross  = (analysis && analysis.crossings) || {};
+    var totals = (analysis && analysis.totals)    || {};
+
+    // ── Smoking Gun 2: Despesas/Comissões vs Fatura BTF ──────────────────────
+    // Revelar sempre que discrepanciaCritica > 0,01
+    var sg2 = document.getElementById('smoking-gun-2');
+    if (sg2 && Math.abs(cross.discrepanciaCritica || 0) > 0.01) {
+        sg2.style.display = 'block';
+        sg2.style.opacity = '1';
+    }
+
+    // ── Secção II: DISCREPÂNCIAS APURADAS — forçar display:block ─────────────
+    var discCard = document.getElementById('pureDiscCard');
+    if (discCard) {
+        discCard.style.display = 'block';
+        discCard.style.opacity = '1';
+    }
+
+    // ── Todos os elementos .pure-card com display:none ────────────────────────
+    var pureCards = document.querySelectorAll('.pure-card, .pure-sg, .pure-fiscal-item');
+    pureCards.forEach(function(el) {
+        if (el.style.display === 'none') {
+            el.style.display = '';
+            el.style.opacity = '1';
+        }
+    });
+
+    // ── Painel PURE: actualizar valores de discrepâncias ─────────────────────
+    var _setEl = function(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = val;
+    };
+
+    var _eur = function(v) {
+        return new Intl.NumberFormat('pt-PT', {
+            style: 'currency', currency: 'EUR',
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        }).format(v || 0);
+    };
+
+    // Sincronizar valores "Prova Rainha" nos IDs PURE
+    _setEl('pure-disc-c2',        _eur(cross.discrepanciaCritica));
+    _setEl('pure-disc-c2-pct',    (cross.percentagemOmissao    || 0).toFixed(2) + '%');
+    _setEl('pure-disc-saft-dac7', _eur(cross.discrepanciaSaftVsDac7));
+    _setEl('pure-disc-saft-pct',  (cross.percentagemSaftVsDac7 || 0).toFixed(2) + '%');
+    _setEl('pure-iva-23',         _eur(cross.ivaFalta));
+    _setEl('pure-iva-6',          _eur(cross.ivaFalta6));
+    _setEl('pure-irc',            _eur(cross.ircEstimado));
+
+    // IDs alternativos referenciados na directiva (fallback silencioso)
+    _setEl('pure-revenue-gap',    _eur(cross.discrepanciaSaftVsDac7));
+    _setEl('pure-expense-gap',    _eur(cross.discrepanciaCritica));
+
+    console.log('[UNIFED-REVEAL] \u2705 Painéis PURE revelados — disc.C2:', _eur(cross.discrepanciaCritica));
+}
+
+/**
+ * _syncTwoAxisToPure(analysis, sys)
+ * Projecta os valores twoAxis (revenueGap / expenseGap) nos IDs do painel PURE.
+ */
+function _syncTwoAxisToPure(analysis, sys) {
+    var twoAxis = (analysis && analysis.twoAxis) || (sys && sys.analysis && sys.analysis.twoAxis) || {};
+    var _eur = function(v) {
+        return new Intl.NumberFormat('pt-PT', {
+            style: 'currency', currency: 'EUR',
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        }).format(v || 0);
+    };
+    var _setEl = function(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.innerHTML = val;
+    };
+
+    // Injectar nos IDs especificados na directiva
+    _setEl('pure-revenue-gap', _eur(twoAxis.revenueGap));
+    _setEl('pure-expense-gap', _eur(twoAxis.expenseGap));
+
+    // Sincronizar também nos IDs nativos do index.html (revenueGapValue / expenseGapValue)
+    var rgv = document.getElementById('revenueGapValue');
+    var egv = document.getElementById('expenseGapValue');
+    if (rgv && twoAxis.revenueGapActive) rgv.textContent = _eur(twoAxis.revenueGap);
+    if (egv && twoAxis.expenseGapActive) egv.textContent = _eur(twoAxis.expenseGap);
+}
+
+/**
+ * _activateATFPanel()
+ * Garante que o contentor ATF do painel PURE transita para display:grid + opacity:1.
+ * Usa IDs de painel PURE conhecidos e o modal dinamico como fallback.
+ */
+function _activateATFPanel() {
+    // Tentar ID estático do painel PURE (pureATFCard)
+    var atfCard = document.getElementById('pureATFCard');
+    if (atfCard) {
+        atfCard.style.display = 'grid';
+        atfCard.style.opacity = '1';
+    }
+
+    // Tentar ID genérico atfPanel
+    var atfPanel = document.getElementById('atfPanel');
+    if (atfPanel) {
+        atfPanel.style.display = 'grid';
+        atfPanel.style.opacity = '1';
+    }
+
+    // Actualizar valores estáticos do ATF no painel PURE
+    var sys = window.UNIFEDSystem || {};
+    if (sys.analysis && sys.monthlyData !== undefined) {
+        var atf = computeTemporalAnalysis(sys.monthlyData || {}, sys.analysis);
+        var _setEl = function(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.innerHTML = val;
+        };
+
+        _setEl('pure-atf-sp',
+            atf.persistenceScore +
+            '<span style="font-size:1rem;opacity:0.6">/100</span>');
+
+        var trendPt = atf.trend === 'ascending'  ? '📈 ASCENDENTE'  :
+                      atf.trend === 'descending' ? '📉 DESCENDENTE' : '➡ ESTÁVEL';
+        _setEl('pure-atf-trend', trendPt);
+
+        var spLabel = atf.persistenceScore >= 80 ? 'OMISSÃO SISTEMÁTICA · RISCO MÁXIMO' :
+                      atf.persistenceScore >= 55 ? 'OMISSÃO RECORRENTE · RISCO ELEVADO'  :
+                      atf.persistenceScore >= 30 ? 'OMISSÃO PONTUAL · RISCO MODERADO'    :
+                                                   'ESPORÁDICO · RISCO REDUZIDO';
+        _setEl('pure-atf-status',   spLabel);
+        _setEl('pure-atf-classify', spLabel);
+        _setEl('pure-atf-outliers', atf.outlierMonths.length + ' outliers &gt; 2σ');
+
+        if (atf.months.length > 0) {
+            _setEl('pure-atf-meses',
+                atf.months.length + ' meses com dados (' +
+                atf.months[0] + '–' + atf.months[atf.months.length - 1] + ')');
+        }
+
+        // Barra de progresso ATF
+        var bar = document.querySelector('.pure-atf-bar-fill');
+        if (bar) {
+            bar.style.width  = atf.persistenceScore + '%';
+            bar.style.background =
+                atf.persistenceScore >= 80 ? '#EF4444' :
+                atf.persistenceScore >= 55 ? '#F59E0B' : '#10B981';
+        }
+
+        console.log('[UNIFED-ATF] \u2705 Painel ATF actualizado — SP:', atf.persistenceScore, '| trend:', atf.trend);
+    }
+}
+
+// ── Listener Principal ────────────────────────────────────────────────────────
+window.addEventListener('UNIFED_ANALYSIS_COMPLETE', function(evt) {
+    var analysis = evt.detail || (window.UNIFEDSystem && window.UNIFEDSystem.analysis) || {};
+    var sys      = window.UNIFEDSystem || {};
+
+    try {
+        // 1. Revelar painéis PURE e sincronizar discrepâncias
+        _revealPureCards(analysis);
+
+        // 2. Sincronizar twoAxis nos IDs PURE e nativos
+        _syncTwoAxisToPure(analysis, sys);
+
+        // 3. Activar e actualizar painel ATF
+        _activateATFPanel();
+
+        // 4. Se pureDashboardWrapper visível, forçar opacidade total
+        var wrapper = document.getElementById('pureDashboardWrapper');
+        if (wrapper && wrapper.style.display !== 'none') {
+            wrapper.style.opacity = '1';
+        }
+
+        console.log('[UNIFED-ENRICHMENT] \u2705 UNIFED_ANALYSIS_COMPLETE processado — módulos ATF + PURE activados.');
+    } catch (syncErr) {
+        // Isolamento total: erro no enrichment não propaga para o motor forense
+        console.warn('[UNIFED-ENRICHMENT] \u26a0 Erro no listener UNIFED_ANALYSIS_COMPLETE:', syncErr.message);
+    }
+});
+
+// ── MutationObserver: activar PURE se pureDashboardWrapper aparecer ──────────
+// Cobre o caso em que _activatePurePanel() é chamado DEPOIS do evento
+// (ex: utilizador activa o demo mode após executar a perícia).
+(function() {
+    var _wrapper = document.getElementById('pureDashboardWrapper');
+    if (!_wrapper || typeof MutationObserver === 'undefined') return;
+
+    var _obs = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            if (m.attributeName === 'style') {
+                var s = _wrapper.getAttribute('style') || '';
+                if (s.indexOf('display: none') === -1 && s.indexOf('display:none') === -1) {
+                    var sys = window.UNIFEDSystem || {};
+                    if (sys.analysis && sys.analysis.crossings) {
+                        setTimeout(function() {
+                            _revealPureCards(sys.analysis);
+                            _syncTwoAxisToPure(sys.analysis, sys);
+                            _activateATFPanel();
+                        }, 200);
+                    }
+                }
+            }
+        });
+    });
+    _obs.observe(_wrapper, { attributes: true, attributeFilter: ['style'] });
+})();
+
 console.log('[UNIFED-ENRICHMENT] \u2705 Output Enrichment Layer v13.5.0-PURE carregado.');
 console.log('[UNIFED-ENRICHMENT]   . generateLegalNarrative()     - IA Argumentativa + AI Adversarial Simulator');
 console.log('[UNIFED-ENRICHMENT]   . renderSankeyToImage()        - Dynamic Canvas-to-PDF (Sankey)');
