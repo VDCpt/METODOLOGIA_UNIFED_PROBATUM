@@ -100,6 +100,137 @@
 </head>
 <body>
 
+    <!-- ══════════════════════════════════════════════════════════════════════
+         UNIFED-GATEKEEPER v1.0 — Layer de autenticação inicial
+         Sobrepõe todo o conteúdo (z-index:9999) até credencial válida.
+         Password hardcoded: Beatriz2026###@@@
+         NÃO persiste em localStorage — sessão volátil (segurança forense).
+         ══════════════════════════════════════════════════════════════════ -->
+    <div id="unifedGatekeeper" style="
+        position:fixed;top:0;left:0;width:100%;height:100%;
+        z-index:9999;background:#000;display:flex;
+        flex-direction:column;align-items:center;justify-content:center;
+        font-family:'Courier New',Courier,monospace;overflow:hidden;">
+
+        <!-- Scanline overlay -->
+        <div style="position:absolute;top:0;left:0;width:100%;height:100%;
+            background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.03) 2px,rgba(0,229,255,0.03) 4px);
+            pointer-events:none;z-index:1;"></div>
+
+        <!-- Terminal LED -->
+        <div id="gkTerminal" style="
+            position:relative;z-index:2;width:min(680px,92vw);
+            border:1px solid #00E5FF;box-shadow:0 0 32px rgba(0,229,255,0.3),inset 0 0 60px rgba(0,0,0,0.8);
+            padding:32px 36px;background:rgba(0,10,20,0.97);border-radius:4px;">
+
+            <div style="color:#00E5FF;font-size:0.72rem;letter-spacing:0.18em;margin-bottom:20px;opacity:0.7;">
+                UNIFED · PROBATUM · v13.5.0-PURE · SISTEMA DE PERITAGEM FORENSE
+            </div>
+
+            <div id="gkLog" style="
+                color:#00E5FF;font-size:0.78rem;line-height:1.9;min-height:140px;
+                margin-bottom:24px;white-space:pre-wrap;opacity:0.9;"></div>
+
+            <div id="gkInputRow" style="display:none;align-items:center;gap:12px;margin-top:8px;">
+                <span style="color:#00E5FF;font-size:0.85rem;white-space:nowrap;">CREDENTIAL ›</span>
+                <input id="gkPasswordInput" type="password" autocomplete="off"
+                    style="flex:1;background:transparent;border:none;border-bottom:1px solid #00E5FF;
+                    color:#fff;font-family:inherit;font-size:0.9rem;padding:4px 0;outline:none;
+                    caret-color:#00E5FF;"
+                    placeholder="inserir credencial de acesso..."
+                    onkeydown="if(event.key==='Enter') window._gkValidate();">
+                <button onclick="window._gkValidate()" style="
+                    background:transparent;border:1px solid #00E5FF;color:#00E5FF;
+                    font-family:inherit;font-size:0.78rem;padding:6px 16px;cursor:pointer;
+                    letter-spacing:0.12em;">VALIDAR</button>
+            </div>
+
+            <div id="gkError" style="display:none;color:#EF4444;font-size:0.78rem;
+                margin-top:12px;letter-spacing:0.1em;">
+                ⛔  CREDENCIAL INVÁLIDA — ACESSO NEGADO · TENTATIVA REGISTADA
+            </div>
+        </div>
+
+        <div style="position:relative;z-index:2;margin-top:18px;font-size:0.65rem;
+            color:rgba(0,229,255,0.35);letter-spacing:0.15em;">
+            ISO/IEC 27037:2012 · DORA (UE) 2022/2554 · RGPD · RFC 3161
+        </div>
+    </div>
+
+    <script>
+    (function _unifedGatekeeper() {
+        var _PWD      = 'Beatriz2026###@@@';
+        var _log      = document.getElementById('gkLog');
+        var _inputRow = document.getElementById('gkInputRow');
+        var _errMsg   = document.getElementById('gkError');
+        var _gk       = document.getElementById('unifedGatekeeper');
+
+        var _lines = [
+            '[ BOOT ]  UNIFED-PROBATUM — Secure Forensic Shell',
+            '[ INIT ]  Carregando módulo de autenticação forense...',
+            '[ CHK  ]  Verificando integridade do ambiente de execução...',
+            '[ CHK  ]  Validando certificado de sessão (RFC 3161)...',
+            '[ CHK  ]  Motor NEXUS · Motor ATF · Motor SAF-T — standby',
+            '[ CHK  ]  Cadeia de custódia digital — activada',
+            '[ CHK  ]  DORA compliance check — OK',
+            '[ OK   ]  Ambiente validado. Aguardando credencial de operador.',
+            '',
+            '  ██╗   ██╗███╗   ██╗██╗███████╗███████╗██████╗ ',
+            '  ██║   ██║████╗  ██║██║██╔════╝██╔════╝██╔══██╗',
+            '  ██║   ██║██╔██╗ ██║██║█████╗  █████╗  ██║  ██║',
+            '  ██║   ██║██║╚██╗██║██║██╔══╝  ██╔══╝  ██║  ██║',
+            '  ╚██████╔╝██║ ╚████║██║██║     ███████╗██████╔╝',
+            '   ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝     ╚══════╝╚═════╝ ',
+            '',
+            '[ AUTH ]  Insira credencial para aceder ao sistema pericial ›',
+        ];
+
+        var _i = 0;
+        function _typeNext() {
+            if (_i < _lines.length) {
+                _log.textContent += _lines[_i] + '\n';
+                _i++;
+                setTimeout(_typeNext, _i < 9 ? 120 : 40);
+            } else {
+                _inputRow.style.display = 'flex';
+                setTimeout(function() {
+                    var inp = document.getElementById('gkPasswordInput');
+                    if (inp) inp.focus();
+                }, 50);
+            }
+        }
+        _typeNext();
+
+        window._gkValidate = function() {
+            var inp = document.getElementById('gkPasswordInput');
+            if (!inp) return;
+            if (inp.value === _PWD) {
+                _errMsg.style.display = 'none';
+                _log.textContent += '\n[ OK   ]  Credencial validada — a carregar sistema...';
+                _inputRow.style.display = 'none';
+                setTimeout(function() {
+                    _gk.style.transition = 'opacity 0.6s ease';
+                    _gk.style.opacity    = '0';
+                    setTimeout(function() {
+                        _gk.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }, 620);
+                }, 400);
+            } else {
+                inp.value = '';
+                _errMsg.style.display = 'block';
+                _log.textContent += '\n[ ERR  ]  Credencial recusada — tentativa registada.';
+                _gk.style.boxShadow = '0 0 40px rgba(239,68,68,0.5)';
+                setTimeout(function() { _gk.style.boxShadow = ''; }, 800);
+            }
+        };
+
+        // Bloquear scroll do body enquanto Gatekeeper activo
+        document.body.style.overflow = 'hidden';
+    })();
+    </script>
+
+
     <!-- SPLASH SCREEN PANORÂMICO - VERSÃO HORIZONTAL 16:9 / ULTRAWIDE -->
     <div id="splashScreen" class="splash-screen">
         <div class="laser-h"></div>
@@ -360,6 +491,12 @@
                         </button>
                         <button id="exportJSONBtn" class="btn-tool">
                             <i class="fas fa-file-code"></i> EXPORTAR JSON
+                        </button>
+                        <!-- v13.5.0-PURE: Pacote Offline para Advogado -->
+                        <button id="exportPacoteAdvogadoBtn" class="btn-tool btn-pacote-advogado"
+                            title="Exportar Pacote Completo para Advogado (JSON + PDF prontos para submissão offline)"
+                            onclick="window._exportPacoteAdvogado && window._exportPacoteAdvogado()">
+                            <i class="fas fa-briefcase"></i> PACOTE ADVOGADO
                         </button>
                         <button id="resetBtn" class="btn-tool">
                             <i class="fas fa-redo-alt"></i> REINICIAR
@@ -967,5 +1104,68 @@
         });
     </script>
 
+
+    <!-- ══ UNIFED: Exportar Pacote Advogado (Offline) ══════════════════════════
+         Agrupa JSON da análise + dispara PDF via window.exportPDF().
+         Preparado para extensão futura com JSZip (npm: jszip).
+         ══════════════════════════════════════════════════════════════════════ -->
+    <script>
+    window._exportPacoteAdvogado = function() {
+        console.info('[UNIFED-PACOTE] ▶ Iniciando geração do Pacote Advogado (Offline)...');
+
+        // ── 1. Capturar payload JSON da análise activa
+        var _sys     = window.UNIFEDSystem || {};
+        var _session = (_sys.sessionId || 'UNIFED-' + Date.now().toString(36).toUpperCase());
+        var _ts      = new Date().toISOString();
+
+        var _payload = {
+            meta: {
+                sistema:   'UNIFED-PROBATUM v13.5.0-PURE',
+                sessao:    _session,
+                timestamp: _ts,
+                formato:   'Pacote Advogado (Offline)',
+                conformidade: ['DORA (UE) 2022/2554', 'RGPD', 'ISO/IEC 27037:2012', 'RFC 3161', 'Art. 125.º CPP']
+            },
+            analise: _sys.analysis      || null,
+            dados:   _sys.documents     || null,
+            monthly: _sys.monthlyData   || null,
+            log:     (typeof ForensicLogger !== 'undefined' && ForensicLogger.getEntries)
+                        ? ForensicLogger.getEntries()
+                        : []
+        };
+
+        // ── 2. Serializar e descarregar JSON
+        try {
+            var _jsonStr  = JSON.stringify(_payload, null, 2);
+            var _jsonBlob = new Blob([_jsonStr], { type: 'application/json' });
+            var _jsonUrl  = URL.createObjectURL(_jsonBlob);
+            var _jsonLink = document.createElement('a');
+            _jsonLink.href     = _jsonUrl;
+            _jsonLink.download = 'UNIFED_PACOTE_ADVOGADO_' + _session + '.json';
+            document.body.appendChild(_jsonLink);
+            _jsonLink.click();
+            document.body.removeChild(_jsonLink);
+            URL.revokeObjectURL(_jsonUrl);
+            console.info('[UNIFED-PACOTE] ✅ JSON descarregado:', _jsonLink.download);
+        } catch (e) {
+            console.error('[UNIFED-PACOTE] ✗ Erro ao gerar JSON:', e.message);
+        }
+
+        // ── 3. Disparar PDF pericial (usa window.exportPDF de script.js)
+        setTimeout(function() {
+            if (typeof window.exportPDF === 'function') {
+                console.info('[UNIFED-PACOTE] ▶ A gerar PDF pericial...');
+                window.exportPDF();
+            } else if (document.getElementById('exportPDFBtn')) {
+                document.getElementById('exportPDFBtn').click();
+            } else {
+                console.warn('[UNIFED-PACOTE] ⚠ window.exportPDF não disponível — apenas JSON exportado.');
+            }
+        }, 600);
+
+        console.info('[UNIFED-PACOTE] ✅ Pacote Advogado gerado — Sessão:', _session, '| TS:', _ts);
+        console.info('[UNIFED-PACOTE]    Nota: Para empacotar em ZIP, activar JSZip no wrangler.toml.');
+    };
+    </script>
 </body>
 </html>

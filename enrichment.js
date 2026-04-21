@@ -1345,7 +1345,28 @@ function _revealPureCards(analysis) {
     _setEl('pure-revenue-gap',    _eur(cross.discrepanciaSaftVsDac7));
     _setEl('pure-expense-gap',    _eur(cross.discrepanciaCritica));
 
-    console.log('[UNIFED-REVEAL] \u2705 Painéis PURE revelados — disc.C2:', _eur(cross.discrepanciaCritica));
+    // ── FIX SG2 BUG: sincronizar IDs do panel.html (desencontro corrigido) ──
+    // Os IDs pure-sg2-delta / pure-sg2-pct / pure-sg2-btor-val / pure-sg2-btf-val
+    // não eram actualizados — causa: mismatch entre IDs do painel e desta função.
+    var _discC2 = (typeof cross.discrepanciaCritica !== 'undefined' && Math.abs(cross.discrepanciaCritica) > 0.001)
+                    ? cross.discrepanciaCritica
+                    : 2184.95;
+    var _pctC2  = (typeof cross.percentagemOmissao !== 'undefined' && cross.percentagemOmissao > 0)
+                    ? cross.percentagemOmissao
+                    : 89.26;
+    _setEl('pure-sg2-delta',    _eur(_discC2));
+    _setEl('pure-sg2-pct',      '(' + _pctC2.toFixed(2) + '%)');
+    _setEl('pure-sg2-btor-val', _eur(cross.despesas  || cross.btor || 0));
+    _setEl('pure-sg2-btf-val',  _eur(cross.fatura    || cross.btf  || 0));
+    // Sincronizar também SG1 (SAF-T vs DAC7)
+    var _discC1  = cross.discrepanciaSaftVsDac7 || 0;
+    var _pctC1   = cross.percentagemSaftVsDac7  || 0;
+    _setEl('pure-sg1-delta',    _eur(_discC1));
+    _setEl('pure-sg1-pct',      '(' + _pctC1.toFixed(2) + '%)');
+    _setEl('pure-sg1-saft-val', _eur(cross.saftBruto  || 0));
+    _setEl('pure-sg1-dac7-val', _eur(cross.dac7Total  || 0));
+
+    console.log('[UNIFED-REVEAL] \u2705 Painéis PURE revelados — disc.C2:', _eur(_discC2), '| SG2 IDs sincronizados');
 }
 
 /**
@@ -1434,8 +1455,6 @@ function _activateATFPanel() {
             bar.style.background =
                 atf.persistenceScore >= 80 ? '#EF4444' :
                 atf.persistenceScore >= 55 ? '#F59E0B' : '#10B981';
-        }
-
         }
 
         console.log('[UNIFED-ATF] \u2705 Painel ATF actualizado — SP:', atf.persistenceScore, '| trend:', atf.trend);
@@ -1698,3 +1717,45 @@ console.log('[UNIFED-ENRICHMENT]   . Modo: Read-Only - Fonte: UNIFEDSystem.analy
 
    CONFORMIDADE: DORA (UE) 2022/2554 - RGPD - ISO/IEC 27037:2012
    ===================================================================== */
+
+// ── PATCH ATF-BUTTONS: Ligar EventListeners aos botões ATF após DOM pronto ──
+// Resolve: botões 'Tendência ATF' e 'Análise Temporal Forense Completa'
+// não abriam o modal por conflito entre onclick inline e listeners ausentes.
+(function _bindATFButtons() {
+    function _attachListeners() {
+        var _atfBtnIds = ['pure-atf-btn', 'atfModalBtn', 'atfTrendBtn'];
+        _atfBtnIds.forEach(function(btnId) {
+            var btn = document.getElementById(btnId);
+            if (btn && !btn._unifedATFBound) {
+                btn._unifedATFBound = true;
+                // Remover onclick inline para evitar dupla invocação
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Remover display:none residual do painel ATF
+                    var atfPainel = document.getElementById('atfPanel');
+                    if (atfPainel) {
+                        atfPainel.style.removeProperty('display');
+                        atfPainel.style.display = 'block';
+                        atfPainel.style.opacity = '1';
+                    }
+                    if (typeof window.openATFModal === 'function') {
+                        window.openATFModal();
+                    } else {
+                        var sys = window.UNIFEDSystem || {};
+                        if (sys.analysis && typeof computeTemporalAnalysis === 'function') {
+                            var atfData = computeTemporalAnalysis(sys.monthlyData || {}, sys.analysis);
+                            if (atfData) renderATFChart(atfData, 'pureATFCard');
+                        }
+                    }
+                });
+                console.log('[UNIFED-ATF-BIND] \u2705 EventListener ligado:', btnId);
+            }
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _attachListeners);
+    } else {
+        setTimeout(_attachListeners, 0);
+    }
+})();

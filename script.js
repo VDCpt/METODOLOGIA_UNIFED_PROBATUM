@@ -442,13 +442,16 @@ function robustSAFTParser(csvText) {
 }
 
 const validateNIF = (nif) => {
-    if (!nif || !/^\d{9}$/.test(nif)) return false;
-    const first = parseInt(nif[0]);
+    const nifLimpo = (nif || '').replace(/\D/g, '');
+    // BYPASS: NIFs especiais de caso real / demonstração — excepção explícita ao algoritmo módulo 11
+    if (nifLimpo === '999999990' || nifLimpo === '123456789') return true;
+    if (!nifLimpo || !/^\d{9}$/.test(nifLimpo)) return false;
+    const first = parseInt(nifLimpo[0]);
     if (![1, 2, 3, 5, 6, 8, 9].includes(first)) return false;
     let sum = 0;
-    for (let i = 0; i < 8; i++) sum += parseInt(nif[i]) * (9 - i);
+    for (let i = 0; i < 8; i++) sum += parseInt(nifLimpo[i]) * (9 - i);
     const mod = sum % 11;
-    return parseInt(nif[8]) === ((mod < 2) ? 0 : 11 - mod);
+    return parseInt(nifLimpo[8]) === ((mod < 2) ? 0 : 11 - mod);
 };
 
 const formatCurrency = (value) => {
@@ -456,7 +459,7 @@ const formatCurrency = (value) => {
 };
 
 const formatCurrencyEN = (value) => {
-    return forensicRound(value).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    return forensicRound(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 };
 
 const getRiskVerdict = (delta, gross) => {
@@ -1735,7 +1738,7 @@ const ForensicLogger = {
             const logEl = document.createElement('div');
             logEl.className = 'log-entry log-info';
             const date = new Date(log.timestamp).toLocaleString(
-                typeof currentLang !== 'undefined' && currentLang === 'pt' ? 'pt-PT' : 'en-GB'
+                typeof currentLang !== 'undefined' && currentLang === 'pt' ? 'pt-PT' : 'en-US'
             );
             logEl.textContent = `[${date}] ${log.action} ${log.data ? JSON.stringify(log.data) : ''}`;
             el.appendChild(logEl);
@@ -3408,7 +3411,7 @@ function populateYears() {
 function startClockAndDate() {
     const update = () => {
         const now = new Date();
-        const locale = currentLang === 'pt' ? 'pt-PT' : 'en-GB';
+        const locale = currentLang === 'pt' ? 'pt-PT' : 'en-US';
         const dateStr = now.toLocaleDateString(locale);
         const timeStr = now.toLocaleTimeString(locale);
         setElementText('currentDate', dateStr);
@@ -5190,7 +5193,7 @@ function renderChart() {
                 tooltip: {
                     callbacks: {
                         label: (context) => {
-                            return context.raw.toLocaleString(currentLang === 'pt' ? 'pt-PT' : 'en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                            return context.raw.toLocaleString(currentLang === 'pt' ? 'pt-PT' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
                         }
                     }
                 }
@@ -5201,7 +5204,7 @@ function renderChart() {
                     grid: { color: 'rgba(255,255,255,0.1)' },
                     ticks: {
                         color: '#b8c6e0',
-                        callback: (v) => v.toLocaleString(currentLang === 'pt' ? 'pt-PT' : 'en-GB') + ' €'
+                        callback: (v) => v.toLocaleString(currentLang === 'pt' ? 'pt-PT' : 'en-US') + ' €'
                     }
                 },
                 x: {
@@ -5263,7 +5266,7 @@ function renderDiscrepancyChart() {
                     grid: { color: 'rgba(255,255,255,0.1)' },
                     ticks: {
                         color: '#b8c6e0',
-                        callback: (v) => v.toLocaleString(currentLang === 'pt' ? 'pt-PT' : 'en-GB') + ' €'
+                        callback: (v) => v.toLocaleString(currentLang === 'pt' ? 'pt-PT' : 'en-US') + ' €'
                     }
                 }
             }

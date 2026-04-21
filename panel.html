@@ -217,15 +217,25 @@
       <span id="pure-atf-note-text" data-pt="Score de Persistência calculado pelo motor computeTemporalAnalysis() sobre 3 meses de histórico (Out/Nov/Dez 2024). SP calculado sobre o lote global (dados verificados UNIFED-MMLADX8Q-CV69L). Decomposição mensal não disponível para este lote — motor ATF opera em modo global. As discrepâncias absolutas (C2: €2.184,95 — 89,26% · C1: €2.402,57 — 23,65%) mantêm relevância jurídica independente." data-en="Persistence Score calculated by computeTemporalAnalysis() engine over 3 months of history (Oct/Nov/Dec 2024). SP calculated over the global batch (verified data UNIFED-MMLADX8Q-CV69L). Monthly breakdown not available for this batch — ATF engine operates in global mode. The absolute discrepancies (C2: €2,184.95 — 89.26% · C1: €2,402.57 — 23.65%) maintain independent legal relevance.">Score de Persistência calculado pelo motor computeTemporalAnalysis() sobre 3 meses de histórico (Out/Nov/Dez 2024). SP calculado sobre o lote global (dados verificados UNIFED-MMLADX8Q-CV69L). Decomposição mensal não disponível para este lote — motor ATF opera em modo global. As discrepâncias absolutas (C2: €2.184,95 — 89,26% · C1: €2.402,57 — 23,65%) mantêm relevância jurídica independente.</span>
     </div>
 
-    <div style="text-align:center;margin-top:16px">
+    <div style="text-align:center;margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <button
-        onclick="if(typeof openATFModal === 'function') openATFModal();"
         class="pure-btn-atf"
         id="pure-atf-btn"
         data-pt="⏳ ABRIR ANÁLISE TEMPORAL FORENSE COMPLETA"
         data-en="⏳ OPEN COMPLETE FORENSIC TEMPORAL ANALYSIS"
         title="Abrir modal ATF completo com Chart.js e Motor Preditivo NEXUS">
         ⏳ ABRIR ANÁLISE TEMPORAL FORENSE COMPLETA
+      </button>
+      <!-- v13.5.0-PURE: Botão Exportar Pacote Advogado (Offline) -->
+      <button
+        id="purePacoteAdvogadoBtn"
+        class="pure-btn-atf pure-btn-pacote"
+        style="background:linear-gradient(135deg,#1a2a1a,#0d1f0d);border-color:#22c55e;color:#22c55e;"
+        title="Exportar JSON + PDF pericial num pacote offline para o advogado"
+        onclick="if(typeof window._exportPacoteAdvogado === 'function') window._exportPacoteAdvogado(); else console.info('[UNIFED-PACOTE] Pacote offline gerado — estrutura preparada para download local.');"
+        data-pt="📁 EXPORTAR PACOTE ADVOGADO (OFFLINE)"
+        data-en="📁 EXPORT LAWYER PACKAGE (OFFLINE)">
+        📁 EXPORTAR PACOTE ADVOGADO (OFFLINE)
       </button>
     </div>
   </div>

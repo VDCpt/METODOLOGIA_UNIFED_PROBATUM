@@ -3573,3 +3573,175 @@ body.dual-screen .stat-card p {
 }
 
 /* ══ FIM — v13.5.0-PURE CSS Integration · UNIFED - PROBATUM ══════════════ */
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   UNIFED - PROBATUM · PATCHES v13.5.0-PURE — Code Freeze Final
+   Aplicados por: Fase Final - Go-Live Preparation
+   Conformidade: Zero impacto nas fórmulas | Somente estilo e UX
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── PATCH 7: LED Colarinho Branco — card #colarinho-branco ─────────────────
+   Remove fundo encarnado sólido. Substitui por animação @keyframes de
+   box-shadow + border intermitente (efeito LED vermelho pulsante).
+   Fundo mantém-se escuro e legível; texto sem alteração de cor.          */
+
+@keyframes unifed-led-criminalidade {
+    0%   {
+        box-shadow: 0 0 0px rgba(239,68,68,0),
+                    inset 0 0 0px rgba(239,68,68,0);
+        border-color: rgba(239,68,68,0.3);
+    }
+    25%  {
+        box-shadow: 0 0 18px rgba(239,68,68,0.85),
+                    0 0 40px rgba(239,68,68,0.35),
+                    inset 0 0 12px rgba(239,68,68,0.08);
+        border-color: rgba(239,68,68,0.95);
+    }
+    50%  {
+        box-shadow: 0 0 6px rgba(239,68,68,0.2),
+                    inset 0 0 0px rgba(239,68,68,0);
+        border-color: rgba(239,68,68,0.4);
+    }
+    75%  {
+        box-shadow: 0 0 22px rgba(239,68,68,0.9),
+                    0 0 48px rgba(239,68,68,0.4),
+                    inset 0 0 14px rgba(239,68,68,0.1);
+        border-color: rgba(239,68,68,1);
+    }
+    100% {
+        box-shadow: 0 0 0px rgba(239,68,68,0),
+                    inset 0 0 0px rgba(239,68,68,0);
+        border-color: rgba(239,68,68,0.3);
+    }
+}
+
+#colarinho-branco,
+.pure-card-white-collar {
+    /* Remover fundo encarnado sólido */
+    background: linear-gradient(135deg, #0d0d0d 0%, #12100e 50%, #0d0d0d 100%) !important;
+    background-color: transparent !important;
+    border: 1px solid rgba(239,68,68,0.3) !important;
+    animation: unifed-led-criminalidade 2.4s ease-in-out infinite !important;
+    /* Garantir texto legível sobre fundo escuro */
+    color: #e2e8f0 !important;
+}
+
+/* Forçar título do card legível — evitar herança de cor encarnada */
+#colarinho-branco .pure-card-title,
+.pure-card-white-collar .pure-card-title {
+    color: #fca5a5 !important;
+    text-shadow: 0 0 8px rgba(239,68,68,0.4);
+}
+
+/* ── PATCH 6: Prova Rainha — diferenciação visual labels vs valores ──────────
+   Labels (.pure-sg-key): cor neutra azulada — não competem com os valores.
+   Valores (.pure-sg-val, .pure-delta-value): branco brilhante / accent.
+   Delta percentagem (.pure-delta-pct): accent primário atenuado.          */
+
+.pure-sg-key,
+.pure-sg-label {
+    color: #94a3b8 !important;          /* slate-400: neutro, não distrai   */
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.pure-sg-val {
+    color: #f8fafc !important;          /* branco quase puro: destaque máximo */
+    font-weight: 700;
+    font-size: 1.0rem;
+    text-shadow: 0 0 6px rgba(248,250,252,0.25);
+}
+
+.pure-delta-value {
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+
+.pure-delta-pct {
+    color: var(--accent-primary, #00E5FF) !important;
+    font-size: 0.88rem;
+    opacity: 0.85;
+    font-weight: 600;
+}
+
+/* Separação visual entre linhas do smoking gun */
+.pure-sg-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(148,163,184,0.1);
+}
+
+.pure-sg-delta {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(239,68,68,0.25);
+}
+
+/* ── PATCH 8: Parâmetros de Auditoria Forense — diferenciação visual ─────────
+   Adiciona border-left accent + background subtil para destacar a box
+   do fundo principal sem ruptura de contraste.                            */
+
+.audit-params-box,
+#auditParamsBox,
+.parametros-auditoria,
+[id*="param"][id*="audit"],
+[class*="param"][class*="audit"] {
+    border-left: 3px solid var(--accent-primary, #00E5FF) !important;
+    background: linear-gradient(90deg,
+        rgba(0,229,255,0.06) 0%,
+        rgba(0,229,255,0.02) 40%,
+        transparent 100%) !important;
+    padding-left: 14px !important;
+    border-radius: 0 4px 4px 0 !important;
+}
+
+/* Fallback: qualquer secção com título "PARÂMETROS" */
+.module-card:has(h4[id*="param"]),
+.module-card:has(h4[id*="Param"]) {
+    border-left: 3px solid var(--accent-primary, #00E5FF);
+    background: linear-gradient(90deg, rgba(0,229,255,0.05) 0%, transparent 60%);
+}
+
+/* ── Botão Exportar Pacote Advogado — estilo harmonizado ─────────────────── */
+.btn-pacote-advogado,
+#exportPacoteAdvogadoBtn {
+    border-color: #22c55e !important;
+    color: #22c55e !important;
+    background: linear-gradient(135deg, #0a1a0a, #0d200d) !important;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: box-shadow 0.25s ease, transform 0.15s ease;
+}
+
+.btn-pacote-advogado:hover,
+#exportPacoteAdvogadoBtn:hover {
+    box-shadow: 0 0 16px rgba(34,197,94,0.45), 0 0 32px rgba(34,197,94,0.2) !important;
+    transform: translateY(-1px);
+    color: #4ade80 !important;
+    border-color: #4ade80 !important;
+}
+
+/* ── Botão Pacote no panel.html (pure-btn-pacote) ───────────────────────── */
+.pure-btn-pacote {
+    background: linear-gradient(135deg, #0a1a0a, #0d200d) !important;
+    border: 1px solid #22c55e !important;
+    color: #22c55e !important;
+    font-weight: 700;
+    transition: box-shadow 0.25s ease;
+}
+
+.pure-btn-pacote:hover {
+    box-shadow: 0 0 18px rgba(34,197,94,0.5) !important;
+    color: #86efac !important;
+}
+
+/* ══ FIM DOS PATCHES v13.5.0-PURE · UNIFED - PROBATUM · CODE FREEZE ══════ */
