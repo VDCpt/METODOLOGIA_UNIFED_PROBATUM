@@ -626,33 +626,86 @@
             console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
 
-        // ── Guarda de visibilidade: garante que #triadaContainer e o seu
-        //    wrapper pai (.pure-toolbar-right) não permanecem colapsados
-        //    após injecção dinâmica dos botões da Tríade Documental.
-        if (container.style.display === 'none' || container.style.display === '') {
-            container.style.display = 'flex';
-        }
-        var _rightWrapper = container.closest ? container.closest('.pure-toolbar-right') : container.parentElement;
-        if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
-            _rightWrapper.style.display = 'flex';
-        }
-
         console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO!');
         return true;
     }
 
-    // ── SOBREPOSIÇÃO CIRÚRGICA: PACOTE ADVOGADO (MÚLTIPLA EXPORTAÇÃO SEQUENCIAL) ──
-    window._exportPacoteAdvogado = async function() {
-        _log('▶ Iniciando geração do Pacote Advogado Estrito (3 Ficheiros)...', 'info');
+    /**
+     * UNIFED - PROBATUM v13.5.0-PURE
+     * RECONFIGURAÇÃO FINAL DOS PACOTES (ANALISTA vs ADVOGADO)
+     */
 
-        await _unifedExportPdfRelatorio();
-        setTimeout(async function() { await _unifedExportPdfAnexoCustodia(); }, 1500);
-        setTimeout(async function() { await _unifedExportDocxMatriz();       }, 3000);
+    // --- 1. PACOTE ANALISTA (PERITIA PDF + JSON ANALISTA) ---
+    // Exporta o relatório pericial completo (PERITIA) mais o JSON com
+    // nomenclatura de Analista. Chama exportPDF() de script.js via alias
+    // window.exportPDF_Peritia, e exportDataJSON() via _exportJsonSistema().
+    window._exportPacoteAnalista = async function() {
+        _log('Iniciando PACOTE ANALISTA: Ficheiro PERITIA + Dados JSON', 'info');
 
-        if (typeof window.showToast === 'function') {
-            window.showToast('Pacote Advogado gerado: 3 ficheiros enviados para download.', 'success');
+        try {
+            // Exporta o PDF PERITIA (relatório pericial completo)
+            if (typeof window.exportPDF_Peritia === 'function') {
+                await window.exportPDF_Peritia();
+            } else if (typeof window.exportPDF === 'function') {
+                // Fallback: alias directo à função de exportação PDF de script.js
+                await window.exportPDF();
+            } else {
+                _log('Erro: Função exportPDF_Peritia / exportPDF não encontrada.', 'error');
+            }
+
+            // Exporta o JSON com nomenclatura de Analista
+            setTimeout(function() {
+                if (typeof window._exportJsonSistema === 'function') {
+                    window._exportJsonSistema('ANALISTA');
+                } else if (typeof exportDataJSON === 'function') {
+                    exportDataJSON();
+                }
+            }, 1200);
+
+        } catch (e) {
+            _log('Falha na exportação do Analista: ' + e.message, 'error');
         }
     };
+
+    // --- 2. PACOTE ADVOGADO (JSON ADVOGADO + CUSTÓDIA PDF + MATRIZ DOCX) ---
+    // Exporta sequencialmente os três documentos destinados ao mandatário:
+    // JSON probatório, Anexo de Custódia e Matriz Jurídica.
+    window._exportPacoteAdvogadoOffline = async function() {
+        _log('Iniciando PACOTE ADVOGADO: JSON + Custódia + Matriz Jurídica', 'info');
+
+        try {
+            // A. Exporta o JSON do Advogado
+            if (typeof window._exportJsonSistema === 'function') {
+                window._exportJsonSistema('ADVOGADO');
+            } else if (typeof exportDataJSON === 'function') {
+                exportDataJSON();
+            }
+
+            // B. Exporta Anexo Custódia (PDF)
+            setTimeout(async function() {
+                if (typeof _unifedExportPdfAnexoCustodia === 'function') {
+                    await _unifedExportPdfAnexoCustodia();
+                }
+            }, 1200);
+
+            // C. Exporta Matriz Jurídica (DOCX)
+            setTimeout(async function() {
+                if (typeof _unifedExportDocxMatriz === 'function') {
+                    await _unifedExportDocxMatriz();
+                }
+            }, 2500);
+
+            if (typeof window.showToast === 'function') {
+                window.showToast('Pacote Advogado gerado: JSON + Custódia + Matriz enviados para download.', 'success');
+            }
+
+        } catch (e) {
+            _log('Falha na exportação do Advogado: ' + e.message, 'error');
+        }
+    };
+
+    // Manter alias retrocompatível para qualquer referência anterior a _exportPacoteAdvogado
+    window._exportPacoteAdvogado = window._exportPacoteAdvogadoOffline;
 
     // Vincular botão Pacote Advogado ao novo handler global
     (function _bindPacoteAdvogado() {

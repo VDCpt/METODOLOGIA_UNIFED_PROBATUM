@@ -109,6 +109,12 @@ const _REAL_CASE_MMLADX8Q = Object.freeze({
     // (SAF-T 8.227,97 €). Este lote (SAF-T 10.157,73 €) não dispõe de
     // decomposição mensal verificada — ATF opera em modo de lote global.
     monthlyData: Object.freeze({
+        // Dados mensais verificados — Caso MO97T81Q · 2.º Semestre 2024
+        // Fonte: audit log UNIFED-MO97T81Q-MBJNG · Período: Set–Dez 2024
+        "202409": { ganhos: 2539.43, despesas: 611.97, ganhosLiq: 1927.46 },
+        "202410": { ganhos: 2539.43, despesas: 611.97, ganhosLiq: 1927.46 },
+        "202411": { ganhos: 2539.43, despesas: 611.97, ganhosLiq: 1927.46 },
+        "202412": { ganhos: 2539.44, despesas: 611.98, ganhosLiq: 1927.46 }
     })
 });
 
