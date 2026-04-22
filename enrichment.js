@@ -1762,20 +1762,13 @@ console.log('[UNIFED-ENRICHMENT]   . Modo: Read-Only - Fonte: UNIFEDSystem.analy
                 btn.removeAttribute('onclick');
                 btn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    // Remover display:none residual do painel ATF
-                    var atfPainel = document.getElementById('atfPanel');
-                    if (atfPainel) {
-                        atfPainel.style.removeProperty('display');
-                        atfPainel.style.display = 'block';
-                        atfPainel.style.opacity = '1';
-                    }
                     if (typeof window.openATFModal === 'function') {
                         window.openATFModal();
                     } else {
                         var sys = window.UNIFEDSystem || {};
                         if (sys.analysis && typeof computeTemporalAnalysis === 'function') {
                             var atfData = computeTemporalAnalysis(sys.monthlyData || {}, sys.analysis);
-                            if (atfData) renderATFChart(atfData, 'pureATFCard');
+                            if (atfData) window.renderATFChart(atfData, 'pureATFCard');
                         }
                     }
                 });

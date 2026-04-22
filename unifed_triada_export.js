@@ -600,63 +600,81 @@
         return btn;
     }
     
+    // ── SOBREPOSIÇÃO CIRÚRGICA v13.5.0-PURE: injetarBotoes → #triadaContainer ──
     function injetarBotoes() {
-        console.log('[UNIFED-TRIADA] Procurando contentor para injetar botões...');
-        
-        var container = document.querySelector('.toolbar-grid');
-        
+        console.log('[UNIFED-TRIADA] Procurando #triadaContainer...');
+
+        var container = document.getElementById('triadaContainer');
         if (!container) {
-            var toolbarSection = document.querySelector('.toolbar-section');
-            if (toolbarSection) {
-                container = document.createElement('div');
-                container.className = 'toolbar-grid';
-                container.style.cssText = 'display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 8px 0;';
-                toolbarSection.appendChild(container);
-                console.log('[UNIFED-TRIADA] ✅ Contentor .toolbar-grid criado');
-            }
-        }
-        
-        if (!container) {
-            var analysisArea = document.querySelector('.analysis-area');
-            if (analysisArea) {
-                container = document.createElement('div');
-                container.className = 'toolbar-grid triada-buttons';
-                container.style.cssText = 'display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin: 16px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px;';
-                analysisArea.insertBefore(container, analysisArea.firstChild);
-                console.log('[UNIFED-TRIADA] ✅ Contentor criado no topo da área de análise');
-            }
-        }
-        
-        if (!container) {
-            console.error('[UNIFED-TRIADA] ❌ Nenhum contentor disponível');
+            console.error('[UNIFED-TRIADA] ❌ #triadaContainer não encontrado');
             return false;
         }
-        
+
         if (document.getElementById('unifedPdfRelatorioBtn')) {
             console.log('[UNIFED-TRIADA] Botões já existem');
             return true;
         }
-        
+
         var botoes = [
-            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf', label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio },
-            { id: 'unifedPdfAnexoBtn', icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA', cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
-            { id: 'unifedDocxMatrizBtn', icon: 'fa-file-word', label: 'MATRIZ JURÍDICA', cor: '#10B981', handler: _unifedExportDocxMatriz }
+            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
+            { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA',   cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
+            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        }
         ];
-        
+
         botoes.forEach(function(b) {
-            var btn = criarBotao(b.id, b.icon, b.label, b.cor, b.handler);
-            container.appendChild(btn);
-            console.log('[UNIFED-TRIADA] ✅ Botão criado:', b.id);
+            container.appendChild(criarBotao(b.id, b.icon, b.label, b.cor, b.handler));
+            console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
-        
-        var btnPDF = document.getElementById('exportPDFBtn');
-        var btnDOCX = document.getElementById('exportDOCXBtn');
-        if (btnPDF) btnPDF.style.display = 'none';
-        if (btnDOCX) btnDOCX.style.display = 'none';
-        
+
+        // ── Guarda de visibilidade: garante que #triadaContainer e o seu
+        //    wrapper pai (.pure-toolbar-right) não permanecem colapsados
+        //    após injecção dinâmica dos botões da Tríade Documental.
+        if (container.style.display === 'none' || container.style.display === '') {
+            container.style.display = 'flex';
+        }
+        var _rightWrapper = container.closest ? container.closest('.pure-toolbar-right') : container.parentElement;
+        if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
+            _rightWrapper.style.display = 'flex';
+        }
+
         console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO!');
         return true;
     }
+
+    // ── SOBREPOSIÇÃO CIRÚRGICA: PACOTE ADVOGADO (MÚLTIPLA EXPORTAÇÃO SEQUENCIAL) ──
+    window._exportPacoteAdvogado = async function() {
+        _log('▶ Iniciando geração do Pacote Advogado Estrito (3 Ficheiros)...', 'info');
+
+        await _unifedExportPdfRelatorio();
+        setTimeout(async function() { await _unifedExportPdfAnexoCustodia(); }, 1500);
+        setTimeout(async function() { await _unifedExportDocxMatriz();       }, 3000);
+
+        if (typeof window.showToast === 'function') {
+            window.showToast('Pacote Advogado gerado: 3 ficheiros enviados para download.', 'success');
+        }
+    };
+
+    // Vincular botão Pacote Advogado ao novo handler global
+    (function _bindPacoteAdvogado() {
+        function _attach() {
+            var btn = document.getElementById('exportPacoteAdvogadoBtn');
+            if (btn && !btn._pacoteBound) {
+                btn._pacoteBound = true;
+                btn.removeAttribute('onclick');
+                btn.addEventListener('click', function() {
+                    if (typeof window._exportPacoteAdvogado === 'function') {
+                        window._exportPacoteAdvogado();
+                    }
+                });
+                console.log('[UNIFED-TRIADA] ✅ exportPacoteAdvogadoBtn vinculado.');
+            }
+        }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', _attach);
+        } else {
+            setTimeout(_attach, 0);
+        }
+    })();
     
     function executar() {
         console.log('[UNIFED-TRIADA] Iniciando...');

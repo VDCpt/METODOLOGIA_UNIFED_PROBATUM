@@ -1894,7 +1894,7 @@ const translations = {
         // Sidebar - Identificação do Sujeito Passivo
         sidebarIdTitle: "IDENTIFICAÇÃO DO SUJEITO PASSIVO",
         lblClientName: "Nome / Denominação Social",
-        lblNIF: "NIF / Número de Identificação Fiscal",
+        lblNIF: "Número de Identificação Fiscal (NIF)",
         btnRegister: "VALIDAR IDENTIDADE",
         
         // Sidebar - Parâmetros de Auditoria
@@ -1915,7 +1915,7 @@ const translations = {
         // Dashboard - Cards
         cardNet: "VALOR LÍQUIDO RECONSTRUÍDO",
         cardComm: "COMISSÕES DETETADAS",
-        cardJuros: "DISCREPÂNCIA COMISSÕES",
+        cardJuros: "DISCREPÂNCIA DE COMISSÕES",
         discrepancy5: "DISCREPÂNCIA SAF-T vs DAC7",
         agravamentoBruto: "AGRAVAMENTO BRUTO/IRC",
         irc: "IRC (21% + Derrama)",
@@ -1970,7 +1970,7 @@ const translations = {
         quantumNote: "IVA em falta (23%): 0,00 € | IVA (6%): 0,00 €",
         
         // Veredicto
-        verdictPercent: "CONSULTA TÉCNICA FORENSE N.º",
+        verdictPercent: "PARECER TÉCNICO N.º",
         
         // Alertas
         alertCriticalTitle: "SMOKING GUN · DIVERGÊNCIA CRÍTICA",
@@ -2030,7 +2030,7 @@ const translations = {
         clearConsoleBtn: "LIMPAR CONSOLE",
         
         // Two-Axis Alerts
-        revenueGapTitle: "OMISSÃO DE FATURAMENTO",
+        revenueGapTitle: "OMISSÃO DE FATURAÇÃO",
         expenseGapTitle: "OMISSÃO DE CUSTOS/IVA",
         revenueGapDesc: "SAF-T Bruto vs Ganhos",
         expenseGapDesc: "Despesas/Comissões (Extrato) vs Faturadas (BTF)",
@@ -2144,7 +2144,7 @@ const translations = {
         quantumNote: "Missing VAT (23%): 0,00 € | VAT (6%): 0,00 €",
         
         // Verdict
-        verdictPercent: "TECHNICAL OPINION No.",
+        verdictPercent: "EXPERT OPINION No.",
         
         // Alerts
         alertCriticalTitle: "SMOKING GUN · CRITICAL DIVERGENCE",
@@ -8110,7 +8110,9 @@ function resetAllValues() {
     elementsToReset.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            if (id.includes('Value') || id.includes('stat') || id.includes('kpi') || id.includes('quantum') || id.includes('alert') || id.includes('Gap')) {
+            if (id.includes('Percent') || id.includes('pct')) {
+                el.textContent = '0,00%';
+            } else if (id.includes('Value') || id.includes('stat') || id.includes('kpi') || id.includes('quantum') || id.includes('alert') || id.includes('Gap')) {
                 el.textContent = '0,00 €';
             } else {
                 el.textContent = 'AGUARDANDO ANÁLISE';

@@ -473,37 +473,33 @@
             <!-- ÁREA PRINCIPAL DE ANÁLISE -->
             <main class="analysis-area">
                 
-                <!-- TOOLBAR -->
+                <!-- TOOLBAR — v13.5.0-PURE: Bipartição lógica (operacional + documental) -->
                 <div class="toolbar-section">
-                    <div class="toolbar-grid" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-                        <button id="exportPDFBtn" class="btn-tool" disabled>
-                            <i class="fas fa-file-pdf"></i> <span id="btnPDF">PARECER TÉCNICO</span>
-                        </button>
-                        <!-- v13.3.0-DIAMOND: Minuta de Petição Inicial DOCX -->
-                        <button id="exportDOCXBtn" class="btn-tool"
-                            title="Exportar Minuta de Petição Inicial (.docx) — OOXML editável pelo advogado">
-                            <i class="fas fa-file-word"></i> MINUTA WORD
-                        </button>
-                        <!-- v13.3.0-DIAMOND: ATF — Análise Temporal Forense -->
-                        <button id="atfModalBtn" class="btn-tool"
-                            title="Análise Temporal Forense — Tendências · Outliers 2σ · Score de Persistência">
-                            <i class="fas fa-chart-line"></i> &#x23F3; TENDÊNCIA ATF
-                        </button>
-                        <button id="exportJSONBtn" class="btn-tool">
-                            <i class="fas fa-file-code"></i> EXPORTAR JSON
-                        </button>
-                        <!-- v13.5.0-PURE: Pacote Offline para Advogado -->
-                        <button id="exportPacoteAdvogadoBtn" class="btn-tool btn-pacote-advogado"
-                            title="Exportar Pacote Completo para Advogado (JSON + PDF prontos para submissão offline)"
-                            onclick="window._exportPacoteAdvogado && window._exportPacoteAdvogado()">
-                            <i class="fas fa-briefcase"></i> PACOTE ADVOGADO
-                        </button>
-                        <button id="resetBtn" class="btn-tool">
-                            <i class="fas fa-redo-alt"></i> REINICIAR
-                        </button>
-                        <button id="clearConsoleBtn" class="btn-tool">
-                            <i class="fas fa-trash-alt"></i> <span id="clearConsoleBtnText">LIMPAR CONSOLE</span>
-                        </button>
+                    <div class="pure-toolbar-left" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start;">
+                        <div class="toolbar-grid-operacional" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start;">
+                            <button id="atfModalBtn" class="btn-tool"
+                                title="Análise Temporal Forense — Tendências · Outliers 2σ · Score de Persistência">
+                                <i class="fas fa-chart-line"></i> &#x23F3; TENDÊNCIA ATF
+                            </button>
+                            <button id="exportJSONBtn" class="btn-tool">
+                                <i class="fas fa-file-code"></i> EXPORTAR JSON
+                            </button>
+                            <button id="resetBtn" class="btn-tool">
+                                <i class="fas fa-redo-alt"></i> REINICIAR
+                            </button>
+                            <button id="clearConsoleBtn" class="btn-tool">
+                                <i class="fas fa-trash-alt"></i> <span id="clearConsoleBtnText">LIMPAR CONSOLE</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pure-toolbar-right" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;">
+                        <div class="toolbar-grid-documental" id="triadaContainer" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;">
+                            <button id="exportPacoteAdvogadoBtn" class="btn-tool btn-pacote-advogado"
+                                title="Exportar Pacote Completo (Relatório + Anexo + Matriz)">
+                                <i class="fas fa-briefcase"></i> PACOTE ADVOGADO
+                            </button>
+                        </div>
                     </div>
                 </div>
 
