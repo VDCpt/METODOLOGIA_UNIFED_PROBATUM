@@ -146,7 +146,7 @@ const forensicRound = (num) => {
 };
 
 // ============================================================================
-// 4.1 FUNÇÃO DE NORMALIZAÇÃO INVARIANTE (CORREÇÃO CRÍTICA - v12.8.9)
+// 4.1 FUNÇÃO DE NORMALIZAÇÃO INVARIANTE (CORREÇÃO CRÍTICA - v13.5.0-PURE)
 // ============================================================================
 const normalizeNumericValue = (input) => {
     if (!input) return 0;
@@ -272,7 +272,7 @@ const testParsing = () => {
         { input: "4.178,32", expected: 4178.32 }        // SAF-T Outubro
     ];
 
-    console.log('🔬 TESTE DE PARSING v12.8.9:');
+    console.log('🔬 TESTE DE PARSING v13.5.0-PURE:');
     testCases.forEach((test, i) => {
         const result = normalizeNumericValue(test.input);
         const status = Math.abs(result - test.expected) < 0.01 ? '✓' : '❌';
@@ -2618,7 +2618,7 @@ function switchLanguage() {
 }
 
 // ============================================================================
-// 8. SCHEMA REGISTRY - VERSÃO CORRIGIDA (v12.8.9) - EXTRAÇÃO PRECISA
+// 8. SCHEMA REGISTRY - VERSÃO CORRIGIDA (v13.5.0-PURE) - EXTRAÇÃO PRECISA
 // ============================================================================
 const SchemaRegistry = {
     schemas: {
@@ -2787,7 +2787,7 @@ const SchemaRegistry = {
 
         result.despesas = Math.abs(result.despesas);
 
-        logAudit(`📊 Extração Extrato (v12.8.9) - Ganhos: ${formatCurrency(result.ganhos)} | Despesas: ${formatCurrency(result.despesas)} | Líquido: ${formatCurrency(result.ganhosLiq)}`, 'info');
+        logAudit(`📊 Extração Extrato (v13.5.0-PURE) - Ganhos: ${formatCurrency(result.ganhos)} | Despesas: ${formatCurrency(result.despesas)} | Líquido: ${formatCurrency(result.ganhosLiq)}`, 'info');
 
         return result;
     },
@@ -3805,7 +3805,7 @@ function registerClient() {
 }
 
 // ============================================================================
-// 20. PROCESSAMENTO DE FICHEIROS (COM SCHEMA REGISTRY v12.8.9)
+// 20. PROCESSAMENTO DE FICHEIROS (COM SCHEMA REGISTRY v13.5.0-PURE)
 // ============================================================================
 async function processFile(file, type) {
     const fileKey = `${file.name}_${file.size}_${file.lastModified}`;
@@ -3968,7 +3968,7 @@ async function processFile(file, type) {
 
             processAuxiliaryPlatformData(text, file.name);
 
-            logAudit(`📊 Extrato processado (v12.8.9): ${file.name} | Ganhos: ${formatCurrency(extracted.ganhos)} | Despesas: ${formatCurrency(extracted.despesas)} | Líquido: ${formatCurrency(extracted.ganhosLiq)}`, 'success');
+            logAudit(`📊 Extrato processado (v13.5.0-PURE): ${file.name} | Ganhos: ${formatCurrency(extracted.ganhos)} | Despesas: ${formatCurrency(extracted.despesas)} | Líquido: ${formatCurrency(extracted.ganhosLiq)}`, 'success');
             ForensicLogger.addEntry('STATEMENT_PROCESSED', { filename: file.name, ...extracted });
 
         } catch(e) {
@@ -4340,7 +4340,7 @@ function simulateUpload(type, count) {
 }
 
 // ============================================================================
-// 22. MOTOR DE PERÍCIA FORENSE (v12.8.9) COM CORREÇÕES
+// 22. MOTOR DE PERÍCIA FORENSE (v13.5.0-PURE) COM CORREÇÕES
 // ============================================================================
 function performAudit() {
     window._unifedAnalysisPending = true;  // Sinaliza análise em curso aos módulos externos
@@ -4422,7 +4422,7 @@ function performAudit() {
                 dac7TotalPeriodo: dac7TotalPeriodo
             };
 
-            console.log('🔍 VALORES EXTRAÍDOS (v12.8.9):');
+            console.log('🔍 VALORES EXTRAÍDOS (v13.5.0-PURE):');
             console.log('   SAF-T Bruto:', formatCurrency(saftBruto));
             console.log('   SAF-T Ilíquido:', formatCurrency(saftIliquido));
             console.log('   SAF-T IVA:', formatCurrency(saftIva));
@@ -4449,7 +4449,7 @@ function performAudit() {
             UNIFEDSystem.performanceTiming.end = performance.now();
             const duration = (UNIFEDSystem.performanceTiming.end - UNIFEDSystem.performanceTiming.start).toFixed(2);
 
-            logAudit(`📊 VALORES UTILIZADOS NA PERÍCIA (v12.8.9):`, 'info');
+            logAudit(`📊 VALORES UTILIZADOS NA PERÍCIA (v13.5.0-PURE):`, 'info');
             logAudit(`   SAF-T Bruto: ${formatCurrency(saftBruto)} (${UNIFEDSystem.documents.saft?.files?.length || 0} ficheiros)`, 'info');
             logAudit(`   Ganhos (Extrato): ${formatCurrency(stmtGanhos)}`, 'info');
             logAudit(`   Despesas (Extrato): ${formatCurrency(stmtDespesas)}`, 'info');
@@ -4462,7 +4462,7 @@ function performAudit() {
             logAudit(`   Expense Gap (Despesas - Fatura): ${formatCurrency(stmtDespesas - invoiceVal)}`, 'info');
             logAudit(`   Meses com dados: ${UNIFEDSystem.dataMonths.size}`, 'info');
 
-            logAudit(`✅ Perícia BIG DATA v12.8.9 concluída em ${duration}ms.`, 'success');
+            logAudit(`✅ Perícia BIG DATA v13.5.0-PURE concluída em ${duration}ms.`, 'success');
 
             ForensicLogger.addEntry('AUDIT_COMPLETED', {
                 duration,
@@ -5365,7 +5365,7 @@ async function exportDataJSON() {
 }
 
 // ============================================================================
-// 24. EXPORTAÇÃO PDF (v12.8.9 - Atualizada para novos campos)
+// 24. EXPORTAÇÃO PDF (v13.5.0-PURE - Atualizada para novos campos)
 // ============================================================================
 async function exportPDF() {
     if (!UNIFEDSystem.client) return showToast('Sem sujeito passivo para gerar parecer.', 'error');

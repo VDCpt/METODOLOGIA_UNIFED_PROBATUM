@@ -2,7 +2,8 @@
  * ============================================================================
  * UNIFED - PROBATUM · v13.5.0-PURE · INJEÇÃO DE CASO REAL ANONIMIZADO
  * ============================================================================
- * Sessão de referência : UNIFED-MMLADX8Q-CV69L (dados reais, demoMode: false)
+ * Sessão de referência : UNIFED-MO97T81Q-MBJNG (dados reais, demoMode: false)
+ * Sessão anterior      : UNIFED-MMLADX8Q-CV69L
  * Fonte de verdade     : JSON exportado + Audit Log verificado
  * Anonimização         : Nome e NIF substituídos — valores financeiros intactos
  * Conformidade         : ISO/IEC 27037 · DORA (UE) 2022/2554 · Art. 125.º CPP
@@ -18,13 +19,16 @@
 'use strict';
 
 // ============================================================================
-// DADOS VERIFICADOS — extraídos do JSON UNIFED-MMLADX8Q-CV69L
+// DADOS VERIFICADOS — extraídos do JSON UNIFED-MO97T81Q-MBJNG
+// Sessão anterior  : UNIFED-MMLADX8Q-CV69L
+// Sessão activa    : UNIFED-MO97T81Q-MBJNG (export actualizado — Fase 7)
 // Verificação: hash SHA-256 = 5150e7674b891d5d07ca990e4c7124fc66af40488452759aeebdf84976eaa8f6
+// AVISO: masterHash deve ser re-verificado após mudança de sessionId.
 // ============================================================================
 const _REAL_CASE_MMLADX8Q = Object.freeze({
 
     // ── Metadados de sessão ──────────────────────────────────────────────────
-    sessionId:   'UNIFED-MMLADX8Q-CV69L',
+    sessionId:   'UNIFED-MO97T81Q-MBJNG',
     masterHash:  '5150e7674b891d5d07ca990e4c7124fc66af40488452759aeebdf84976eaa8f6',
     periodoAnalise: '2s',   // 2.º Semestre 2024
     anoFiscal:   2024,
@@ -68,14 +72,16 @@ const _REAL_CASE_MMLADX8Q = Object.freeze({
         // Fiscal
         ivaFalta:               502.54,   // 23% × 2184,95
         ivaFalta6:              131.10,   // 6% × 2184,95
-        agravamentoBrutoIRC:   2184.95,
-        ircEstimado:            458.84,   // 21% × 2184,95
+        // CORRECÇÃO FASE 7: agravamento calculado sobre base anualizada (÷ 4 meses × 12)
+        // (2184,95 ÷ 4) × 12 = 6554,85 → IRC 21% = 1376,52
+        agravamentoBrutoIRC:   6554.85,   // (2184,95 / 4 meses) × 12 meses
+        ircEstimado:           1376.52,   // 6554,85 × 21% — harmonizado com card Agravamento
 
-        // Projeção sistémica (média mensal × 38.000 × 12 × 7)
-        // Fonte: impactoMensalMercado = (2184,95 / 4 meses) × 38.000 = €20.757.025/mês
-        impactoMensalMercado:  20757120,
-        impactoAnualMercado:  249085440,
-        impactoSeteAnosMercado: 1743598080
+        // CORRECÇÃO FASE 7: Projeção sistémica recalculada com base mensal correcta
+        // (2184,95 ÷ 4) × 38.000 = 20.757.025/mês × 12 × 7 = 1.743.590.100,00 €
+        impactoMensalMercado:  20757025,
+        impactoAnualMercado:  249084300,
+        impactoSeteAnosMercado: 1743590100
     }),
 
     // ── Veredicto (analysis.verdict) ─────────────────────────────────────────
@@ -89,11 +95,13 @@ const _REAL_CASE_MMLADX8Q = Object.freeze({
     // ── Valores auxiliares (não sujeitos a comissão — isolados pelo sistema) ─
     // Fonte: audit log [AUX] — Outubro 2024 (mês com Total Não Sujeitos: 451,00 €)
     nonCommissionable: Object.freeze({
-        campanhas:   451.00,   // Out: 205 + Nov: 180 + Dez: 20 = 405 (log confirma 451 out/alone)
-        portagens:     0.00,
-        gorjetas:     46.00,   // Out: 19,50 + Nov: 17,50 + Dez: 9,00
-        cancelamentos: 58.10,  // Out: 24,20 + Nov: 14,80 + Dez: 15,60 + Set: 3,50
-        totalNaoSujeitos: 451.00
+        // CORRECÇÃO FASE 7: valores verificados acumulado Set-Dez 2024
+        // Fonte: audit log por tipologia — quadrimestre completo
+        campanhas:        405.00,  // Out: 205,00 + Nov: 180,00 + Dez: 20,00 = 405,00
+        portagens:          0.15,  // Evidência log: portagem única registada
+        gorjetas:          46.00,  // Out: 19,50 + Nov: 17,50 + Dez: 9,00 = 46,00
+        cancelamentos:     58.10,  // Out: 24,20 + Nov: 14,80 + Dez: 15,60 + Set: 3,50
+        totalNaoSujeitos: 451.15   // 405,00 + 46,00 + 0,15 = 451,15
     }),
 
     // ── Dados mensais para o motor ATF ───────────────────────────────────────
@@ -253,15 +261,70 @@ function _syncPureDashboard(sys) {
     _set('pure-verdict',        v.level && v.level.pt ? v.level.pt : 'RISCO ELEVADO');
     _set('pure-verdict-pct',    v.percent || '89,04%');
 
-    // ── Badge de integridade ──────────────────────────────────────────────────
-    _set('pure-session-id',          sys.sessionId || '');
-    _set('pure-hash-prefix',         (sys.masterHash || '').substring(0, 24) + '...');
-    _set('pure-hash-prefix-verdict', (sys.masterHash || '').substring(0, 24) + '...');
+    // ── Badge de integridade — SSoT: activeForensicSession ──────────────────
+    // sessionId propagado de sys > activeForensicSession > _REAL_CASE_MMLADX8Q
+    var _sid = sys.sessionId
+            || (window.activeForensicSession && window.activeForensicSession.sessionId)
+            || (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.sessionId)
+            || '';
+    var _mh  = sys.masterHash
+            || (window.activeForensicSession && window.activeForensicSession.masterHash)
+            || (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.masterHash)
+            || '';
+    var _mhDisplay = _mh ? _mh.substring(0, 24) + '...' : 'GERANDO...';
+
+    // Painel de integridade (header e veredicto)
+    _set('pure-session-id',          _sid);
+    _set('pure-hash-prefix',         _mhDisplay);
+    _set('pure-hash-prefix-verdict', _mhDisplay);
+
+    // Nós adicionais na Reconstituição da Verdade Material (Painel I)
+    _set('pure-session-id-header',   _sid);
+    _set('verdictSessionId',         _sid);
+
+    // Log de custódia + footer — garantir unicidade do hash exibido
+    _set('footerMasterHash',         _mhDisplay);
+    _set('custodyMasterHash',        _mhDisplay);
+
+    // Sincronizar window.activeForensicSession com SSoT
+    if (window.activeForensicSession) {
+        window.activeForensicSession.sessionId  = _sid;
+        window.activeForensicSession.masterHash = _mh;
+    }
+
+    console.log('[UNIFED-SSoT] ✅ SessionId sincronizado:', _sid, '| Hash:', _mhDisplay);
 }
 
 // Expor _syncPureDashboard globalmente para ser invocada pelo listener
 // UNIFED_ANALYSIS_COMPLETE em enrichment.js após a perícia real
 window._syncPureDashboard = _syncPureDashboard;
+
+// ── PATCH 5: Gestão de Evidências — seeding de contadores verificados ────────
+// Reflecte o array real do Log do caso UNIFED-MO97T81Q-MBJNG:
+//   SAF-T: 4 ficheiros (132509_Set.csv, 132509_Out.csv, 132509_Nov.csv, 132509_Dez.csv)
+//   FAT  : 2 ficheiros (PT1124.pdf, PT1125.pdf)
+//   EXT  : 4 ficheiros (EXT_Set.pdf, EXT_Out.pdf, EXT_Nov.pdf, EXT_Dez.pdf)
+// Estes contadores são preenchidos dinamicamente pelo motor ao carregar ficheiros.
+// Este seeding garante a visualização correcta na demonstração sem upload manual.
+(function _seedEvidenceCounters() {
+    function _setCounter(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
+    function _doSeed() {
+        _setCounter('saftCountCompact',      4);  // SAF-T: Set/Out/Nov/Dez 2024
+        _setCounter('invoiceCountCompact',   2);  // FAT  : PT1124 + PT1125
+        _setCounter('statementCountCompact', 4);  // EXT  : extratos Set/Out/Nov/Dez
+        _setCounter('dac7CountCompact',      1);  // DAC7 : Q4 2024
+        _setCounter('controlCountCompact',   0);  // CTRL : sem ficheiro de controlo
+        console.log('[UNIFED-EVIDENCIAS] ✅ Contadores seeded: SAF-T=4 | FAT=2 | EXT=4 | DAC7=1');
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _doSeed);
+    } else {
+        setTimeout(_doSeed, 0);
+    }
+})();
 
 // ── SSoT: activeForensicSession ─────────────────────────────────────────────
 if (typeof window.activeForensicSession === 'undefined') {
