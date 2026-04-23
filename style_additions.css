@@ -718,40 +718,81 @@
 /* ══ FIM PATCH TERMINAL ════════════════════════════════════════════════════ */
 
 /* ==========================================================================
-   TERMINAL GATEKEEPER PANORÂMICO — v13.5.0-PURE (PATCH CORRECTO)
-   Alarga APENAS o contentor #gkTerminal via CSS !important para vencer
-   o estilo inline width:min(680px,92vw) sem remover os estilos inline
-   funcionais (white-space:pre-wrap, padding, background).
-   O #gkLog NÃO é tocado — preserva white-space:pre-wrap inline original.
+   TOOLBAR UNIFICADA 9 BOTÕES LED — UNIFED v13.5.0-PURE
+   .pure-toolbar-unified é uma grelha de 20 colunas.
+   Linha 1: 4 × .l1-btn (span 5) — botões estáticos no HTML.
+   Linha 2: .triada-row ocupa as 20 colunas e contém os 5 × .l2-btn
+            injectados pelo unifed_triada_export.js.
    ========================================================================== */
 
-#gkTerminal {
-    width: min(980px, 92vw) !important;
-    max-width: 980px !important;
-    box-shadow:
-        0 0 50px rgba(0, 229, 255, 0.15),
-        inset 0 0 60px rgba(0, 0, 0, 0.8) !important;
+.pure-toolbar-unified {
+    display: grid !important;
+    grid-template-columns: repeat(20, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 20px 0 16px 0 !important;
+    align-items: stretch;
 }
 
-/* Arte ASCII: fonte ligeiramente reduzida para caber em viewports estreitas */
-#gkLog {
-    font-size: 0.72rem !important;
-    line-height: 1.75 !important;
-    /* white-space:pre-wrap já definido inline — não sobrescrever */
+/* Linha 1: 4 botões operacionais */
+.pure-toolbar-unified .l1-btn {
+    grid-column: span 5 !important;
 }
 
-/* Input row: aproveitar a largura extra com espaçamento generoso */
-#gkInputRow {
-    gap: 16px !important;
-    padding-top: 18px !important;
-    border-top: 1px solid rgba(0, 229, 255, 0.25) !important;
-    margin-top: 16px !important;
+/* Linha 2: o contentor triada ocupa a linha inteira */
+.pure-toolbar-unified .triada-row {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 10px !important;
 }
 
-#gkPasswordInput {
-    font-size: 1rem !important;
-    letter-spacing: 3px !important;
-    text-transform: uppercase !important;
+/* Base LED unificada */
+.pure-btn-led {
+    height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center;
+    padding: 0 8px;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.18s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ══ FIM PATCH TERMINAL PANORÂMICO ════════════════════════════════════════ */
+.pure-btn-led:hover {
+    filter: brightness(1.35);
+    transform: translateY(-1px);
+}
+
+/* Variantes cromáticas */
+.led-blue   { border-bottom: 2px solid #00e5ff; box-shadow: 0 3px 8px -3px rgba(0,229,255,0.55); }
+.led-silver { border-bottom: 2px solid #94a3b8; }
+.led-cyan   { border-bottom: 2px solid #22d3ee; color: #22d3ee !important; box-shadow: 0 3px 8px -3px rgba(34,211,238,0.4); }
+.led-purple { border-bottom: 2px solid #a855f7; color: #c084fc !important; box-shadow: 0 3px 8px -3px rgba(168,85,247,0.4); }
+.led-pink   { border-bottom: 2px solid #ec4899; color: #f472b6 !important; box-shadow: 0 3px 8px -3px rgba(236,72,153,0.4); }
+.led-gold   { border-bottom: 2px solid #eab308; color: #facc15 !important; box-shadow: 0 3px 8px -3px rgba(234,179,8,0.4); }
+.led-orange {
+    border: 1px solid #f97316 !important;
+    background: rgba(249, 115, 22, 0.12) !important;
+    color: #f97316 !important;
+    box-shadow: 0 0 12px rgba(249,115,22,0.45), 0 0 3px rgba(249,115,22,0.7) !important;
+    font-weight: 800 !important;
+}
+
+/* Retrocompatibilidade com aliases anteriores */
+.led-magenta     { border-bottom: 2px solid #ec4899; color: #f472b6 !important; }
+.led-orange-master { border: 1px solid #f97316 !important; background: rgba(249,115,22,0.12) !important; color: #f97316 !important; font-weight: 800 !important; }
+
+/* ══ FIM TOOLBAR UNIFICADA ════════════════════════════════════════════════ */

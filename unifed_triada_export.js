@@ -600,53 +600,36 @@
         return btn;
     }
     
-    // ── GRELHA 4+5 LED 48px — PATCH DEFINITIVO v13.5.0-PURE ─────────────────
-    // Linha 1 (Operacional): 4 botões .l1-btn (span 5 × 4 = 20 colunas)
-    // Linha 2 (Entregáveis): 5 botões .l2-btn (span 4 × 5 = 20 colunas)
-    // Handlers com window. — obrigatório dentro de IIFE para acesso ao scope global.
-    // container.innerHTML = '' garante limpeza de qualquer estado anterior.
+    // ── injetarBotoes v13.5.0-PURE FINAL ────────────────────────────────────
+    // Injeta APENAS os 5 botões entregáveis (Linha 2) no #triadaContainer.
+    // Os 4 botões operacionais (Linha 1) são estáticos no HTML.
+    // .triada-row usa grid-template-columns:repeat(5,1fr) definido no CSS.
     function injetarBotoes() {
-        var container = document.getElementById('triadaContainer')
-                     || document.getElementById('botoes-container');
+        var container = document.getElementById('triadaContainer');
         if (!container) { return false; }
 
-        // Barreira idempotente: classe + sentinel ID
+        // Barreira idempotente: classe + sentinel ID do último botão
         if (container.classList.contains('botoes-injetados') || document.getElementById('btnAdvogado')) {
             return true;
         }
 
+        // Apagar placeholder e aplicar classe de grelha (triada-row já no CSS)
         container.innerHTML = '';
-        container.className = 'pure-button-grid-v2';
 
-        var layout = [
-            // Linha 1: Operacional (4 × l1-btn)
-            { id: 'atfBtn',     text: '⏳ TENDÊNCIA ATF', cls: 'led-blue l1-btn',
-              fn: function() { if (typeof window.openATFModal === 'function') window.openATFModal(); } },
-            { id: 'jsonBtn',    text: 'EXPORTAR JSON',    cls: 'led-silver l1-btn',
-              fn: function() { var b = document.getElementById('exportJSONBtn'); if (b) b.click(); } },
-            { id: 'resetBtn',   text: 'REINICIAR',         cls: 'led-silver l1-btn',
-              fn: function() { if (typeof window.resetSystem === 'function') window.resetSystem(); else if (confirm('Reiniciar análise?')) window.location.reload(); } },
-            { id: 'consoleBtn', text: 'LIMPAR CONSOLE',    cls: 'led-silver l1-btn',
-              fn: function() {
-                var c = document.getElementById('consoleOutput'); if (c) c.innerHTML = '';
-                if (typeof window.ForensicLogger !== 'undefined' && window.ForensicLogger.clear) window.ForensicLogger.clear();
-              }
-            },
-
-            // Linha 2: Entregáveis (5 × l2-btn)
-            { id: 'btnAnalista',  text: 'PACOTE ANALISTA',     cls: 'led-cyan l2-btn',
+        var entregaveis = [
+            { id: 'btnAnalista',  text: 'PACOTE ANALISTA',     cls: 'led-cyan',
               fn: function() { if (typeof window._exportPacoteAnalista === 'function') window._exportPacoteAnalista(); } },
-            { id: 'btnRelatorio', text: 'RELATÓRIO PERICIAL',  cls: 'led-purple l2-btn',
+            { id: 'btnRelatorio', text: 'RELATÓRIO PERICIAL',  cls: 'led-purple',
               fn: function() { if (typeof window._unifedExportPdfRelatorio === 'function') window._unifedExportPdfRelatorio(); else if (typeof window.exportPDF === 'function') window.exportPDF(); } },
-            { id: 'btnAnexo',     text: 'ANEXO · CUSTÓDIA',    cls: 'led-pink l2-btn',
+            { id: 'btnAnexo',     text: 'ANEXO · CUSTÓDIA',    cls: 'led-pink',
               fn: function() { if (typeof window._unifedExportPdfAnexoCustodia === 'function') window._unifedExportPdfAnexoCustodia(); } },
-            { id: 'btnMatriz',    text: 'MATRIZ JURÍDICA',     cls: 'led-gold l2-btn',
+            { id: 'btnMatriz',    text: 'MATRIZ JURÍDICA',     cls: 'led-gold',
               fn: function() { if (typeof window._unifedExportDocxMatriz === 'function') window._unifedExportDocxMatriz(); } },
-            { id: 'btnAdvogado',  text: 'PACOTE ADVOGADO',     cls: 'led-orange l2-btn',
+            { id: 'btnAdvogado',  text: 'PACOTE ADVOGADO',     cls: 'led-orange',
               fn: function() { if (typeof window._exportPacoteAdvogadoOffline === 'function') window._exportPacoteAdvogadoOffline(); } }
         ];
 
-        layout.forEach(function(def) {
+        entregaveis.forEach(function(def) {
             var b = document.createElement('button');
             b.id        = def.id;
             b.innerText = def.text;
@@ -656,11 +639,7 @@
         });
 
         container.classList.add('botoes-injetados');
-        if (!container.style.display || container.style.display === 'none') {
-            container.style.display = 'grid';
-        }
-
-        console.log('[UNIFED-TRIADA] ✅ Grelha 4+5 LED 48px injectada com sucesso.');
+        console.log('[UNIFED-TRIADA] ✅ 5 botões entregáveis injectados em #triadaContainer.');
         return true;
     }
 

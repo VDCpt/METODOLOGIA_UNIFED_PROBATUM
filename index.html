@@ -473,30 +473,27 @@
             <!-- ÁREA PRINCIPAL DE ANÁLISE -->
             <main class="analysis-area">
                 
-                <!-- TOOLBAR — v13.5.0-PURE: Bipartição lógica (operacional + documental) -->
-                <div class="toolbar-section">
-                    <div class="toolbar-grid-operacional" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-bottom:12px;">
-                        <button id="atfModalBtn" class="btn-tool"
-                            title="Análise Temporal Forense — Tendências · Outliers 2σ · Score de Persistência">
-                            <i class="fas fa-chart-line"></i> &#x23F3; TENDÊNCIA ATF
-                        </button>
-                        <button id="exportJSONBtn" class="btn-tool">
-                            <i class="fas fa-file-code"></i> EXPORTAR JSON
-                        </button>
-                        <button id="resetBtn" class="btn-tool">
-                            <i class="fas fa-redo-alt"></i> REINICIAR
-                        </button>
-                        <button id="clearConsoleBtn" class="btn-tool">
-                            <i class="fas fa-trash-alt"></i> <span id="clearConsoleBtnText">LIMPAR CONSOLE</span>
-                        </button>
-                    </div>
+                <!-- TOOLBAR — v13.5.0-PURE: Grelha Unificada 9 Botões LED (4+5) -->
+                <div class="toolbar-section pure-toolbar-unified">
 
-                    <div class="toolbar-grid-documental" id="triadaContainer" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
-                        <button id="exportPacoteAdvogadoBtn" class="btn-tool btn-pacote-advogado"
-                            title="Exportar Pacote Completo (Relatório + Anexo + Matriz)">
-                            <i class="fas fa-briefcase"></i> PACOTE ADVOGADO
-                        </button>
-                    </div>
+                    <!-- Linha 1: Operacional (4 botões estáticos — IDs preservados para listeners) -->
+                    <button id="atfModalBtn" class="pure-btn-led led-blue l1-btn"
+                        title="Análise Temporal Forense — Tendências · Outliers 2σ · Score de Persistência">
+                        ⏳ TENDÊNCIA ATF
+                    </button>
+                    <button id="exportJSONBtn" class="pure-btn-led led-silver l1-btn">
+                        EXPORTAR JSON
+                    </button>
+                    <button id="resetBtn" class="pure-btn-led led-silver l1-btn">
+                        REINICIAR
+                    </button>
+                    <button id="clearConsoleBtn" class="pure-btn-led led-silver l1-btn">
+                        <span id="clearConsoleBtnText">LIMPAR CONSOLE</span>
+                    </button>
+
+                    <!-- Linha 2: Entregáveis (5 botões injectados pelo unifed_triada_export.js) -->
+                    <div id="triadaContainer" class="triada-row"></div>
+
                 </div>
 
                 <!-- LINHA 1: MÓDULO SAF-T -->
