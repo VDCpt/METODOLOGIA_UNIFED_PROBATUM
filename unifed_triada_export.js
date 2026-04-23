@@ -600,39 +600,51 @@
         return btn;
     }
     
-    // ── EXPOSIÇÃO GLOBAL v13.5.1-REPAIR — resolve "is not a function" nos onclick ──
-    // As funções vivem no closure; window. torna-as acessíveis externamente.
-    window._unifedExportPdfRelatorio     = _unifedExportPdfRelatorio;
-    window._unifedExportPdfAnexoCustodia = _unifedExportPdfAnexoCustodia;
-    window._unifedExportDocxMatriz       = _unifedExportDocxMatriz;
-
-    // ── INJEÇÃO IDEMPOTENTE v13.5.1-REPAIR: apenas PACOTE ADVOGADO ───────────
-    // Os botões individuais (Relatório, Custódia, Matriz) são estáticos no
-    // index.html — o closure injeta apenas o PACOTE ADVOGADO para evitar
-    // duplicação. Barreira dupla: classe + ID do botão.
+    // ── GRELHA DE 9 BOTÕES LED v13.5.0-PURE ─────────────────────────────────
+    // Reconstrói a grelha de acções a partir do #triadaContainer.
+    // Barreira idempotente: classe + ID sentinel.
+    // Linha 1 (Operacional): atfModalBtn, exportJSONBtn, resetBtn, clearConsoleBtn
+    //   — geridos pelo index.html; não reinjectados aqui.
+    // Linha 2 (Entregáveis): 5 botões injectados pelo closure.
     function injetarBotoes() {
         var container = document.getElementById('triadaContainer');
         if (!container) { return false; }
 
+        // Barreira idempotente
         if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPacoteAdvBtn')) {
             return true;
         }
 
-        var btn = criarBotao(
-            'unifedPacoteAdvBtn',
-            'fa-briefcase',
-            'PACOTE ADVOGADO',
-            '#F59E0B',
-            window._exportPacoteAdvogadoOffline
-        );
-        container.appendChild(btn);
+        // Aplicar classe de grelha ao contentor
+        container.className = 'pure-button-grid-v2';
+
+        // Linha 2 — 5 botões entregáveis (IDs referenciados pelo CSS da grelha)
+        var entregaveis = [
+            { id: 'unifedAnalistaBtn',   label: 'PACOTE ANALISTA',    cls: 'led-cyan',           handler: window._exportPacoteAnalista          },
+            { id: 'unifedRelatorioBtn',  label: 'RELATÓRIO PERICIAL', cls: 'led-purple',         handler: window._unifedExportPdfRelatorio      },
+            { id: 'unifedAnexoBtn',      label: 'ANEXO · CUSTÓDIA',   cls: 'led-magenta',        handler: window._unifedExportPdfAnexoCustodia  },
+            { id: 'unifedMatrizBtn',     label: 'MATRIZ JURÍDICA',    cls: 'led-gold',           handler: window._unifedExportDocxMatriz        },
+            { id: 'unifedPacoteAdvBtn',  label: 'PACOTE ADVOGADO',    cls: 'led-orange-master',  handler: window._exportPacoteAdvogadoOffline   }
+        ];
+
+        entregaveis.forEach(function(def) {
+            var b = document.createElement('button');
+            b.id        = def.id;
+            b.innerText = def.label;
+            b.className = 'pure-btn-led ' + def.cls;
+            if (typeof def.handler === 'function') {
+                b.addEventListener('click', def.handler);
+            }
+            container.appendChild(b);
+        });
+
         container.classList.add('botoes-injetados');
 
         if (!container.style.display || container.style.display === 'none') {
-            container.style.display = 'flex';
+            container.style.display = 'grid';
         }
 
-        console.log('[UNIFED-TRIADA] ✅ PACOTE ADVOGADO injetado em #triadaContainer.');
+        console.log('[UNIFED-TRIADA] ✅ Grelha LED 9 botões injectada em #triadaContainer.');
         return true;
     }
 

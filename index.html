@@ -117,36 +117,24 @@
             background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.03) 2px,rgba(0,229,255,0.03) 4px);
             pointer-events:none;z-index:1;"></div>
 
-        <!-- Terminal LED -->
-        <div id="gkTerminal" style="
-            position:relative;z-index:2;width:min(680px,92vw);
-            border:1px solid #00E5FF;box-shadow:0 0 32px rgba(0,229,255,0.3),inset 0 0 60px rgba(0,0,0,0.8);
-            padding:32px 36px;background:rgba(0,10,20,0.97);border-radius:4px;">
+        <!-- Terminal LED Panorâmico v13.5.0-PURE -->
+        <div id="gkTerminal">
 
-            <div style="color:#00E5FF;font-size:0.72rem;letter-spacing:0.18em;margin-bottom:20px;opacity:0.7;">
-                UNIFED · PROBATUM · v13.5.0-PURE · SISTEMA DE PERITAGEM FORENSE
+            <div class="terminal-logs">
+                <span class="t-title">UNIFED · PROBATUM · v13.5.0-PURE · SISTEMA DE PERITAGEM FORENSE</span>
+                <div id="gkLog"></div>
             </div>
 
-            <div id="gkLog" style="
-                color:#00E5FF;font-size:0.78rem;line-height:1.9;min-height:140px;
-                margin-bottom:24px;white-space:pre-wrap;opacity:0.9;"></div>
-
-            <div id="gkInputRow" style="display:none;align-items:center;gap:12px;margin-top:8px;">
-                <span style="color:#00E5FF;font-size:0.85rem;white-space:nowrap;">CREDENTIAL ›</span>
+            <div id="gkInputRow" style="display:none;">
                 <input id="gkPasswordInput" type="password" autocomplete="off"
-                    style="flex:1;background:transparent;border:none;border-bottom:1px solid #00E5FF;
-                    color:#fff;font-family:inherit;font-size:0.9rem;padding:4px 0;outline:none;
-                    caret-color:#00E5FF;"
-                    placeholder="inserir credencial de acesso..."
+                    placeholder="CREDENTIAL"
+                    spellcheck="false"
                     onkeydown="if(event.key==='Enter') window._gkValidate();">
-                <button onclick="window._gkValidate()" style="
-                    background:transparent;border:1px solid #00E5FF;color:#00E5FF;
-                    font-family:inherit;font-size:0.78rem;padding:6px 16px;cursor:pointer;
-                    letter-spacing:0.12em;">VALIDAR</button>
+                <button onclick="window._gkValidate()">VALIDAR</button>
             </div>
 
-            <div id="gkError" style="display:none;color:#EF4444;font-size:0.78rem;
-                margin-top:12px;letter-spacing:0.1em;">
+            <div id="gkError" style="display:none;color:#EF4444;font-size:0.85rem;
+                margin-top:14px;letter-spacing:0.1em;font-family:'JetBrains Mono',monospace;">
                 ⛔  CREDENCIAL INVÁLIDA — ACESSO NEGADO · TENTATIVA REGISTADA
             </div>
         </div>
@@ -473,11 +461,9 @@
             <!-- ÁREA PRINCIPAL DE ANÁLISE -->
             <main class="analysis-area">
                 
-                <!-- TOOLBAR — v13.5.0-PURE: Linha 1 (Operacional) + Linha 2 (Documental) -->
-                <div class="toolbar-section" style="display:flex;flex-direction:column;align-items:center;gap:15px;width:100%;margin:20px 0;">
-
-                    <!-- Linha 1 — Ferramentas Operacionais -->
-                    <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;">
+                <!-- TOOLBAR — v13.5.0-PURE: Bipartição lógica (operacional + documental) -->
+                <div class="toolbar-section">
+                    <div class="toolbar-grid-operacional" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;margin-bottom:12px;">
                         <button id="atfModalBtn" class="btn-tool"
                             title="Análise Temporal Forense — Tendências · Outliers 2σ · Score de Persistência">
                             <i class="fas fa-chart-line"></i> &#x23F3; TENDÊNCIA ATF
@@ -493,27 +479,9 @@
                         </button>
                     </div>
 
-                    <!-- Linha 2 — Tríade Documental + Pacote Analista -->
-                    <div id="triadaContainer" style="display:flex;justify-content:center;flex-wrap:wrap;gap:10px;">
-                        <button onclick="window._exportPacoteAnalista()" class="btn-tool"
-                            style="border:1px solid #00e5ff;font-weight:bold;color:#00e5ff;"
-                            title="Pacote Analista: Relatório PERITIA (PDF) + JSON Analista">
-                            <i class="fas fa-microscope"></i> PACOTE ANALISTA
-                        </button>
-                        <button onclick="window._unifedExportPdfRelatorio()" class="btn-tool"
-                            title="Exportar Relatório Pericial PDF">
-                            <i class="fas fa-file-pdf"></i> RELATÓRIO PERICIAL
-                        </button>
-                        <button onclick="window._unifedExportPdfAnexoCustodia()" class="btn-tool"
-                            title="Exportar Anexo de Custódia PDF">
-                            <i class="fas fa-file-contract"></i> ANEXO · CUSTÓDIA
-                        </button>
-                        <button onclick="window._unifedExportDocxMatriz()" class="btn-tool"
-                            title="Exportar Matriz Jurídica DOCX">
-                            <i class="fas fa-file-word"></i> MATRIZ JURÍDICA
-                        </button>
+                    <div class="toolbar-grid-documental" id="triadaContainer" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;">
                         <button id="exportPacoteAdvogadoBtn" class="btn-tool btn-pacote-advogado"
-                            title="Pacote Advogado: JSON + Custódia PDF + Matriz DOCX">
+                            title="Exportar Pacote Completo (Relatório + Anexo + Matriz)">
                             <i class="fas fa-briefcase"></i> PACOTE ADVOGADO
                         </button>
                     </div>
