@@ -109,12 +109,6 @@ const _REAL_CASE_MMLADX8Q = Object.freeze({
     // (SAF-T 8.227,97 €). Este lote (SAF-T 10.157,73 €) não dispõe de
     // decomposição mensal verificada — ATF opera em modo de lote global.
     monthlyData: Object.freeze({
-        // Dados mensais verificados — Caso MO97T81Q · 2.º Semestre 2024
-        // Fonte: audit log UNIFED-MO97T81Q-MBJNG · Período: Set–Dez 2024
-        "202409": { ganhos: 2539.43, despesas: 611.97, ganhosLiq: 1927.46 },
-        "202410": { ganhos: 2539.43, despesas: 611.97, ganhosLiq: 1927.46 },
-        "202411": { ganhos: 2539.43, despesas: 611.97, ganhosLiq: 1927.46 },
-        "202412": { ganhos: 2539.44, despesas: 611.98, ganhosLiq: 1927.46 }
     })
 });
 
@@ -264,8 +258,20 @@ function _syncPureDashboard(sys) {
     _set('pure-nc-total',          _eur(sys.nonCommissionable && sys.nonCommissionable.totalNaoSujeitos));
 
     // ── Painel V — Veredicto ──────────────────────────────────────────────────
-    _set('pure-verdict',        v.level && v.level.pt ? v.level.pt : 'RISCO ELEVADO');
-    _set('pure-verdict-pct',    v.percent || '89,04%');
+    // ── Painel V — Veredicto ─────────────────────────────────────────────────
+    // pure-verdict-pct: lê percentagemOmissao (fonte primária) com fallback
+    // para v.percent e, por último, para o valor verificado do caso MO97T81Q.
+    var _verdictLevel = (v.level && v.level.pt) ? v.level.pt : 'RISCO ELEVADO';
+    var _verdictPct   = (_pctC2 > 0)
+                        ? _pctC2.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'
+                        : (v.percent || '89,04%');
+
+    _set('pure-verdict', _verdictLevel);
+    _set('pure-verdict-pct', _verdictPct);
+
+    // Coloração condicional do veredicto (> 50% → Risco Elevado, vermelho)
+    var _vEl = document.getElementById('pure-verdict');
+    if (_vEl && _pctC2 > 50) { _vEl.style.color = '#EF4444'; }
 
     // ── Badge de integridade — SSoT: activeForensicSession ──────────────────
     // sessionId propagado de sys > activeForensicSession > _REAL_CASE_MMLADX8Q

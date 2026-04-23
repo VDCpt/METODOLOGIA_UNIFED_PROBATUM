@@ -600,48 +600,39 @@
         return btn;
     }
     
-    // ── SOBREPOSIÇÃO CIRÚRGICA v13.5.0-PURE: injetarBotoes → #triadaContainer ──
+    // ── EXPOSIÇÃO GLOBAL v13.5.1-REPAIR — resolve "is not a function" nos onclick ──
+    // As funções vivem no closure; window. torna-as acessíveis externamente.
+    window._unifedExportPdfRelatorio     = _unifedExportPdfRelatorio;
+    window._unifedExportPdfAnexoCustodia = _unifedExportPdfAnexoCustodia;
+    window._unifedExportDocxMatriz       = _unifedExportDocxMatriz;
+
+    // ── INJEÇÃO IDEMPOTENTE v13.5.1-REPAIR: apenas PACOTE ADVOGADO ───────────
+    // Os botões individuais (Relatório, Custódia, Matriz) são estáticos no
+    // index.html — o closure injeta apenas o PACOTE ADVOGADO para evitar
+    // duplicação. Barreira dupla: classe + ID do botão.
     function injetarBotoes() {
-        console.log('[UNIFED-TRIADA] Procurando #triadaContainer...');
-
         var container = document.getElementById('triadaContainer');
-        if (!container) {
-            console.error('[UNIFED-TRIADA] ❌ #triadaContainer não encontrado');
-            return false;
-        }
+        if (!container) { return false; }
 
-        // ── [BARREIRA ANTI-DUPLICAÇÃO] ────────────────────────────────────────
-        // Dupla defesa: classe-barreira no contentor + existência física do botão primário.
-        // Bloqueia re-injecção por MutationObserver ou chamadas repetidas.
-        if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPdfRelatorioBtn')) {
-            console.log('[UNIFED-TRIADA] Botões já existem — injeção bloqueada.');
+        if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPacoteAdvBtn')) {
             return true;
         }
 
-        var botoes = [
-            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
-            { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA',   cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
-            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        }
-        ];
-
-        botoes.forEach(function(b) {
-            container.appendChild(criarBotao(b.id, b.icon, b.label, b.cor, b.handler));
-            console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
-        });
-
-        // Selar contentor — impede re-injecção por qualquer observador posterior
+        var btn = criarBotao(
+            'unifedPacoteAdvBtn',
+            'fa-briefcase',
+            'PACOTE ADVOGADO',
+            '#F59E0B',
+            window._exportPacoteAdvogadoOffline
+        );
+        container.appendChild(btn);
         container.classList.add('botoes-injetados');
 
-        // Guarda de visibilidade do contentor e do wrapper pai
-        if (container.style.display === 'none' || container.style.display === '') {
+        if (!container.style.display || container.style.display === 'none') {
             container.style.display = 'flex';
         }
-        var _rightWrapper = container.closest ? container.closest('.pure-toolbar-right') : container.parentElement;
-        if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
-            _rightWrapper.style.display = 'flex';
-        }
 
-        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO!');
+        console.log('[UNIFED-TRIADA] ✅ PACOTE ADVOGADO injetado em #triadaContainer.');
         return true;
     }
 
