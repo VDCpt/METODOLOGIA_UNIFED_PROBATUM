@@ -1501,15 +1501,17 @@ function _activateATFPanel() {
 // NÃO usa openATFModal() — renderiza inline no painel estático.
 // ============================================================================
 function renderATFChart(atf, containerId) {
-    // Resolver contentor — ordem de prioridade conforme arquitectura do panel.html
+    // ── [SAFE GUARD v13.5.0-PURE] ─────────────────────────────────────────────
+    // Aborta silenciosamente se o contentor alvo não estiver activo no DOM.
+    // Impede erros F12 quando o modal/card ainda não foi renderizado.
     var host = document.getElementById(containerId || 'pureATFCard')
             || document.getElementById('atfTrendChartContainer')
             || document.querySelector('.pure-atf-section')
             || document.getElementById('atfPanel');
 
     if (!host) {
-        console.warn('[UNIFED-ATF] renderATFChart: contentor não encontrado.');
-        return;
+        console.warn('[UNIFED-ATF] Abortado silenciosamente: contentor \'' + (containerId || 'pureATFCard') + '\' não está ativo no DOM.');
+        return; // Sai sem gerar erro vermelho na consola
     }
 
     if (typeof Chart === 'undefined') {

@@ -610,8 +610,11 @@
             return false;
         }
 
-        if (document.getElementById('unifedPdfRelatorioBtn')) {
-            console.log('[UNIFED-TRIADA] Botões já existem');
+        // ── [BARREIRA ANTI-DUPLICAÇÃO] ────────────────────────────────────────
+        // Dupla defesa: classe-barreira no contentor + existência física do botão primário.
+        // Bloqueia re-injecção por MutationObserver ou chamadas repetidas.
+        if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPdfRelatorioBtn')) {
+            console.log('[UNIFED-TRIADA] Botões já existem — injeção bloqueada.');
             return true;
         }
 
@@ -625,6 +628,18 @@
             container.appendChild(criarBotao(b.id, b.icon, b.label, b.cor, b.handler));
             console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
+
+        // Selar contentor — impede re-injecção por qualquer observador posterior
+        container.classList.add('botoes-injetados');
+
+        // Guarda de visibilidade do contentor e do wrapper pai
+        if (container.style.display === 'none' || container.style.display === '') {
+            container.style.display = 'flex';
+        }
+        var _rightWrapper = container.closest ? container.closest('.pure-toolbar-right') : container.parentElement;
+        if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
+            _rightWrapper.style.display = 'flex';
+        }
 
         console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO!');
         return true;
@@ -667,44 +682,42 @@
         }
     };
 
-    // --- 2. PACOTE ADVOGADO (JSON ADVOGADO + CUSTÓDIA PDF + MATRIZ DOCX) ---
-    // Exporta sequencialmente os três documentos destinados ao mandatário:
-    // JSON probatório, Anexo de Custódia e Matriz Jurídica.
+    // --- 2. PACOTE ADVOGADO (TRÍADE PROCESSUAL: RELATÓRIO + CUSTÓDIA + MATRIZ) ---
+    // Exporta exclusivamente: Relatório Pericial (PDF) + Custódia (PDF) + Matriz (DOCX).
+    // Sem geração de ficheiros JSON — destino: mandatário judicial.
     window._exportPacoteAdvogadoOffline = async function() {
-        _log('Iniciando PACOTE ADVOGADO: JSON + Custódia + Matriz Jurídica', 'info');
+        console.log('[UNIFED] Iniciando PACOTE ADVOGADO (Tríade Processual)...');
 
         try {
-            // A. Exporta o JSON do Advogado
-            if (typeof window._exportJsonSistema === 'function') {
-                window._exportJsonSistema('ADVOGADO');
-            } else if (typeof exportDataJSON === 'function') {
-                exportDataJSON();
+            // 1. Relatório Pericial (PDF)
+            if (typeof window._unifedExportPdfRelatorio === 'function') {
+                await window._unifedExportPdfRelatorio();
             }
 
-            // B. Exporta Anexo Custódia (PDF)
+            // 2. Anexo Cadeia de Custódia (PDF) — margem 1500 ms para buffer do browser
             setTimeout(async function() {
                 if (typeof _unifedExportPdfAnexoCustodia === 'function') {
                     await _unifedExportPdfAnexoCustodia();
                 }
-            }, 1200);
+            }, 1500);
 
-            // C. Exporta Matriz Jurídica (DOCX)
+            // 3. Matriz Jurídica (DOCX) — margem 3000 ms
             setTimeout(async function() {
                 if (typeof _unifedExportDocxMatriz === 'function') {
                     await _unifedExportDocxMatriz();
                 }
-            }, 2500);
+            }, 3000);
 
             if (typeof window.showToast === 'function') {
-                window.showToast('Pacote Advogado gerado: JSON + Custódia + Matriz enviados para download.', 'success');
+                window.showToast('PACOTE ADVOGADO GERADO: Relatório, Custódia e Matriz.', 'success');
             }
 
         } catch (e) {
-            _log('Falha na exportação do Advogado: ' + e.message, 'error');
+            console.error('[UNIFED] Falha na exportação da Tríade:', e.message);
         }
     };
 
-    // Manter alias retrocompatível para qualquer referência anterior a _exportPacoteAdvogado
+    // Alias retrocompatível
     window._exportPacoteAdvogado = window._exportPacoteAdvogadoOffline;
 
     // Vincular botão Pacote Advogado ao novo handler global

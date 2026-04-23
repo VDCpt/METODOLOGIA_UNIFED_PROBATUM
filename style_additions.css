@@ -650,3 +650,69 @@
    Estilos para Painel PURE v13.5.0 + Colarinho Branco v13.12.3
    ============================================================================ */
 
+
+/* ============================================================================
+   PATCH TERMINAL — v13.5.0-PURE · Boot Terminal Panorâmico de Elite
+   Escopo: #bootTerminalContainer, .pure-login-box, #consoleOutput (fallback)
+   Glassmorphism Forense: fundo translúcido + tipografia legível + scroll elegante
+   ============================================================================ */
+
+#bootTerminalContainer,
+.pure-login-box,
+#consoleOutput {
+    width: 100%;
+    max-width: 900px;
+    height: 350px;
+    background: rgba(2, 6, 23, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid #00e5ff;
+    border-radius: 8px;
+    padding: 24px;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.1);
+
+    /* Tipografia legível e moderna */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #00e5ff;
+    text-align: left;
+
+    /* Transição suave de entrada */
+    transition: box-shadow 0.3s ease;
+}
+
+#bootTerminalContainer:hover,
+.pure-login-box:hover,
+#consoleOutput:hover {
+    box-shadow: 0 12px 40px rgba(0, 229, 255, 0.18);
+}
+
+/* Scrollbar elegante — não quebra imersão */
+#bootTerminalContainer::-webkit-scrollbar,
+.pure-login-box::-webkit-scrollbar,
+#consoleOutput::-webkit-scrollbar {
+    width: 6px;
+}
+
+#bootTerminalContainer::-webkit-scrollbar-track,
+.pure-login-box::-webkit-scrollbar-track,
+#consoleOutput::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#bootTerminalContainer::-webkit-scrollbar-thumb,
+.pure-login-box::-webkit-scrollbar-thumb,
+#consoleOutput::-webkit-scrollbar-thumb {
+    background: rgba(0, 229, 255, 0.3);
+    border-radius: 4px;
+}
+
+#bootTerminalContainer::-webkit-scrollbar-thumb:hover,
+.pure-login-box::-webkit-scrollbar-thumb:hover,
+#consoleOutput::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 229, 255, 0.55);
+}
+
+/* ══ FIM PATCH TERMINAL ════════════════════════════════════════════════════ */
