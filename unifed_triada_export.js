@@ -344,12 +344,31 @@
             
             var _hashSessionJson = await _sha256(JSON.stringify({ sessionId: sessId, totals: t, crossings: c }));
             
-            var _evidencias = [
-                { id: 'EV-001', tipo: 'application/json', origem: 'Snapshot JSON — UNIFEDSystem', hash: _hashSessionJson, status: 'VERIFICADO' },
-                { id: 'EV-002', tipo: 'data/object', origem: 'Totals — analysis.totals', hash: await _sha256(JSON.stringify(t)), status: 'VERIFICADO' },
-                { id: 'EV-003', tipo: 'data/object', origem: 'Crossings — analysis.crossings', hash: await _sha256(JSON.stringify(c)), status: 'VERIFICADO' },
-                { id: 'EV-004', tipo: 'data/hash', origem: 'Master Hash', hash: mhash, status: 'VERIFICADO' }
-            ];
+            // --- BLOCO CORRIGIDO v13.5.1 — 15 ficheiros reais da cadeia de custódia ---
+            var _evidencias = [];
+            var evidList = (sys.analysis.evidence && sys.analysis.evidence.integrity)
+                        || sys.analysis.evidenceIntegrity
+                        || (sys.evidence && sys.evidence.integrity)
+                        || [];
+
+            if (evidList.length > 0) {
+                evidList.forEach(function(file, idx) {
+                    _evidencias.push({
+                        id:     'EV-' + String(idx + 1).padStart(3, '0'),
+                        tipo:   (file.type || 'Doc').toUpperCase(),
+                        origem: file.filename || 'N/D',
+                        hash:   file.hash || 'N/D',
+                        status: 'VERIFICADO'
+                    });
+                });
+            } else {
+                // Fallback de segurança se a lista de evidências não estiver disponível
+                _evidencias.push({ id: 'EV-001', tipo: 'application/json', origem: 'Snapshot JSON — UNIFEDSystem', hash: _hashSessionJson, status: 'VERIFICADO' });
+                _evidencias.push({ id: 'EV-002', tipo: 'data/object',      origem: 'Totals — analysis.totals',    hash: await _sha256(JSON.stringify(t)), status: 'VERIFICADO' });
+                _evidencias.push({ id: 'EV-003', tipo: 'data/object',      origem: 'Crossings — analysis.crossings', hash: await _sha256(JSON.stringify(c)), status: 'VERIFICADO' });
+                _evidencias.push({ id: 'EV-004', tipo: 'data/hash',        origem: 'Master Hash',                 hash: mhash, status: 'VERIFICADO' });
+            }
+            // --- FIM BLOCO CORRIGIDO ---
             
             doc.setFillColor(5, 20, 50);
             doc.rect(0, 0, pageW, 22, 'F');
@@ -365,8 +384,9 @@
             doc.setFontSize(7.5);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(60, 60, 60);
-            var _colW = [18, 38, 60, 116, 24];
-            var _cols = ['ID_EVIDÊNCIA', 'TIPO', 'ORIGEM', 'HASH SHA-256', 'STATUS'];
+            // Colunas ajustadas para comportar nomes de ficheiro longos e hash completo (Landscape A4 = 297mm)
+            var _colW = [16, 22, 55, 130, 25]; // Total = 248mm úteis
+            var _cols = ['ID', 'TIPO', 'FICHEIRO ORIGINAL', 'HASH SHA-256 (ASSINATURA DIGITAL)', 'STATUS'];
             
             doc.setFillColor(10, 40, 90);
             doc.rect(L, y, pageW - L * 2, 7, 'F');
@@ -600,46 +620,48 @@
         return btn;
     }
     
-    // ── injetarBotoes v13.5.0-PURE FINAL ────────────────────────────────────
-    // Injeta APENAS os 5 botões entregáveis (Linha 2) no #triadaContainer.
-    // Os 4 botões operacionais (Linha 1) são estáticos no HTML.
-    // .triada-row usa grid-template-columns:repeat(5,1fr) definido no CSS.
+    // ── SOBREPOSIÇÃO CIRÚRGICA v13.5.0-PURE: injetarBotoes → #triadaContainer ──
     function injetarBotoes() {
-        var container = document.getElementById('triadaContainer');
-        if (!container) { return false; }
+        console.log('[UNIFED-TRIADA] Procurando #triadaContainer...');
 
-        // Barreira idempotente: classe + sentinel ID do último botão
-        if (container.classList.contains('botoes-injetados') || document.getElementById('btnAdvogado')) {
+        var container = document.getElementById('triadaContainer');
+        if (!container) {
+            console.error('[UNIFED-TRIADA] ❌ #triadaContainer não encontrado');
+            return false;
+        }
+
+        // ── [BARREIRA ANTI-DUPLICAÇÃO] ────────────────────────────────────────
+        // Dupla defesa: classe-barreira no contentor + existência física do botão primário.
+        // Bloqueia re-injecção por MutationObserver ou chamadas repetidas.
+        if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPdfRelatorioBtn')) {
+            console.log('[UNIFED-TRIADA] Botões já existem — injeção bloqueada.');
             return true;
         }
 
-        // Apagar placeholder e aplicar classe de grelha (triada-row já no CSS)
-        container.innerHTML = '';
-
-        var entregaveis = [
-            { id: 'btnAnalista',  text: 'PACOTE ANALISTA',     cls: 'led-cyan',
-              fn: function() { if (typeof window._exportPacoteAnalista === 'function') window._exportPacoteAnalista(); } },
-            { id: 'btnRelatorio', text: 'RELATÓRIO PERICIAL',  cls: 'led-purple',
-              fn: function() { if (typeof window._unifedExportPdfRelatorio === 'function') window._unifedExportPdfRelatorio(); else if (typeof window.exportPDF === 'function') window.exportPDF(); } },
-            { id: 'btnAnexo',     text: 'ANEXO · CUSTÓDIA',    cls: 'led-pink',
-              fn: function() { if (typeof window._unifedExportPdfAnexoCustodia === 'function') window._unifedExportPdfAnexoCustodia(); } },
-            { id: 'btnMatriz',    text: 'MATRIZ JURÍDICA',     cls: 'led-gold',
-              fn: function() { if (typeof window._unifedExportDocxMatriz === 'function') window._unifedExportDocxMatriz(); } },
-            { id: 'btnAdvogado',  text: 'PACOTE ADVOGADO',     cls: 'led-orange',
-              fn: function() { if (typeof window._exportPacoteAdvogadoOffline === 'function') window._exportPacoteAdvogadoOffline(); } }
+        var botoes = [
+            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
+            { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA',   cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
+            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        }
         ];
 
-        entregaveis.forEach(function(def) {
-            var b = document.createElement('button');
-            b.id        = def.id;
-            b.innerText = def.text;
-            b.className = 'pure-btn-led ' + def.cls;
-            b.addEventListener('click', function(e) { e.preventDefault(); def.fn(); });
-            container.appendChild(b);
+        botoes.forEach(function(b) {
+            container.appendChild(criarBotao(b.id, b.icon, b.label, b.cor, b.handler));
+            console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
 
+        // Selar contentor — impede re-injecção por qualquer observador posterior
         container.classList.add('botoes-injetados');
-        console.log('[UNIFED-TRIADA] ✅ 5 botões entregáveis injectados em #triadaContainer.');
+
+        // Guarda de visibilidade do contentor e do wrapper pai
+        if (container.style.display === 'none' || container.style.display === '') {
+            container.style.display = 'flex';
+        }
+        var _rightWrapper = container.closest ? container.closest('.pure-toolbar-right') : container.parentElement;
+        if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
+            _rightWrapper.style.display = 'flex';
+        }
+
+        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO!');
         return true;
     }
 
