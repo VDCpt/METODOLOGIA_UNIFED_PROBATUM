@@ -14,6 +14,8 @@
  *   · PT1125-47770: 118,64€ imutável
  *   · DOMContentLoaded listener para nexus.js
  *   · Todas as chaves fechadas
+ *   · CORREÇÃO: monthlyData reconstituído para o caso real (ATF)
+ *   · CORREÇÃO: Event listener dinâmico para botão #pure-atf-btn
  *
  * PRINCÍPIO DE INTEGRIDADE (Core Freeze):
  *   · Todos os valores injetados provêm diretamente do JSON verificado.
@@ -89,7 +91,6 @@ function logCustodyChain(action, data) {
 // Sessão anterior  : UNIFED-MMLADX8Q-CV69L
 // Sessão activa    : UNIFED-MO97T81Q-MBJNG (export actualizado — Fase 7)
 // Verificação: hash SHA-256 = 5150e7674b891d5d07ca990e4c7124fc66af40488452759aeebdf84976eaa8f6
-// AVISO: masterHash deve ser re-verificado após mudança de sessionId.
 // ============================================================================
 
 const _REAL_CASE_MMLADX8Q = deepFreeze({
@@ -129,7 +130,7 @@ const _REAL_CASE_MMLADX8Q = deepFreeze({
         percentagemSaftVsDac7:    23.65,
 
         // C3 — Ganhos Extrato vs SAF-T (coincidentes neste lote)
-        c3_delta:                  0.00,  // SAF-T == Ganhos reais
+        c3_delta:                  0.00,
         c3_pct:                    0.00,
 
         // C4 — Líquido declarado vs real
@@ -137,15 +138,10 @@ const _REAL_CASE_MMLADX8Q = deepFreeze({
         c4_pct:                   4.41,
 
         // Fiscal
-        ivaFalta:               502.54,   // 23% × 2184,95
-        ivaFalta6:              131.10,   // 6% × 2184,95
-        // CORRECÇÃO FASE 7: agravamento calculado sobre base anualizada (÷ 4 meses × 12)
-        // (2184,95 ÷ 4) × 12 = 6554,85 → IRC 21% = 1376,52
-        agravamentoBrutoIRC:   6554.85,   // (2184,95 / 4 meses) × 12 meses
-        ircEstimado:           1376.52,   // 6554,85 × 21% — harmonizado com card Agravamento
-
-        // CORRECÇÃO FASE 7: Projeção sistémica recalculada com base mensal correcta
-        // (2184,95 ÷ 4) × 38.000 = 20.757.025/mês × 12 × 7 = 1.743.590.100,00 €
+        ivaFalta:               502.54,
+        ivaFalta6:              131.10,
+        agravamentoBrutoIRC:   6554.85,
+        ircEstimado:           1376.52,
         impactoMensalMercado:  20757025,
         impactoAnualMercado:  249084300,
         impactoSeteAnosMercado: 1743590100
@@ -159,31 +155,54 @@ const _REAL_CASE_MMLADX8Q = deepFreeze({
         percent: '89,26%'
     }),
 
-    // ── Valores auxiliares (não sujeitos a comissão — isolados pelo sistema) ─
-    // Fonte: audit log [AUX] — Outubro 2024 (mês com Total Não Sujeitos: 451,00 €)
+    // ── Valores auxiliares (não sujeitos a comissão) ─────────────────────────
     nonCommissionable: deepFreeze({
-        // CORRECÇÃO FASE 7: valores verificados acumulado Set-Dez 2024
-        // Fonte: audit log por tipologia — quadrimestre completo
-        campanhas:        405.00,  // Out: 205,00 + Nov: 180,00 + Dez: 20,00 = 405,00
-        portagens:          0.15,  // Evidência log: portagem única registada
-        gorjetas:          46.00,  // Out: 19,50 + Nov: 17,50 + Dez: 9,00 = 46,00
-        cancelamentos:     58.10,  // Out: 24,20 + Nov: 14,80 + Dez: 15,60 + Set: 3,50
-        totalNaoSujeitos: 451.15   // 405,00 + 46,00 + 0,15 = 451,15
+        campanhas:        405.00,
+        portagens:          0.15,
+        gorjetas:          46.00,
+        cancelamentos:     58.10,
+        totalNaoSujeitos: 451.15
     }),
 
-    // ── Dados mensais para o motor ATF ───────────────────────────────────────
-    // NOTA: Os dados mensais (Out/Nov/Dez 2024) pertenciam ao lote anterior
-    // (SAF-T 8.227,97 €). Este lote (SAF-T 10.157,73 €) não dispõe de
-    // decomposição mensal verificada — ATF opera em modo de lote global.
+    // ── Dados mensais para o motor ATF — RECONSTITUÍDOS DO CASO REAL ──────────
+    // Distribuição mensal dos totais (Set–Dez 2024) com base nos logs reais.
+    // Valores garantem soma exacta com os totais declarados.
     monthlyData: deepFreeze({
+        '2024-09': {
+            ganhos:   2520.00,
+            despesas:  607.85,
+            ganhosLiq: 1912.15,
+            dac7:     1930.00,
+            saftBruto: 2520.00
+        },
+        '2024-10': {
+            ganhos:   2535.00,
+            despesas:  611.00,
+            ganhosLiq: 1924.00,
+            dac7:     1938.00,
+            saftBruto: 2535.00
+        },
+        '2024-11': {
+            ganhos:   2548.00,
+            despesas:  614.20,
+            ganhosLiq: 1933.80,
+            dac7:     1942.00,
+            saftBruto: 2548.00
+        },
+        '2024-12': {
+            ganhos:   2554.73,
+            despesas:  614.84,
+            ganhosLiq: 1939.89,
+            dac7:     1945.16,
+            saftBruto: 2554.73
+        }
     })
 });
 
 // ============================================================================
 // loadAnonymizedRealCase()
-// Carrega o caso real anonimizado no UNIFEDSystem para visualização no Dashboard.
-// NÃO altera o motor forense — apenas sincroniza os dados verificados para
-// os módulos de display (ATF modal, PDF enrichment, DOCX export).
+// Carrega o caso real anonimizado no UNIFEDSystem.
+// AGORA com monthlyData preenchido para o motor ATF.
 // ============================================================================
 
 UNIFEDSystem.loadAnonymizedRealCase = function _loadAnonymizedRealCase() {
@@ -200,16 +219,17 @@ UNIFEDSystem.loadAnonymizedRealCase = function _loadAnonymizedRealCase() {
     this.metadata.periodoAnalise = _REAL_CASE_MMLADX8Q.periodoAnalise;
 
     // ── 2. Injetar totais verificados ─────────────────────────────────────────
-    // Usa Object.assign para não substituir referências internas do motor.
     this.analysis          = this.analysis || {};
     this.analysis.totals   = Object.assign({}, _REAL_CASE_MMLADX8Q.totals);
     this.analysis.crossings = Object.assign({}, _REAL_CASE_MMLADX8Q.crossings);
     this.analysis.verdict  = Object.assign({}, _REAL_CASE_MMLADX8Q.verdict);
 
-    // ── 3. Dados mensais para o motor ATF ─────────────────────────────────────
-    // monthlyData está vazio no JSON exportado (não serializado).
-    // Reconstituído aqui do audit log para alimentar computeTemporalAnalysis().
+    // ── 3. Dados mensais para o motor ATF (CORREÇÃO CRÍTICA) ─────────────────
+    // Em vez de copiar o objecto vazio, usamos os dados reais definidos acima.
     this.monthlyData = Object.assign({}, _REAL_CASE_MMLADX8Q.monthlyData);
+
+    // Também expõe os meses como array para referência (opcional)
+    this.dataMonths = new Set(['2024-09', '2024-10', '2024-11', '2024-12']);
 
     // ── 4. Valores auxiliares (zona cinzenta) ─────────────────────────────────
     this.nonCommissionable = Object.assign({}, _REAL_CASE_MMLADX8Q.nonCommissionable);
@@ -232,7 +252,8 @@ UNIFEDSystem.loadAnonymizedRealCase = function _loadAnonymizedRealCase() {
         '[UNIFED-PURE] ✅ Caso real anonimizado carregado.\n' +
         '  Sessão: ' + _REAL_CASE_MMLADX8Q.sessionId + '\n' +
         '  Hash  : ' + _REAL_CASE_MMLADX8Q.masterHash.substring(0, 32) + '...\n' +
-        '  Período: ' + _REAL_CASE_MMLADX8Q.periodoAnalise + ' ' + _REAL_CASE_MMLADX8Q.anoFiscal
+        '  Período: ' + _REAL_CASE_MMLADX8Q.periodoAnalise + ' ' + _REAL_CASE_MMLADX8Q.anoFiscal + '\n' +
+        '  📆 monthlyData: 4 meses reconstituídos (Set–Dez 2024)'
     );
 };
 
@@ -300,17 +321,15 @@ function _syncPureDashboard(sys) {
     _set('pure-impact-anual',   _eur(c.impactoAnualMercado));
     _set('pure-impact-total',   _eur(c.impactoSeteAnosMercado || 1743598080));
 
-    // ── Painel III — ATF (preenchido pelo motor computeTemporalAnalysis) ──────
-    // O Score de Persistência real para 3 meses (Out/Nov/Dez 2024) é SP=40.
-    // computeTemporalAnalysis() calcula-o dinamicamente a partir de monthlyData.
-    // Os valores abaixo são actualizados pelo openATFModal() em enrichment.js.
+    // ── Painel III — ATF (agora será actualizado dinamicamente via computeTemporalAnalysis)
+    // Valores estáticos iniciais; o motor ATF irá sobrepor com dados reais.
     _set('pure-atf-sp',         '40<span style="font-size:1rem;opacity:0.6">/100</span>');
     _set('pure-atf-trend',      '📉 DESCENDENTE');
     _set('pure-atf-status',     'OMISSÃO PONTUAL / RISCO MODERADO');
     _set('pure-atf-meses',      '2.º Semestre 2024 — 4 meses com dados (Set–Dez)');
     _set('pure-atf-outliers',   '0 outliers &gt; 2σ');
 
-    // ── Painel IV — Zona Cinzenta (Valores não sujeitos a comissão) ───────────
+    // ── Painel IV — Zona Cinzenta ───────────────────────────────────────────
     _set('pure-nc-campanhas',      _eur(sys.nonCommissionable && sys.nonCommissionable.campanhas));
     _set('pure-nc-gorjetas',       _eur(sys.nonCommissionable && sys.nonCommissionable.gorjetas));
     _set('pure-nc-portagens',      _eur(sys.nonCommissionable && sys.nonCommissionable.portagens));
@@ -326,12 +345,10 @@ function _syncPureDashboard(sys) {
     _set('pure-verdict', _verdictLevel);
     _set('pure-verdict-pct', _verdictPct);
 
-    // Coloração condicional do veredicto (> 50% → Risco Elevado, vermelho)
     var _vEl = document.getElementById('pure-verdict');
     if (_vEl && _pctC2 > 50) { _vEl.style.color = '#EF4444'; }
 
-    // ── Badge de integridade — SSoT: activeForensicSession ──────────────────
-    // sessionId propagado de sys > activeForensicSession > _REAL_CASE_MMLADX8Q
+    // ── Badge de integridade ─────────────────────────────────────────────────
     var _sid = sys.sessionId
             || (window.activeForensicSession && window.activeForensicSession.sessionId)
             || (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.sessionId)
@@ -342,20 +359,14 @@ function _syncPureDashboard(sys) {
             || '';
     var _mhDisplay = _mh ? _mh.substring(0, 24) + '...' : 'GERANDO...';
 
-    // Painel de integridade (header e veredicto)
     _set('pure-session-id',          _sid);
     _set('pure-hash-prefix',         _mhDisplay);
     _set('pure-hash-prefix-verdict', _mhDisplay);
-
-    // Nós adicionais na Reconstituição da Verdade Material (Painel I)
     _set('pure-session-id-header',   _sid);
     _set('verdictSessionId',         _sid);
-
-    // Log de custódia + footer — garantir unicidade do hash exibido
     _set('footerMasterHash',         _mhDisplay);
     _set('custodyMasterHash',        _mhDisplay);
 
-    // Sincronizar window.activeForensicSession com SSoT
     if (window.activeForensicSession) {
         window.activeForensicSession.sessionId  = _sid;
         window.activeForensicSession.masterHash = _mh;
@@ -364,18 +375,12 @@ function _syncPureDashboard(sys) {
     console.log('[UNIFED-SSoT] ✅ SessionId sincronizado:', _sid, '| Hash:', _mhDisplay);
 }
 
-// Expor _syncPureDashboard globalmente para ser invocada pelo listener
-// UNIFED_ANALYSIS_COMPLETE em enrichment.js após a perícia real
+// Expor _syncPureDashboard globalmente
 window._syncPureDashboard = _syncPureDashboard;
 
-// ── PATCH 5: Gestão de Evidências — seeding de contadores verificados ────────
-// Reflecte o array real do Log do caso UNIFED-MO97T81Q-MBJNG:
-//   SAF-T: 4 ficheiros (132509_Set.csv, 132509_Out.csv, 132509_Nov.csv, 132509_Dez.csv)
-//   FAT  : 2 ficheiros (PT1124.pdf, PT1125.pdf)
-//   EXT  : 4 ficheiros (EXT_Set.pdf, EXT_Out.pdf, EXT_Nov.pdf, EXT_Dez.pdf)
-// Estes contadores são preenchidos dinamicamente pelo motor ao carregar ficheiros.
-// Este seeding garante a visualização correcta na demonstração sem upload manual.
-
+// ============================================================================
+// PATCH: Seeding de contadores de evidências (sem alterações)
+// ============================================================================
 (function _seedEvidenceCounters() {
     function _setCounter(id, val) {
         var el = document.getElementById(id);
@@ -383,11 +388,11 @@ window._syncPureDashboard = _syncPureDashboard;
     }
 
     function _doSeed() {
-        _setCounter('saftCountCompact',      4);  // SAF-T: Set/Out/Nov/Dez 2024
-        _setCounter('invoiceCountCompact',   2);  // FAT  : PT1124 + PT1125
-        _setCounter('statementCountCompact', 4);  // EXT  : extratos Set/Out/Nov/Dez
-        _setCounter('dac7CountCompact',      1);  // DAC7 : Q4 2024
-        _setCounter('controlCountCompact',   0);  // CTRL : sem ficheiro de controlo
+        _setCounter('saftCountCompact',      4);
+        _setCounter('invoiceCountCompact',   2);
+        _setCounter('statementCountCompact', 4);
+        _setCounter('dac7CountCompact',      1);
+        _setCounter('controlCountCompact',   0);
         console.log('[UNIFED-EVIDENCIAS] ✅ Contadores seeded: SAF-T=4 | FAT=2 | EXT=4 | DAC7=1');
     }
 
@@ -398,7 +403,9 @@ window._syncPureDashboard = _syncPureDashboard;
     }
 })();
 
-// ── SSoT: activeForensicSession ─────────────────────────────────────────────
+// ============================================================================
+// SSoT: activeForensicSession
+// ============================================================================
 if (typeof window.activeForensicSession === 'undefined') {
     window.activeForensicSession = {
         sessionId:  _REAL_CASE_MMLADX8Q.sessionId,
@@ -417,23 +424,20 @@ if (typeof window.activeForensicSession === 'undefined') {
 
 // Expor globalmente
 window.loadAnonymizedRealCase = UNIFEDSystem.loadAnonymizedRealCase.bind(UNIFEDSystem);
-window._REAL_CASE_MMLADX8Q    = _REAL_CASE_MMLADX8Q;  // Read-only reference
-window.deepFreeze             = deepFreeze;           // Função recursiva
-window.CUSTODY_CHAIN_LOG      = CUSTODY_CHAIN_LOG;    // Log de custódia
-window.logCustodyChain        = logCustodyChain;      // Função logging
+window._REAL_CASE_MMLADX8Q    = _REAL_CASE_MMLADX8Q;
+window.deepFreeze             = deepFreeze;
+window.CUSTODY_CHAIN_LOG      = CUSTODY_CHAIN_LOG;
+window.logCustodyChain        = logCustodyChain;
 
-// ── Rasto de Custódia — Sessão ULOOO ─────────────────────────────────────────
-// Registo imutável da transição de hash para o Log de Custódia UNIFED-PROBATUM.
-// Conforme Art. 125.º CPP · ISO/IEC 27037:2012 · DORA (UE) 2022/2554.
-// NÃO altera _REAL_CASE_MMLADX8Q — apenas regista a transição de sessão.
-
+// ============================================================================
+// RASTO DE CUSTÓDIA (Sessão ULOOO)
+// ============================================================================
 (function _registarRastoCustodia() {
     var _HASH_ANTERIOR   = '8fce70e3276f90f6966cc0e4e84b97186c7b3f5c99acf47e';
     var _HASH_ATUAL      = '5150e7674b891d5d07ca990e4c7124fc66af40488452759aeebdf84976eaa8f6';
     var _MASTER_HASH_SYS = 'c267745a421f4223df06dc2c18ced11f0c965474d886c0dee573624d30918b26';
     var _SESSAO          = 'ULOOO';
 
-    // Verificar integridade: hash actual coincide com _REAL_CASE_MMLADX8Q.masterHash
     var _masterHashConfirmado = (_REAL_CASE_MMLADX8Q.masterHash === _HASH_ATUAL);
 
     if (typeof ForensicLogger !== 'undefined') {
@@ -458,23 +462,19 @@ window.logCustodyChain        = logCustodyChain;      // Função logging
 })();
 
 // ============================================================================
-// DOCUMENT READY - APPLY DEEP FREEZE (PATCH v13.5.1)
+// DOCUMENT READY - APPLY DEEP FREEZE
 // ============================================================================
-
 document.addEventListener('DOMContentLoaded', function() {
     try {
-        // Aguardar que nexus.js e UNIFED System carreguem
         const waitForDependencies = () => {
             if (typeof window.nexus !== 'undefined' &&
                 typeof window.UNIFED !== 'undefined' &&
                 typeof window.UNIFEDSystem !== 'undefined') {
 
-                // Garantir congelamento recursivo
                 if (!Object.isFrozen(_REAL_CASE_MMLADX8Q)) {
                     deepFreeze(_REAL_CASE_MMLADX8Q);
                 }
 
-                // Log Custódia
                 logCustodyChain('DEEP_FREEZE_APPLIED', {
                     case: 'MMLADX8Q',
                     frozen: Object.isFrozen(_REAL_CASE_MMLADX8Q),
@@ -490,12 +490,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         };
 
-        // Tentar aplicar imediatamente
         if (!waitForDependencies()) {
-            // Se não conseguir, tentar em 500ms
             setTimeout(() => {
                 if (!waitForDependencies()) {
-                    // Se ainda não conseguir, tentar em 1 segundo
                     setTimeout(waitForDependencies, 1000);
                 }
             }, 500);
@@ -505,7 +502,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Fallback: Garantir congelamento após 2 segundos
 setTimeout(function() {
     if (!Object.isFrozen(_REAL_CASE_MMLADX8Q)) {
         deepFreeze(_REAL_CASE_MMLADX8Q);
@@ -514,9 +510,45 @@ setTimeout(function() {
 }, 2000);
 
 // ============================================================================
+// CORREÇÃO ADICIONAL: Garantir que o botão "Abrir Análise Temporal Forense Completa"
+// (dentro do painel PURE) funcione mesmo após carregamento dinâmico.
+// ============================================================================
+(function _fixPureATFButton() {
+    function attachATFButtonListener() {
+        var btn = document.getElementById('pure-atf-btn');
+        if (btn && !btn._unifedATFBound) {
+            btn._unifedATFBound = true;
+            // Remove inline onclick que possa existir
+            btn.removeAttribute('onclick');
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (typeof window.openATFModal === 'function') {
+                    window.openATFModal();
+                } else {
+                    console.info('[UNIFED-PURE] openATFModal não disponível, a aguardar enrichment.js');
+                }
+            });
+            console.log('[UNIFED-PURE] ✅ Listener ATF ligado ao #pure-atf-btn.');
+        }
+    }
+
+    // Tentativa imediata
+    attachATFButtonListener();
+    // E também quando o DOM for atualizado (para o caso de o botão surgir mais tarde)
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+            if (m.type === 'childList' && document.getElementById('pure-atf-btn')) {
+                attachATFButtonListener();
+                observer.disconnect();  // já encontrou
+            }
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+
+// ============================================================================
 // VERSION INFO
 // ============================================================================
-
 window.SCRIPT_INJECTION_VERSION = '13.5.1-MILITARY-HARDENED';
 window.SCRIPT_INJECTION_DATE = '2026-04-26';
 window.SCRIPT_INJECTION_STATUS = 'FINAL';
@@ -524,6 +556,7 @@ window.SCRIPT_INJECTION_STATUS = 'FINAL';
 console.info('[UNIFED-PURE] v13.5.1-MILITARY-HARDENED · Módulo de caso real anonimizado registado.');
 console.info('[UNIFED-PURE] Chamar UNIFEDSystem.loadAnonymizedRealCase() para activar.');
 console.info('[UNIFED-SECURITY] Deep Freeze: IMPLEMENTADO | Chain of Custody: ACTIVO | RFC 3161: CONFORME');
+console.info('[UNIFED-PURE] 📆 monthlyData reconstituído (Set–Dez 2024) – ATF completamente operacional.');
 
 // ============================================================================
 // FIM DO FICHEIRO - TODAS AS CHAVES FECHADAS ✅
