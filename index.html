@@ -1011,66 +1011,68 @@
     </div>
 
     <!-- SCRIPTS (UNIFED PROBATUM v13.5.1-MILITARY-HARDENED - SEM DUPLICAÇÕES) -->
-    <script>
-        window.pdfjsLib = window['pdfjs-dist/build/pdf'];
-        if (window.pdfjsLib) {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-    </script>
-    <!-- SCP: Fallback document.write removido — substituído pelo OTS Dynamic Loader no <head> -->
-    <!-- UNIFED PROBATUM v13.5.1-MILITARY-HARDENED — Output Enrichment Layer -->
-    <!-- Carregado ANTES de script.js para garantir que window.generateLegalNarrative -->
-    <!-- e window.renderSankeyToImage estão disponíveis quando exportPDF() é chamado. -->
-    <!-- Padrão: Read-Only · Asynchronous Post-Computation Orchestration             -->
-    <script src="enrichment.js"></script>
-    <script src="script.js"></script>
-    <!-- ══ UNIFED PROBATUM v13.5.1-MILITARY-HARDENED — NEXUS Adaptive Extension Layer ══════
-         Carregado APÓS enrichment.js e script.js. Consome UNIFEDSystem em Read-Only.
-         NÃO altera fórmulas fiscais nem o Dashboard. Módulos:
-           M1 · Stealth Network Interceptor (Anti-F12 Protocol)
-           M2 · RAG Jurisprudencial DOCX (Art. 103/104 RGIT · Art. 78 CIVA · STA)
-           M3 · Motor Preditivo ATF Forecasting 6M (Regressão Linear + EMA)
-           M4 · Blockchain Evidence Explorer (SHA-256 Individual · OTS UI)
-         Conformidade: DORA (UE) 2022/2554 · ISO/IEC 27037:2012 · Art. 125.º CPP
-         ══════════════════════════════════════════════════════════════════════════ -->
-    <script src="nexus.js"></script>
+<script>
+    window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+    if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
 
-    <!-- ══ UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · CASO REAL ANONIMIZADO ═══════════════
-         Carregado APÓS nexus.js. Injeta os dados reais verificados (UNIFED-MMLADX8Q-CV69L)
-         no UNIFEDSystem e activa o painel #pureDashboard.
-         Conformidade: ISO/IEC 27037 · Art. 125.º CPP · DORA (UE) 2022/2554
-         Core Freeze: não altera fórmulas de script.js nem módulos enrichment/nexus.
-         ══════════════════════════════════════════════════════════════════════════ -->
-    <link rel="stylesheet" href="style_additions.css">
-    <script src="script_injection.js"></script>
-    <script>
-        // ── Activação do Painel v13.5.1-MILITARY-HARDENED ───────────────────────────────────
-        // Aguarda UNIFEDSystem estar disponível, depois:
-        //   1. Injeta o HTML do painel no wrapper
-        //   2. Chama loadAnonymizedRealCase() para popular os dados
-        //   3. Torna o wrapper visível
-        // O fetch do panel.html é local — sem dependências externas.
-        // Painel v13.5.1-MILITARY-HARDENED: NÃO auto-executa.
-        // Activação exclusiva via window._activatePurePanel() chamado em activateDemoMode().
-        window._activatePurePanel = function() {
-            fetch('panel.html')
-                .then(function(r) { return r.text(); })
-                .then(function(html) {
-                    var wrapper = document.getElementById('pureDashboardWrapper');
-                    if (wrapper) {
-                        wrapper.innerHTML = html;
-                        wrapper.style.display = 'block';
-                    }
-                    if (typeof UNIFEDSystem !== 'undefined' && typeof UNIFEDSystem.loadAnonymizedRealCase === 'function') {
-                        UNIFEDSystem.loadAnonymizedRealCase();
-                    }
-                    console.info('[UNIFED-PURE] ✅ Painel v13.5.1-MILITARY-HARDENED activado.');
-                })
-                .catch(function() {
-                    console.info('[UNIFED-PURE] [i] panel.html não encontrado — modo standalone.');
-                });
-        };
-    </script>
+</script>
+<!-- SCP: Fallback document.write removido — substituído pelo OTS Dynamic Loader no <head> -->
+<!-- UNIFED PROBATUM v13.5.1-MILITARY-HARDENED — Output Enrichment Layer -->
+<!-- REORDENADO TECNICAMENTE: script.js e script_injection.js carregados PRIMEIRO (evita erros de memória/campos vazios) -->
+<!-- enrichment.js e nexus.js carregados em seguida, consumindo o UNIFEDSystem já inicializado -->
+<script src="script.js"></script>
+<script src="script_injection.js"></script>
+<script src="enrichment.js"></script>
+<script src="nexus.js"></script>
+
+<!-- ══ UNIFED PROBATUM v13.5.1-MILITARY-HARDENED — NEXUS Adaptive Extension Layer ══════
+     Carregado APÓS enrichment.js e script.js. Consome UNIFEDSystem em Read-Only.
+     NÃO altera fórmulas fiscais nem o Dashboard. Módulos:
+       M1 · Stealth Network Interceptor (Anti-F12 Protocol)
+       M2 · RAG Jurisprudencial DOCX (Art. 103/104 RGIT · Art. 78 CIVA · STA)
+       M3 · Motor Preditivo ATF Forecasting 6M (Regressão Linear + EMA)
+       M4 · Blockchain Evidence Explorer (SHA-256 Individual · OTS UI)
+     Conformidade: DORA (UE) 2022/2554 · ISO/IEC 27037:2012 · Art. 125.º CPP
+     ══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ══ UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · CASO REAL ANONIMIZADO ═══════════════
+     Carregado APÓS nexus.js. Injeta os dados reais verificados (UNIFED-MMLADX8Q-CV69L)
+     no UNIFEDSystem e activa o painel #pureDashboard.
+     Conformidade: ISO/IEC 27037 · Art. 125.º CPP · DORA (UE) 2022/2554
+     Core Freeze: não altera fórmulas de script.js nem módulos enrichment/nexus.
+     ══════════════════════════════════════════════════════════════════════════ -->
+<link rel="stylesheet" href="style_additions.css">
+<script>
+    // ── Activação do Painel v13.5.1-MILITARY-HARDENED ───────────────────────────────────
+    // Aguarda UNIFEDSystem estar disponível, depois:
+    //   1. Injeta o HTML do painel no wrapper
+    //   2. Chama loadAnonymizedRealCase() para popular os dados
+    //   3. Torna o wrapper visível
+    // O fetch do panel.html é local — sem dependências externas.
+    // Painel v13.5.1-MILITARY-HARDENED: NÃO auto-executa.
+    // Activação exclusiva via window._activatePurePanel() chamado em activateDemoMode().
+    window._activatePurePanel = function() {
+        fetch('panel.html')
+            .then(function(r) { return r.text(); })
+            .then(function(html) {
+                var wrapper = document.getElementById('pureDashboardWrapper');
+                if (wrapper) {
+                    wrapper.innerHTML = html;
+                    wrapper.style.display = 'block';
+                }
+                if (typeof UNIFEDSystem !== 'undefined' && typeof UNIFEDSystem.loadAnonymizedRealCase === 'function') {
+                    UNIFEDSystem.loadAnonymizedRealCase();
+                }
+                console.info('[UNIFED-PURE] ✅ Painel v13.5.1-MILITARY-HARDENED activado.');
+            })
+            .catch(function() {
+                console.info('[UNIFED-PURE] [i] panel.html não encontrado — modo standalone.');
+            });
+    };
+</script>
+
     <!-- TRÍADE DOCUMENTAL - MÓDULO DE EXPORTAÇÃO -->
     <script src="unifed_triada_export.js"></script>
 
