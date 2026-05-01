@@ -721,7 +721,7 @@
    TOOLBAR UNIFICADA 9 BOTÕES LED — UNIFED v13.5.1-MILITARY-HARDENED
    .pure-toolbar-unified é uma grelha de 20 colunas.
    Linha 1: 4 × .l1-btn (span 5) — botões estáticos no HTML.
-   Linha 2: .triada-row ocupa as 20 colunas e contém os 3 botões
+   Linha 2: .triada-row ocupa as 20 colunas e contém os 4 botões
             injectados pelo unifed_triada_export.js.
    ========================================================================== */
 
@@ -739,7 +739,7 @@
     grid-column: span 5 !important;
 }
 
-/* Linha 2: contentor da tríade — centralização dos 3 botões */
+/* Linha 2: contentor da tríade — centralização dos 4 botões */
 .pure-toolbar-unified .triada-row {
     grid-column: 1 / -1 !important;
     display: flex !important;

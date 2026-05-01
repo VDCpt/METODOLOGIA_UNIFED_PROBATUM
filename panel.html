@@ -230,16 +230,16 @@
         title="Abrir modal ATF completo com Chart.js e Motor Preditivo NEXUS">
         ⏳ ABRIR ANÁLISE TEMPORAL FORENSE COMPLETA
       </button>
-      <!-- v13.5.1-PURE: Botão Exportar Pacote Advogado (Offline) -->
+      <!-- v13.5.1-PURE: Botão Exportar Pacote Analista (Offline) - ANTIGO ADVOGADO -->
       <button
-        id="purePacoteAdvogadoBtn"
+        id="purePacoteAnalistaBtn"
         class="pure-btn-atf pure-btn-pacote"
         style="background:linear-gradient(135deg,#1a2a1a,#0d1f0d);border-color:#22c55e;color:#22c55e;"
-        title="Exportar JSON + PDF pericial num pacote offline para o advogado"
-        onclick="if(typeof window._exportPacoteAdvogado === 'function') window._exportPacoteAdvogado(); else console.info('[UNIFED-PACOTE] Pacote offline gerado — estrutura preparada para download local.');"
-        data-pt="📁 EXPORTAR PACOTE ADVOGADO (OFFLINE)"
-        data-en="📁 EXPORT LAWYER PACKAGE (OFFLINE)">
-        📁 EXPORTAR PACOTE ADVOGADO (OFFLINE)
+        title="Exportar JSON + PDF pericial num pacote offline para o analista"
+        onclick="if(typeof window._exportPacoteAnalista === 'function') window._exportPacoteAnalista(); else console.info('[UNIFED-PACOTE] Pacote Analista offline gerado — estrutura preparada para download local.');"
+        data-pt="📁 EXPORTAR PACOTE ANALISTA (OFFLINE)"
+        data-en="📁 EXPORT ANALYST PACKAGE (OFFLINE)">
+        📁 EXPORTAR PACOTE ANALISTA (OFFLINE)
       </button>
     </div>
   </div>
@@ -298,7 +298,7 @@
         <div class="pure-verdict-basis" id="pure-verdict-basis" data-pt="Art. 103.º / 104.º RGIT · Art. 125.º CPP" data-en="Art. 103 / 104 RGIT · Art. 125 CPP">Art. 103.º / 104.º RGIT · Art. 125.º CPP</div>
       </div>
       <div class="pure-integrity-block">
-        <div class="pure-verdict-label" id="pure-integrity-label" data-pt="INTEGRIDADE SHA-256" data-en="SHA-256 INTEGRITY">INTEGRIDADE SHA-256</div>
+        <div class="pure-verdict-label" id="pure-integrity-label" data-pt="INTEGRIDADE SHA-256" data-en="SHA-256 INTEGRIDADE">INTEGRIDADE SHA-256</div>
         <div id="pure-hash-prefix-verdict" class="pure-mono pure-hash-lg">DINÂMICO</div>
         <div class="pure-verdict-basis" id="pure-integrity-basis1" data-pt="RFC 3161 · ISO/IEC 27037:2012" data-en="RFC 3161 · ISO/IEC 27037:2012">RFC 3161 · ISO/IEC 27037:2012</div>
         <div class="pure-verdict-basis" id="pure-integrity-basis2" style="margin-top:4px" data-pt="v13.5.1-MILITARY-HARDENED · DORA Compliant" data-en="v13.5.1-MILITARY-HARDENED · DORA Compliant">v13.5.1-MILITARY-HARDENED · DORA Compliant</div>

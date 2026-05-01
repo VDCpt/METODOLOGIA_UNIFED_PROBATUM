@@ -3,7 +3,7 @@
  * UNIFED - PROBATUM · v13.5.1-MILITARY-HARDENED · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
- * Versão        : 1.0.6-TRIADA (COMPLETA - COM EXPORTAÇÕES REAIS)
+ * Versão        : 1.0.7-TRIADA (COMPLETA - COM EXPORTAÇÕES REAIS + PACOTE ADVOGADO)
  * ============================================================================
  */
 
@@ -589,6 +589,70 @@
     }
     
     // =========================================================================
+    // PACOTE ADVOGADO COMPLETO: JSON + RELATÓRIO + ANEXO + MATRIZ
+    // =========================================================================
+    async function _exportPacoteAdvogadoCompleto() {
+        _log('📦 Iniciando PACOTE ADVOGADO: JSON + Relatório + Anexo + Matriz', 'info');
+        
+        // 1. Exportar JSON
+        if (typeof window.exportDataJSON === 'function') {
+            window.exportDataJSON();
+        } else {
+            _log('⚠️ exportDataJSON não encontrado – a gerar JSON de fallback...', 'warn');
+            try {
+                var sys = _getSys();
+                var fallbackJson = JSON.stringify({
+                    sessionId: sys.sessionId,
+                    masterHash: sys.masterHash,
+                    analysis: sys.analysis,
+                    exportedAt: new Date().toISOString(),
+                    note: 'JSON gerado pelo módulo de exportação UNIFED (fallback)'
+                }, null, 2);
+                var blob = new Blob([fallbackJson], { type: 'application/json' });
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'UNIFED_JSON_' + sys.sessionId + '.json';
+                link.click();
+                URL.revokeObjectURL(link.href);
+                _log('✅ JSON de fallback exportado.', 'success');
+            } catch (e) {
+                _log('Erro ao gerar JSON fallback: ' + e.message, 'error');
+            }
+        }
+        
+        // 2. Relatório Pericial (PDF)
+        setTimeout(() => {
+            if (typeof _unifedExportPdfRelatorio === 'function') {
+                _unifedExportPdfRelatorio();
+            } else {
+                _log('⚠️ _unifedExportPdfRelatorio não encontrado', 'error');
+            }
+        }, 800);
+        
+        // 3. Anexo Custódia (PDF)
+        setTimeout(() => {
+            if (typeof _unifedExportPdfAnexoCustodia === 'function') {
+                _unifedExportPdfAnexoCustodia();
+            } else {
+                _log('⚠️ _unifedExportPdfAnexoCustodia não encontrado', 'error');
+            }
+        }, 2000);
+        
+        // 4. Matriz Jurídica (DOCX)
+        setTimeout(() => {
+            if (typeof _unifedExportDocxMatriz === 'function') {
+                _unifedExportDocxMatriz();
+            } else {
+                _log('⚠️ _unifedExportDocxMatriz não encontrado', 'error');
+            }
+        }, 3500);
+        
+        if (typeof window.showToast === 'function') {
+            window.showToast('📦 Pacote Advogado gerado: JSON + 3 documentos', 'success');
+        }
+    }
+    
+    // =========================================================================
     // CRIAÇÃO DOS BOTÕES (COM AS FUNÇÕES REAIS)
     // =========================================================================
     function criarBotao(id, iconClass, label, cor, handler) {
@@ -631,8 +695,6 @@
         }
 
         // ── [BARREIRA ANTI-DUPLICAÇÃO] ────────────────────────────────────────
-        // Dupla defesa: classe-barreira no contentor + existência física do botão primário.
-        // Bloqueia re-injecção por MutationObserver ou chamadas repetidas.
         if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPdfRelatorioBtn')) {
             console.log('[UNIFED-TRIADA] Botões já existem — injeção bloqueada.');
             return true;
@@ -641,7 +703,8 @@
         var botoes = [
             { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
             { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA',   cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
-            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        }
+            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        },
+            { id: 'unifedPacoteAdvogadoBtn', icon: 'fa-folder-open', label: 'PACOTE ADVOGADO',    cor: '#F97316', handler: _exportPacoteAdvogadoCompleto  }
         ];
 
         botoes.forEach(function(b) {
@@ -649,10 +712,8 @@
             console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
 
-        // Selar contentor — impede re-injecção por qualquer observador posterior
         container.classList.add('botoes-injetados');
 
-        // Guarda de visibilidade do contentor e do wrapper pai
         if (container.style.display === 'none' || container.style.display === '') {
             container.style.display = 'flex';
         }
@@ -661,7 +722,7 @@
             _rightWrapper.style.display = 'flex';
         }
 
-        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO!');
+        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL (4 BOTÕES) INJETADA COM SUCESSO!');
         return true;
     }
 
@@ -671,24 +732,18 @@
      */
 
     // --- 1. PACOTE ANALISTA (PERITIA PDF + JSON ANALISTA) ---
-    // Exporta o relatório pericial completo (PERITIA) mais o JSON com
-    // nomenclatura de Analista. Chama exportPDF() de script.js via alias
-    // window.exportPDF_Peritia, e exportDataJSON() via _exportJsonSistema().
     window._exportPacoteAnalista = async function() {
         _log('Iniciando PACOTE ANALISTA: Ficheiro PERITIA + Dados JSON', 'info');
 
         try {
-            // Exporta o PDF PERITIA (relatório pericial completo)
             if (typeof window.exportPDF_Peritia === 'function') {
                 await window.exportPDF_Peritia();
             } else if (typeof window.exportPDF === 'function') {
-                // Fallback: alias directo à função de exportação PDF de script.js
                 await window.exportPDF();
             } else {
                 _log('Erro: Função exportPDF_Peritia / exportPDF não encontrada.', 'error');
             }
 
-            // Exporta o JSON com nomenclatura de Analista
             setTimeout(function() {
                 if (typeof window._exportJsonSistema === 'function') {
                     window._exportJsonSistema('ANALISTA');
@@ -703,25 +758,21 @@
     };
 
     // --- 2. PACOTE ADVOGADO (TRÍADE PROCESSUAL: RELATÓRIO + CUSTÓDIA + MATRIZ) ---
-    // Exporta exclusivamente: Relatório Pericial (PDF) + Custódia (PDF) + Matriz (DOCX).
-    // Sem geração de ficheiros JSON — destino: mandatário judicial.
+    // Mantido por compatibilidade, mas agora o novo botão usa _exportPacoteAdvogadoCompleto
     window._exportPacoteAdvogadoOffline = async function() {
         console.log('[UNIFED] Iniciando PACOTE ADVOGADO (Tríade Processual)...');
 
         try {
-            // 1. Relatório Pericial (PDF)
             if (typeof window._unifedExportPdfRelatorio === 'function') {
                 await window._unifedExportPdfRelatorio();
             }
 
-            // 2. Anexo Cadeia de Custódia (PDF) — margem 1500 ms para buffer do browser
             setTimeout(async function() {
                 if (typeof _unifedExportPdfAnexoCustodia === 'function') {
                     await _unifedExportPdfAnexoCustodia();
                 }
             }, 1500);
 
-            // 3. Matriz Jurídica (DOCX) — margem 3000 ms
             setTimeout(async function() {
                 if (typeof _unifedExportDocxMatriz === 'function') {
                     await _unifedExportDocxMatriz();
@@ -737,22 +788,21 @@
         }
     };
 
-    // Alias retrocompatível
     window._exportPacoteAdvogado = window._exportPacoteAdvogadoOffline;
 
-    // Vincular botão Pacote Advogado ao novo handler global
-    (function _bindPacoteAdvogado() {
+    // Vincular botão Pacote Analista do painel PURE
+    (function _bindPacoteAnalista() {
         function _attach() {
-            var btn = document.getElementById('exportPacoteAdvogadoBtn');
-            if (btn && !btn._pacoteBound) {
-                btn._pacoteBound = true;
+            var btn = document.getElementById('purePacoteAnalistaBtn');
+            if (btn && !btn._pacoteAnalistaBound) {
+                btn._pacoteAnalistaBound = true;
                 btn.removeAttribute('onclick');
                 btn.addEventListener('click', function() {
-                    if (typeof window._exportPacoteAdvogado === 'function') {
-                        window._exportPacoteAdvogado();
+                    if (typeof window._exportPacoteAnalista === 'function') {
+                        window._exportPacoteAnalista();
                     }
                 });
-                console.log('[UNIFED-TRIADA] ✅ exportPacoteAdvogadoBtn vinculado.');
+                console.log('[UNIFED-TRIADA] ✅ purePacoteAnalistaBtn vinculado.');
             }
         }
         if (document.readyState === 'loading') {
@@ -791,13 +841,9 @@
     executar();
 
     // ── Exposição global para hook pós-interface ──────────────────────────────
-    // Chamado pelo evento 'unifed:interfaceShown' em index.html
-    // após showMainInterface() tornar #mainContainer visível.
     window.UNIFED_TRIADA_REINJETAR = injetarBotoes;
 
     // ── MutationObserver: fallback robusto sem dependência de eventos custom ──
-    // Observa o atributo style de #mainContainer. Quando deixa de ter
-    // display:none (i.e., showMainInterface() actua), reinjecta os botões.
     (function() {
         var _fired = false;
         var _mc    = document.getElementById('mainContainer');
