@@ -1363,8 +1363,8 @@ function _revealPureCards(analysis) {
     var _pctC1   = cross.percentagemSaftVsDac7  || 0;
     _setEl('pure-sg1-delta',    _eur(_discC1));
     _setEl('pure-sg1-pct',      '(' + _pctC1.toFixed(2) + '%)');
-    _setEl('pure-sg1-saft-val', _eur(cross.saftBruto  || 0));
-    _setEl('pure-sg1-dac7-val', _eur(cross.dac7Total  || 0));
+    _setEl('pure-sg1-saft-val', _eur(totals.saftBruto  || 0));
+    _setEl('pure-sg1-dac7-val', _eur(totals.dac7TotalPeriodo  || 0));
 
     console.log('[UNIFED-REVEAL] \u2705 Painéis PURE revelados — disc.C2:', _eur(_discC2), '| SG2 IDs sincronizados');
     // ── FIX ZC: sincronizar Zona Cinzenta com valores do caso real ─────────
