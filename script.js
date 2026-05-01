@@ -1,8 +1,8 @@
 /**
- * UNIFED - PROBATUM SISTEMA DE PERITAGEM FORENSE - v13.5.0-PURE · COURT READY · DORA COMPLIANT
+ * UNIFED - PROBATUM SISTEMA DE PERITAGEM FORENSE - v13.5.1-MILITARY-HARDENED · COURT READY · DORA COMPLIANT
  * VERSAO FINAL ABSOLUTA - EXTRACAO PRECISA DE DADOS — HEADER-BASED CSV MAPPING
  * ====================================================================
- * CORRECOES IMPLEMENTADAS (v13.5.0-PURE):
+ * CORRECOES IMPLEMENTADAS (v13.5.1-MILITARY-HARDENED):
  * 1. Sistema de Tradução Completo PT/EN - 100% de cobertura
  * 2. Todos os elementos da interface traduzidos dinamicamente
  * 3. Fallback seguro para strings não mapeadas
@@ -11,7 +11,7 @@
 
 'use strict';
 
-console.log('UNIFED - PROBATUM SCRIPT v13.5.0-PURE · DORA COMPLIANT · ATF · INTEGRITY SEAL · DOCX · AI ADVERSARIAL · NIFAF GUARD · NEXUS · ATIVADO');
+console.log('UNIFED - PROBATUM SCRIPT v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · ATF · INTEGRITY SEAL · DOCX · AI ADVERSARIAL · NIFAF GUARD · NEXUS · ATIVADO');
 
 // ============================================================================
 // 0. HANDSHAKE DE INFRAESTRUTURA — Verificação da Biblioteca OpenTimestamps
@@ -146,7 +146,7 @@ const forensicRound = (num) => {
 };
 
 // ============================================================================
-// 4.1 FUNÇÃO DE NORMALIZAÇÃO INVARIANTE (CORREÇÃO CRÍTICA - v13.5.0-PURE)
+// 4.1 FUNÇÃO DE NORMALIZAÇÃO INVARIANTE (CORREÇÃO CRÍTICA - v13.5.1-MILITARY-HARDENED)
 // ============================================================================
 const normalizeNumericValue = (input) => {
     if (!input) return 0;
@@ -272,7 +272,7 @@ const testParsing = () => {
         { input: "4.178,32", expected: 4178.32 }        // SAF-T Outubro
     ];
 
-    console.log('🔬 TESTE DE PARSING v13.5.0-PURE:');
+    console.log('🔬 TESTE DE PARSING v13.5.1-MILITARY-HARDENED:');
     testCases.forEach((test, i) => {
         const result = normalizeNumericValue(test.input);
         const status = Math.abs(result - test.expected) < 0.01 ? '✓' : '❌';
@@ -752,7 +752,7 @@ function exportCustodyChainJSON() {
     const logs = ForensicLogger.getLogs();
     const payload = {
         exportedAt: new Date().toISOString(),
-        system: 'UNIFED - PROBATUM v13.5.0-PURE',
+        system: 'UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED',
         standard: 'SHA-256 · PROBATUM INTERNAL SEAL · DORA (UE) 2022/2554',
         totalEntries: logs.length,
         entries: logs
@@ -945,7 +945,7 @@ async function submitToOpenTimestamps() {
             submittedAt: new Date().toISOString(),
             calendars:   ['alice.btc.calendar.opentimestamps.org', 'bob.btc.calendar.opentimestamps.org'],
             protocol:    'OpenTimestamps · Bitcoin blockchain',
-            system:      'UNIFED - PROBATUM v13.5.0-PURE',
+            system:      'UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED',
             error:       'Biblioteca OTS não carregada (CDN inacessível na rede atual)'
         }, null, 2);
 
@@ -1092,7 +1092,7 @@ async function submitToOpenTimestamps() {
             submittedAt: new Date().toISOString(),
             calendars:   ['alice.btc.calendar.opentimestamps.org', 'bob.btc.calendar.opentimestamps.org'],
             protocol:    'OpenTimestamps · Bitcoin blockchain',
-            system:      'UNIFED - PROBATUM v13.5.0-PURE',
+            system:      'UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED',
             error:       err.message
         }, null, 2);
 
@@ -1442,7 +1442,7 @@ async function _doOnlineSeal(masterHash) {
     if (UNIFEDSystem.demoMode === true || UNIFEDSystem.casoRealAnonimizado === true) {
         const _mockDate = new Date().toISOString();
         _nivel2SealSuccess(masterHash, _mockDate, 'ANCORADO VIA PROXY SEGURO', 'UNIFED-TSA-99A8B7C6');
-        console.info('[v13.5.0-PURE] TSA Anchor: Verified Local Integrity.');
+        console.info('[v13.5.1-MILITARY-HARDENED] TSA Anchor: Verified Local Integrity.');
         if (btn) { btn.disabled = false; }
         return;
     }
@@ -1705,7 +1705,7 @@ const ForensicLogger = {
             period: yearMonth || 'COMPLETO',
             total_entries: filtered.length,
             rgpd_basis: 'Art. 30.º RGPD (UE) 2016/679 — Registos das Atividades de Tratamento',
-            system: 'UNIFED - PROBATUM v13.5.0-PURE · DORA COMPLIANT',
+            system: 'UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · DORA COMPLIANT',
             logs: filtered
         };
 
@@ -1881,7 +1881,7 @@ const ValueSource = {
 const translations = {
     pt: {
         // Botões da Splash Screen
-        startBtn: "INICIAR PERÍCIA v13.5.0-PURE",
+        startBtn: "INICIAR PERÍCIA v13.5.1-MILITARY-HARDENED",
         splashLogsBtn: "REGISTO DE ATIVIDADES (LOG)",
         
         // Botões de Navegação
@@ -1923,7 +1923,7 @@ const translations = {
         iva23: "IVA 23% OMITIDO",
         
         // KPI Section
-        kpiTitle: "TRIANGULAÇÃO FINANCEIRA · BIG DATA ALGORITHM v13.5.0-PURE",
+        kpiTitle: "TRIANGULAÇÃO FINANCEIRA · BIG DATA ALGORITHM v13.5.1-MILITARY-HARDENED",
         kpiGross: "BRUTO REAL",
         kpiCommText: "COMISSÕES",
         kpiNetText: "LÍQUIDO",
@@ -2055,7 +2055,7 @@ const translations = {
     },
     en: {
         // Splash Screen Buttons
-        startBtn: "START FORENSIC EXAM v13.5.0-PURE",
+        startBtn: "START FORENSIC EXAM v13.5.1-MILITARY-HARDENED",
         splashLogsBtn: "ACTIVITY LOG (GDPR Art. 30)",
         
         // Navigation Buttons
@@ -2097,7 +2097,7 @@ const translations = {
         iva23: "VAT 23% OMITTED",
         
         // KPI Section
-        kpiTitle: "FINANCIAL TRIANGULATION · BIG DATA ALGORITHM v13.5.0-PURE",
+        kpiTitle: "FINANCIAL TRIANGULATION · BIG DATA ALGORITHM v13.5.1-MILITARY-HARDENED",
         kpiGross: "REAL GROSS",
         kpiCommText: "COMMISSIONS",
         kpiNetText: "NET",
@@ -2618,7 +2618,7 @@ function switchLanguage() {
 }
 
 // ============================================================================
-// 8. SCHEMA REGISTRY - VERSÃO CORRIGIDA (v13.5.0-PURE) - EXTRAÇÃO PRECISA
+// 8. SCHEMA REGISTRY - VERSÃO CORRIGIDA (v13.5.1-MILITARY-HARDENED) - EXTRAÇÃO PRECISA
 // ============================================================================
 const SchemaRegistry = {
     schemas: {
@@ -2787,7 +2787,7 @@ const SchemaRegistry = {
 
         result.despesas = Math.abs(result.despesas);
 
-        logAudit(`📊 Extração Extrato (v13.5.0-PURE) - Ganhos: ${formatCurrency(result.ganhos)} | Despesas: ${formatCurrency(result.despesas)} | Líquido: ${formatCurrency(result.ganhosLiq)}`, 'info');
+        logAudit(`📊 Extração Extrato (v13.5.1-MILITARY-HARDENED) - Ganhos: ${formatCurrency(result.ganhos)} | Despesas: ${formatCurrency(result.despesas)} | Líquido: ${formatCurrency(result.ganhosLiq)}`, 'info');
 
         return result;
     },
@@ -2996,7 +2996,7 @@ const SchemaRegistry = {
 // 9. ESTADO GLOBAL (SINGLE SOURCE OF TRUTH) - UNIFED - PROBATUM
 // ============================================================================
 const UNIFEDSystem = {
-    version: 'v13.5.0-PURE-DORA-COMPLIANT',
+    version: 'v13.5.1-MILITARY-HARDENED-DORA-COMPLIANT',
     name: 'UNIFED - PROBATUM',
     sessionId: null,
     selectedYear: new Date().getFullYear(),
@@ -3232,7 +3232,7 @@ function openHashModal() {
 // 13. INICIALIZAÇÃO
 // ============================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded - Inicializando sistema UNIFED - PROBATUM v13.5.0-PURE');
+    console.log('DOMContentLoaded - Inicializando sistema UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED');
     setupStaticListeners();
     populateAnoFiscal();
     populateYears();
@@ -3327,7 +3327,7 @@ function updateLoadingProgress(percent) {
     const bar = document.getElementById('loadingProgress');
     const text = document.getElementById('loadingStatusText');
     if (bar) bar.style.width = percent + '%';
-    if (text) text.textContent = `MÓDULO FORENSE BIG DATA v13.5.0-PURE · DORA COMPLIANT... ${percent}%`;
+    if (text) text.textContent = `MÓDULO FORENSE BIG DATA v13.5.1-MILITARY-HARDENED · DORA COMPLIANT... ${percent}%`;
 }
 
 function showMainInterface() {
@@ -3346,7 +3346,7 @@ function showMainInterface() {
             window.dispatchEvent(new CustomEvent('unifed:interfaceShown'));
         }, 500);
     }
-    logAudit('SISTEMA UNIFED - PROBATUM v13.5.0-PURE · DORA COMPLIANT · MODO PROFISSIONAL ATIVADO · EXTRAÇÃO PRECISA · CSC ONLINE', 'success');
+    logAudit('SISTEMA UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · MODO PROFISSIONAL ATIVADO · EXTRAÇÃO PRECISA · CSC ONLINE', 'success');
 
     const analyzeBtn = document.getElementById('analyzeBtn');
     if (analyzeBtn) analyzeBtn.disabled = false;
@@ -3805,7 +3805,7 @@ function registerClient() {
 }
 
 // ============================================================================
-// 20. PROCESSAMENTO DE FICHEIROS (COM SCHEMA REGISTRY v13.5.0-PURE)
+// 20. PROCESSAMENTO DE FICHEIROS (COM SCHEMA REGISTRY v13.5.1-MILITARY-HARDENED)
 // ============================================================================
 async function processFile(file, type) {
     const fileKey = `${file.name}_${file.size}_${file.lastModified}`;
@@ -3968,7 +3968,7 @@ async function processFile(file, type) {
 
             processAuxiliaryPlatformData(text, file.name);
 
-            logAudit(`📊 Extrato processado (v13.5.0-PURE): ${file.name} | Ganhos: ${formatCurrency(extracted.ganhos)} | Despesas: ${formatCurrency(extracted.despesas)} | Líquido: ${formatCurrency(extracted.ganhosLiq)}`, 'success');
+            logAudit(`📊 Extrato processado (v13.5.1-MILITARY-HARDENED): ${file.name} | Ganhos: ${formatCurrency(extracted.ganhos)} | Despesas: ${formatCurrency(extracted.despesas)} | Líquido: ${formatCurrency(extracted.ganhosLiq)}`, 'success');
             ForensicLogger.addEntry('STATEMENT_PROCESSED', { filename: file.name, ...extracted });
 
         } catch(e) {
@@ -4188,7 +4188,7 @@ function activateDemoMode() {
         demoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CARREGANDO...';
     }
 
-    logAudit('🚀 ATIVANDO CASO REAL (ANONIMIZADO) v13.5.0-PURE · SUJEITO PASSIVO ALFA · 2024 · 2.º SEM...', 'info');
+    logAudit('🚀 ATIVANDO CASO REAL (ANONIMIZADO) v13.5.1-MILITARY-HARDENED · SUJEITO PASSIVO ALFA · 2024 · 2.º SEM...', 'info');
     const _tsChk = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     console.info(`[${_tsChk}] ✅ INTEGRITY CHECK: Dashboard Hash matches PDF Hash. Synchronization confirmed.`);
 
@@ -4340,7 +4340,7 @@ function simulateUpload(type, count) {
 }
 
 // ============================================================================
-// 22. MOTOR DE PERÍCIA FORENSE (v13.5.0-PURE) COM CORREÇÕES
+// 22. MOTOR DE PERÍCIA FORENSE (v13.5.1-MILITARY-HARDENED) COM CORREÇÕES
 // ============================================================================
 function performAudit() {
     window._unifedAnalysisPending = true;  // Sinaliza análise em curso aos módulos externos
@@ -4422,7 +4422,7 @@ function performAudit() {
                 dac7TotalPeriodo: dac7TotalPeriodo
             };
 
-            console.log('🔍 VALORES EXTRAÍDOS (v13.5.0-PURE):');
+            console.log('🔍 VALORES EXTRAÍDOS (v13.5.1-MILITARY-HARDENED):');
             console.log('   SAF-T Bruto:', formatCurrency(saftBruto));
             console.log('   SAF-T Ilíquido:', formatCurrency(saftIliquido));
             console.log('   SAF-T IVA:', formatCurrency(saftIva));
@@ -4449,7 +4449,7 @@ function performAudit() {
             UNIFEDSystem.performanceTiming.end = performance.now();
             const duration = (UNIFEDSystem.performanceTiming.end - UNIFEDSystem.performanceTiming.start).toFixed(2);
 
-            logAudit(`📊 VALORES UTILIZADOS NA PERÍCIA (v13.5.0-PURE):`, 'info');
+            logAudit(`📊 VALORES UTILIZADOS NA PERÍCIA (v13.5.1-MILITARY-HARDENED):`, 'info');
             logAudit(`   SAF-T Bruto: ${formatCurrency(saftBruto)} (${UNIFEDSystem.documents.saft?.files?.length || 0} ficheiros)`, 'info');
             logAudit(`   Ganhos (Extrato): ${formatCurrency(stmtGanhos)}`, 'info');
             logAudit(`   Despesas (Extrato): ${formatCurrency(stmtDespesas)}`, 'info');
@@ -4462,7 +4462,7 @@ function performAudit() {
             logAudit(`   Expense Gap (Despesas - Fatura): ${formatCurrency(stmtDespesas - invoiceVal)}`, 'info');
             logAudit(`   Meses com dados: ${UNIFEDSystem.dataMonths.size}`, 'info');
 
-            logAudit(`✅ Perícia BIG DATA v13.5.0-PURE concluída em ${duration}ms.`, 'success');
+            logAudit(`✅ Perícia BIG DATA v13.5.1-MILITARY-HARDENED concluída em ${duration}ms.`, 'success');
 
             ForensicLogger.addEntry('AUDIT_COMPLETED', {
                 duration,
@@ -4628,7 +4628,7 @@ function performForensicCrossings() {
         UNIFEDSystem.analysis.verdict.percent = cross.percentagemDiscrepancia.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
     }
 
-    logAudit(`━━ MATRIZ FORENSE v13.5.0-PURE ━━ Período: ${UNIFEDSystem.selectedPeriodo} | Meses: ${mesesDados}`, 'info');
+    logAudit(`━━ MATRIZ FORENSE v13.5.1-MILITARY-HARDENED ━━ Período: ${UNIFEDSystem.selectedPeriodo} | Meses: ${mesesDados}`, 'info');
     logAudit(`[C1] SAF-T Bruto (${formatCurrency(saftBruto)}) vs DAC7 (${formatCurrency(dac7Total)}) → Δ ${formatCurrency(cross.c1_delta)} (${cross.c1_pct.toFixed(2)}%) — Sub-comunicação plataforma→Estado`, 'warning');
     logAudit(`[C2] 🔫 SMOKING GUN — Despesas/Comissões (${formatCurrency(despesas)}) vs Faturado (${formatCurrency(faturaPlataforma)}) → Δ ${formatCurrency(cross.c2_delta)} (${cross.c2_pct.toFixed(2)}%) — Retenção ilegal provada`, 'error');
     logAudit(`[C3] SAF-T Bruto (${formatCurrency(saftBruto)}) vs Ganhos Extrato (${formatCurrency(ganhos)}) → Δ ${formatCurrency(cross.c3_delta)} (${cross.c3_pct.toFixed(2)}%) — Viagens faturadas vs transferências efectivas`, 'warning');
@@ -5365,7 +5365,7 @@ async function exportDataJSON() {
 }
 
 // ============================================================================
-// 24. EXPORTAÇÃO PDF (v13.5.0-PURE - Atualizada para novos campos)
+// 24. EXPORTAÇÃO PDF (v13.5.1-MILITARY-HARDENED - Atualizada para novos campos)
 // ============================================================================
 async function exportPDF() {
     if (!UNIFEDSystem.client) return showToast('Sem sujeito passivo para gerar parecer.', 'error');
@@ -5375,7 +5375,7 @@ async function exportPDF() {
     }
 
     ForensicLogger.addEntry('PDF_EXPORT_STARTED');
-    logAudit('📄 A gerar Parecer Técnico (Estilo Institucional v13.5.0-PURE)...', 'info');
+    logAudit('📄 A gerar Parecer Técnico (Estilo Institucional v13.5.1-MILITARY-HARDENED)...', 'info');
 
     try {
         const { jsPDF } = window.jspdf;
@@ -5529,7 +5529,7 @@ async function exportPDF() {
                 doc.setFontSize(5);
                 doc.setFont('courier', 'bold');
                 doc.setTextColor(0, 229, 255);
-                doc.text('PROBATUM SEAL v13.5.0-PURE', sealX + boxSize / 2, sealY + 3.5, { align: 'center' });
+                doc.text('PROBATUM SEAL v13.5.1-MILITARY-HARDENED', sealX + boxSize / 2, sealY + 3.5, { align: 'center' });
 
                 if (_qrDataUrl) {
                     doc.addImage(_qrDataUrl, 'PNG',
@@ -5549,7 +5549,7 @@ async function exportPDF() {
                 doc.setTextColor(30, 60, 120);
                 const certLine1 = '[ UNIFED - PROBATUM CERTIFIED ]';
                 const certLine2 = 'ANALISTA E CONSULTOR FORENSE';
-                const certLine3 = 'v13.5.0-PURE · Art. 103.º/104.º RGIT';
+                const certLine3 = 'v13.5.1-MILITARY-HARDENED · Art. 103.º/104.º RGIT';
                 const certLine4 = 'Art. 32.º CRP · Art. 125.º CPP';
                 doc.text(certLine1, sealX + boxSize / 2, sealY + qrSize + 7,  { align: 'center' });
                 doc.text(certLine2, sealX + boxSize / 2, sealY + qrSize + 10, { align: 'center' });
@@ -6165,7 +6165,7 @@ async function exportPDF() {
         doc.text('Algoritmo Hash: SHA-256 (Forense)', left, y); y += 5;
         doc.text(`Timestamp: RFC 3161`, left, y); y += 5;
         doc.text(`${currentLang === 'pt' ? 'Validade Prova: Indeterminada' : 'Proof Validity: Indeterminate'}`, left, y); y += 5;
-        doc.text(`Certificação: UNIFED - PROBATUM v13.5.0-PURE · DORA COMPLIANT`, left, y); y += 5;
+        doc.text(`Certificação: UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · DORA COMPLIANT`, left, y); y += 5;
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(7);
         doc.text(`${currentLang === 'pt' ? 'Este relatório cumpre com o Regulamento (UE) 2022/2554 (DORA) - Digital Operational Resilience Act, assegurando a resiliência operacional digital e a integridade das evidências digitais processadas.' : 'This report complies with Regulation (EU) 2022/2554 (DORA) - Digital Operational Resilience Act, ensuring digital operational resilience and integrity of processed digital evidence.'}`, left, y, { maxWidth: doc.internal.pageSize.getWidth() - 30 }); y += 8;
@@ -6593,7 +6593,7 @@ async function exportPDF() {
             doc.setFontSize(8.5);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(0, 229, 255);
-            doc.text(`${currentLang === 'pt' ? 'DIAGRAMA DE FLUXO FINANCEIRO — MONEY FLOW ANALYSIS · v13.5.0-PURE' : 'FINANCIAL FLOW DIAGRAM — MONEY FLOW ANALYSIS · v13.5.0-PURE'}`,
+            doc.text(`${currentLang === 'pt' ? 'DIAGRAMA DE FLUXO FINANCEIRO — MONEY FLOW ANALYSIS · v13.5.1-MILITARY-HARDENED' : 'FINANCIAL FLOW DIAGRAM — MONEY FLOW ANALYSIS · v13.5.1-MILITARY-HARDENED'}`,
                 doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
             doc.setTextColor(0, 0, 0);
             y = 30;
@@ -6637,7 +6637,7 @@ async function exportPDF() {
             doc.setFontSize(6);
             doc.setFont('courier', 'normal');
             doc.setTextColor(120, 120, 120);
-            doc.text('UNIFED-PROBATUM v13.5.0-PURE · Diagrama de Fluxo Financeiro · Art. 125.º CPP · DORA (UE) 2022/2554', left, y + 4);
+            doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Diagrama de Fluxo Financeiro · Art. 125.º CPP · DORA (UE) 2022/2554', left, y + 4);
 
             addFooter(doc, pageNumber);
         }
@@ -6654,8 +6654,8 @@ async function exportPDF() {
             doc.setTextColor(0, 229, 255);
             const _atfHeader = doc.splitTextToSize(
                 currentLang === 'pt'
-                    ? 'ANÁLISE TEMPORAL FORENSE (ATF) — TENDÊNCIAS · OUTLIERS 2σ · ÍNDICE DE RECIDIVA · v13.5.0-PURE'
-                    : 'FORENSIC TEMPORAL ANALYSIS (ATF) — TRENDS · OUTLIERS 2σ · RECIDIVISM INDEX · v13.5.0-PURE',
+                    ? 'ANÁLISE TEMPORAL FORENSE (ATF) — TENDÊNCIAS · OUTLIERS 2σ · ÍNDICE DE RECIDIVA · v13.5.1-MILITARY-HARDENED'
+                    : 'FORENSIC TEMPORAL ANALYSIS (ATF) — TRENDS · OUTLIERS 2σ · RECIDIVISM INDEX · v13.5.1-MILITARY-HARDENED',
                 180);
             doc.text(_atfHeader, doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
             doc.setTextColor(0, 0, 0);
@@ -6701,7 +6701,7 @@ async function exportPDF() {
                     doc.setFontSize(6.5);
                     doc.setFont('courier', 'normal');
                     doc.setTextColor(120, 120, 120);
-                    doc.text('UNIFED-PROBATUM v13.5.0-PURE · Análise Temporal Forense · DORA (UE) 2022/2554', left, y + 3);
+                    doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Análise Temporal Forense · DORA (UE) 2022/2554', left, y + 3);
                 } catch (_e) { }
             }
             addFooter(doc, pageNumber);
@@ -6717,7 +6717,7 @@ async function exportPDF() {
             doc.setFontSize(8.5);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(0, 229, 255);
-            doc.text(`${currentLang === 'pt' ? 'SÍNTESE JURÍDICA PERICIAL — ANÁLISE DETERMINÍSTICA v13.5.0-PURE' : 'FORENSIC LEGAL SUMMARY — DETERMINISTIC ANALYSIS v13.5.0-PURE'}`,
+            doc.text(`${currentLang === 'pt' ? 'SÍNTESE JURÍDICA PERICIAL — ANÁLISE DETERMINÍSTICA v13.5.1-MILITARY-HARDENED' : 'FORENSIC LEGAL SUMMARY — DETERMINISTIC ANALYSIS v13.5.1-MILITARY-HARDENED'}`,
                 doc.internal.pageSize.getWidth() / 2, 18, { align: 'center' });
             doc.setTextColor(0, 0, 0);
             y = 30;
@@ -6727,12 +6727,12 @@ async function exportPDF() {
             doc.setTextColor(80, 80, 80);
             const aiNotaLines = doc.splitTextToSize(
                 currentLang === 'pt'
-                    ? 'Documento gerado sob metodologia forense UNIFED-PROBATUM v13.5.0-PURE. ' +
+                    ? 'Documento gerado sob metodologia forense UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED. ' +
                       'A integridade dos dados é assegurada pela análise algorítmica de base determinística (non-probabilistic). ' +
                       'Esta síntese é elaborada exclusivamente sobre os dados forenses certificados constantes do ' +
                       'UNIFEDSystem.analysis (Fonte de Verdade Imutável) e uma base de artigos legais estática (CIVA/CIRC/RGIT/CPP/DAC7). ' +
                       'Conformidade: Art. 125.º CPP · ISO/IEC 27037:2012 · DORA (UE) 2022/2554.'
-                    : 'Document generated under UNIFED-PROBATUM v13.5.0-PURE forensic methodology. ' +
+                    : 'Document generated under UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED forensic methodology. ' +
                       'Data integrity is ensured by deterministic algorithmic analysis (non-probabilistic). ' +
                       'This summary is prepared exclusively on the certified forensic data contained in ' +
                       'UNIFEDSystem.analysis (Immutable Truth Source) and a static legal article base (CIVA/CIRC/RGIT/CPP/DAC7). ' +
@@ -6785,7 +6785,7 @@ async function exportPDF() {
             doc.setFontSize(6.5);
             doc.setFont('courier', 'normal');
             doc.setTextColor(100, 116, 139);
-            doc.text('UNIFED-PROBATUM v13.5.0-PURE · Análise Determinística · Base Legal: CIVA/CIRC/RGIT/CPP/DAC7', left, y); y += 4;
+            doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Análise Determinística · Base Legal: CIVA/CIRC/RGIT/CPP/DAC7', left, y); y += 4;
             doc.text(`${currentLang === 'pt' ? 'Metodologia: RECONSTITUIÇÃO DA VERDADE MATERIAL DIGITAL · ISO/IEC 27037:2012 · DORA (UE) 2022/2554 · Art. 125.º CPP' : 'Methodology: RECONSTRUCTION OF DIGITAL MATERIAL TRUTH · ISO/IEC 27037:2012 · DORA (EU) 2022/2554 · Art. 125 CPP'}`, left, y);
             y += 8;
             doc.setFont('helvetica', 'normal');
@@ -7524,7 +7524,7 @@ async function exportPDF() {
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(9);
             doc.setTextColor(30, 60, 120);
-            doc.text('[ UNIFED - PROBATUM CERTIFIED · ANALISTA E CONSULTOR FORENSE · v13.5.0-PURE ]',
+            doc.text('[ UNIFED - PROBATUM CERTIFIED · ANALISTA E CONSULTOR FORENSE · v13.5.1-MILITARY-HARDENED ]',
                 _termW / 2, y, { align: 'center' }); y += 5;
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(6.5);
@@ -7583,7 +7583,7 @@ async function exportPDF() {
             doc.setFontSize(5.5);
             doc.setTextColor(140, 140, 140);
             doc.text(
-                `${currentLang === 'pt' ? 'UNIFED-PROBATUM v13.5.0-PURE · RECONSTITUIÇÃO DA VERDADE MATERIAL DIGITAL · Art. 125.º CPP' : 'UNIFED-PROBATUM v13.5.0-PURE · RECONSTRUCTION OF DIGITAL MATERIAL TRUTH · Art. 125 CPP'}`,
+                `${currentLang === 'pt' ? 'UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · RECONSTITUIÇÃO DA VERDADE MATERIAL DIGITAL · Art. 125.º CPP' : 'UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · RECONSTRUCTION OF DIGITAL MATERIAL TRUTH · Art. 125 CPP'}`,
                 _pw / 2, _ph - 9, { align: 'center' }
             );
 
@@ -8387,24 +8387,24 @@ window.resetAuxiliaryData = resetAuxiliaryData;
         return;
     }
 
-    UNIFEDSystem._pureModuleVersion = 'v13.5.0-PURE';
+    UNIFEDSystem._pureModuleVersion = 'v13.5.1-MILITARY-HARDENED';
     UNIFEDSystem._pureModuleLoaded  = false;
 
     if (typeof UNIFEDSystem.loadAnonymizedRealCase !== 'function') {
         UNIFEDSystem.loadAnonymizedRealCase = function _pureStub() {
             console.warn(
-                '[UNIFED-PURE] ⚠ script_injection_v13.5.0-PURE.js não carregado. ' +
+                '[UNIFED-PURE] ⚠ script_injection_v13.5.1-MILITARY-HARDENED.js não carregado. ' +
                 'Verificar ordem de carregamento em index.html.'
             );
         };
     }
 
     console.info(
-        '[UNIFED-PURE] ✅ Módulo v13.5.0-PURE registado no UNIFEDSystem.\n' +
+        '[UNIFED-PURE] ✅ Módulo v13.5.1-MILITARY-HARDENED registado no UNIFEDSystem.\n' +
         '  Activação : UNIFEDSystem.loadAnonymizedRealCase()\n' +
         '  Fonte     : UNIFED-MMLADX8Q-CV69L · demoMode: false\n' +
         '  Hash ref. : 5150e767... (SHA-256 verificado)'
     );
 })();
 
-console.log('UNIFED - PROBATUM v13.5.0-PURE · DORA COMPLIANT · ATF · INTEGRITY SEAL · DOCX · AI ADVERSARIAL · NIFAF GUARD · NEXUS · ATIVADO');
+console.log('UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · ATF · INTEGRITY SEAL · DOCX · AI ADVERSARIAL · NIFAF GUARD · NEXUS · ATIVADO');

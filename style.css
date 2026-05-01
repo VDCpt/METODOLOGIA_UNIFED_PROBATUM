@@ -1,10 +1,10 @@
 /* =====================================================================
-   UNIFED - PROBATUM SISTEMA DE PERITAGEM FORENSE · v13.5.0-PURE · DORA COMPLIANT · COURT READY · PURE
+   UNIFED - PROBATUM SISTEMA DE PERITAGEM FORENSE · v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · COURT READY · PURE
    ESTÉTICA: PANORAMIC SPLASH + CRUZAMENTO LASER H+V + GLASSMORPHISM
    BIG DATA ACCUMULATOR · ALERTAS INTERMITENTES · NOVAS BOXES
    ESTILO FBI/INTERPOL/CSI · QR CODE · PAGINAÇÃO PDF
    PORTUGUÊS DE PORTUGAL
-   + v13.1.0-GOLD: LED blink classes, box-despesas-blink, DORA Compliant badges
+   + v13.5.1-MILITARY-HARDENED: LED blink classes, box-despesas-blink, DORA Compliant badges
    ===================================================================== */
 
 /* ---------------------------------------------------------------------
@@ -49,10 +49,10 @@
     --presentation-font-size-base: 1.1rem;
     --presentation-font-size-large: 2rem;
 
-    /* ── v13.5.0-PURE — Aliases periciais (compatibilidade style_additions) ── */
+    /* ── v13.5.1-MILITARY-HARDENED — Aliases periciais (compatibilidade style_additions) ── */
     --pure-accent:  #00E5FF;
     --pure-warn:    #EF4444;
-    --pure-version: "v13.5.0-PURE";
+    --pure-version: "v13.5.1-MILITARY-HARDENED";
 }
 
 *,
@@ -3501,15 +3501,15 @@ body.dual-screen .stat-card p {
 }
 
 /* ============================================================================
-   UNIFED - PROBATUM · v13.5.0-PURE · ESTILOS INTEGRADOS
+   UNIFED - PROBATUM · v13.5.1-MILITARY-HARDENED · ESTILOS INTEGRADOS
    ============================================================================
    Nota: Os estilos completos do painel #pureDashboard estão em
-   style_additions_v13.5.0-PURE.css (ficheiro externo, carregado em index.html).
+   style_additions_v13.5.1-MILITARY-HARDENED.css (ficheiro externo, carregado em index.html).
    Este bloco contém apenas os overrides de versão e animações globais
-   que afectam componentes existentes actualizados para v13.5.0-PURE.
+   que afectam componentes existentes actualizados para v13.5.1-MILITARY-HARDENED.
    ============================================================================ */
 
-/* ── Actualização de badges de versão para v13.5.0-PURE ──────────────────── */
+/* ── Actualização de badges de versão para v13.5.1-MILITARY-HARDENED ──────────────────── */
 .version-badge {
     /* Sobrepõe cor dourada GOLD → ciano PURE */
     background: linear-gradient(135deg, rgba(0,229,255,0.15), rgba(14,165,233,0.12));
@@ -3562,7 +3562,7 @@ body.dual-screen .stat-card p {
     transform: translateY(0);
 }
 
-/* ── Blink class para SP ≥ 90% (v13.5.0-PURE não atinge — reservado) ─────── */
+/* ── Blink class para SP ≥ 90% (v13.5.1-MILITARY-HARDENED não atinge — reservado) ─────── */
 .led-pure-amber {
     animation: pure-amber-blink 1.8s infinite;
 }
@@ -3572,10 +3572,10 @@ body.dual-screen .stat-card p {
     50%       { color: #FCD34D; text-shadow: 0 0 18px rgba(245,158,11,0.9); }
 }
 
-/* ══ FIM — v13.5.0-PURE CSS Integration · UNIFED - PROBATUM ══════════════ */
+/* ══ FIM — v13.5.1-MILITARY-HARDENED CSS Integration · UNIFED - PROBATUM ══════════════ */
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   UNIFED - PROBATUM · PATCHES v13.5.0-PURE — Code Freeze Final
+   UNIFED - PROBATUM · PATCHES v13.5.1-MILITARY-HARDENED — Code Freeze Final
    Aplicados por: Fase Final - Go-Live Preparation
    Conformidade: Zero impacto nas fórmulas | Somente estilo e UX
    ══════════════════════════════════════════════════════════════════════════════ */
@@ -3744,10 +3744,10 @@ body.dual-screen .stat-card p {
     color: #86efac !important;
 }
 
-/* ══ FIM DOS PATCHES v13.5.0-PURE · UNIFED - PROBATUM · CODE FREEZE ══════ */
+/* ══ FIM DOS PATCHES v13.5.1-MILITARY-HARDENED · UNIFED - PROBATUM · CODE FREEZE ══════ */
 
 /* ══════════════════════════════════════════════════════════════════════════════
-   UNIFED - PROBATUM · PATCHES v13.5.0-PURE — Fase 6
+   UNIFED - PROBATUM · PATCHES v13.5.1-MILITARY-HARDENED — Fase 6
    ══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── PATCH C1: Toolbar de botões — alinhamento horizontal forçado ────────────

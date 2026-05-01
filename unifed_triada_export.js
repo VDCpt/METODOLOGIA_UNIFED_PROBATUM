@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * UNIFED - PROBATUM · v13.5.0-PURE · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
+ * UNIFED - PROBATUM · v13.5.1-MILITARY-HARDENED · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
  * Versão        : 1.0.6-TRIADA (COMPLETA - COM EXPORTAÇÕES REAIS)
@@ -126,7 +126,7 @@
                 doc.setTextColor(130, 130, 130);
                 doc.setDrawColor(200, 200, 200);
                 doc.line(L, pageH - 12, R, pageH - 12);
-                doc.text('UNIFED-PROBATUM v13.5.0-PURE · Sessão: ' + sessId + ' · SHA-256: ' + hashShort, L, pageH - 8);
+                doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Sessão: ' + sessId + ' · SHA-256: ' + hashShort, L, pageH - 8);
                 doc.text('Pág. ' + _pageNum + ' · ' + hoje + ' · ISO/IEC 27037:2012 · RFC 3161 · Art. 125.º CPP', R, pageH - 8, { align: 'right' });
                 if (isLast) {
                     doc.text('Master Hash SHA-256: ' + mhash, L, pageH - 4.5);
@@ -188,7 +188,7 @@
             doc.text('RELATÓRIO PERICIAL DE RECONSTITUIÇÃO DA VERDADE MATERIAL', pageW / 2, 22, { align: 'center' });
             doc.setFontSize(8);
             doc.setTextColor(120, 160, 200);
-            doc.text('v13.5.0-PURE · ISO/IEC 27037:2012 · DORA (UE) 2022/2554 · RFC 3161', pageW / 2, 30, { align: 'center' });
+            doc.text('v13.5.1-MILITARY-HARDENED · ISO/IEC 27037:2012 · DORA (UE) 2022/2554 · RFC 3161', pageW / 2, 30, { align: 'center' });
             doc.text('Art. 103.º–104.º RGIT · Art. 125.º CPP · Diretiva DAC7 (UE) 2021/514', pageW / 2, 35, { align: 'center' });
             
             var y = 46;
@@ -200,7 +200,7 @@
             y = _kpiRow('Período de Análise', '2.º Semestre 2024 (Setembro–Dezembro 2024)', y, false);
             y = _kpiRow('Ano Fiscal', '2024', y, false);
             y = _kpiRow('Data de Emissão', hoje, y, false);
-            y = _kpiRow('Perito Responsável', 'Sistema UNIFED-PROBATUM v13.5.0-PURE', y, false);
+            y = _kpiRow('Perito Responsável', 'Sistema UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED', y, false);
             y += 4;
             
             y = _sectionHeader('II. ÂMBITO DA PERÍCIA', y, [10, 40, 90]);
@@ -457,7 +457,7 @@
             doc.setTextColor(130, 130, 130);
             doc.setDrawColor(200, 200, 200);
             doc.line(L, pageH - 10, R, pageH - 10);
-            doc.text('UNIFED-PROBATUM v13.5.0-PURE · Sessão: ' + sessId, L, pageH - 6);
+            doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Sessão: ' + sessId, L, pageH - 6);
             doc.text('Pág. 1 · ' + hoje + ' · ISO/IEC 27037:2012', R, pageH - 6, { align: 'right' });
             
             var _fname = 'UNIFED_ANEXO_CUSTODIA_' + sessId + '_' + hoje.replace(/\//g, '-') + '.pdf';
@@ -529,7 +529,7 @@
             
             var _bodyParts = [];
             _bodyParts.push(_p('UNIFED — PROBATUM · MATRIZ DE ARGUMENTAÇÃO JURÍDICA', 'Heading1', true, 28, '0A3060'));
-            _bodyParts.push(_p('Peça Processual Editável — Gerada Automaticamente pelo Motor Forense v13.5.0-PURE', 'Normal', false, 18, '4B5563'));
+            _bodyParts.push(_p('Peça Processual Editável — Gerada Automaticamente pelo Motor Forense v13.5.1-MILITARY-HARDENED', 'Normal', false, 18, '4B5563'));
             _bodyParts.push(_p('Sessão: ' + sessId + ' · Emissão: ' + hoje, 'Normal', false, 18, '6B7280'));
             _bodyParts.push(_p('Master Hash SHA-256: ' + mhash, 'Normal', true, 17, 'DC2626'));
             
@@ -620,7 +620,7 @@
         return btn;
     }
     
-    // ── SOBREPOSIÇÃO CIRÚRGICA v13.5.0-PURE: injetarBotoes → #triadaContainer ──
+    // ── SOBREPOSIÇÃO CIRÚRGICA v13.5.1-MILITARY-HARDENED: injetarBotoes → #triadaContainer ──
     function injetarBotoes() {
         console.log('[UNIFED-TRIADA] Procurando #triadaContainer...');
 
@@ -666,7 +666,7 @@
     }
 
     /**
-     * UNIFED - PROBATUM v13.5.0-PURE
+     * UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED
      * RECONFIGURAÇÃO FINAL DOS PACOTES (ANALISTA vs ADVOGADO)
      */
 

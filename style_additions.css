@@ -1,5 +1,5 @@
 /* ============================================================================
-   UNIFED - PROBATUM · v13.5.0-PURE · ESTILOS DO PAINEL DE CASO REAL
+   UNIFED - PROBATUM · v13.5.1-MILITARY-HARDENED · ESTILOS DO PAINEL DE CASO REAL
    ============================================================================
    Escopo      : Seletor raiz #pureDashboard — sem conflito com estilos base.
    Variáveis   : Consume as CSS custom properties existentes em style.css base.
@@ -13,7 +13,7 @@
 :root {
     --pure-accent:  #00E5FF; /* Cyan Forense */
     --pure-warn:    #EF4444; /* Alerta Fiscal */
-    --pure-version: "v13.5.0-PURE";
+    --pure-version: "v13.5.1-MILITARY-HARDENED";
 }
 
 /* ── Wrapper do painel PURE — transição de entrada ──────────────────────────── */
@@ -518,7 +518,7 @@
 }
 
 /* ============================================================================
-   UNIFED - PROBATUM · v13.12.3-DIAMOND-SHIELD · ESTILOS COLARINHO BRANCO
+   UNIFED - PROBATUM · v13.5.1-MILITARY-HARDENED · ESTILOS COLARINHO BRANCO
    ============================================================================
    Card de Alerta de Criminalidade Financeira — Revelação Dinâmica
    Indicadores de fraude fiscal com métricas quantificadas
@@ -646,13 +646,13 @@
 }
 
 /* ============================================================================
-   FIM: style_additions.css · v13.12.3-DIAMOND-SHIELD · UNIFED-PROBATUM
-   Estilos para Painel PURE v13.5.0 + Colarinho Branco v13.12.3
+   FIM: style_additions.css · v13.5.1-MILITARY-HARDENED · UNIFED-PROBATUM
+   Estilos para Painel PURE v13.5.1 + Colarinho Branco v13.5.1
    ============================================================================ */
 
 
 /* ============================================================================
-   PATCH TERMINAL — v13.5.0-PURE · Boot Terminal Panorâmico de Elite
+   PATCH TERMINAL — v13.5.1-MILITARY-HARDENED · Boot Terminal Panorâmico de Elite
    Escopo: #bootTerminalContainer, .pure-login-box, #consoleOutput (fallback)
    Glassmorphism Forense: fundo translúcido + tipografia legível + scroll elegante
    ============================================================================ */
@@ -718,7 +718,7 @@
 /* ══ FIM PATCH TERMINAL ════════════════════════════════════════════════════ */
 
 /* ==========================================================================
-   TOOLBAR UNIFICADA 9 BOTÕES LED — UNIFED v13.5.0-PURE
+   TOOLBAR UNIFICADA 9 BOTÕES LED — UNIFED v13.5.1-MILITARY-HARDENED
    .pure-toolbar-unified é uma grelha de 20 colunas.
    Linha 1: 4 × .l1-btn (span 5) — botões estáticos no HTML.
    Linha 2: .triada-row ocupa as 20 colunas e contém os 5 × .l2-btn

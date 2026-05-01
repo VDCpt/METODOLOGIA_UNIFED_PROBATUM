@@ -1,5 +1,5 @@
 /**
- * UNIFED - PROBATUM · OUTPUT ENRICHMENT LAYER · v13.5.0-PURE
+ * UNIFED - PROBATUM · OUTPUT ENRICHMENT LAYER · v13.5.1-MILITARY-HARDENED
  * ============================================================================
  * Arquitetura: Asynchronous Post-Computation Orchestration
  * Padrão:      Read-Only Data Consumption sobre UNIFEDSystem.analysis
@@ -297,12 +297,12 @@ async function renderSankeyToImage(analysis) {
     ctx.fillStyle = '#00E5FF';
     ctx.font = 'bold 22px Courier New, monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('DIAGRAMA DE FLUXO FINANCEIRO FORENSE -- UNIFED-PROBATUM v13.5.0-PURE', W / 2, 32);
+    ctx.fillText('DIAGRAMA DE FLUXO FINANCEIRO FORENSE -- UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED', W / 2, 32);
     ctx.font = '14px Courier New, monospace';
     ctx.fillStyle = 'rgba(0,229,255,0.7)';
     ctx.fillText('Read-Only · Art. 125.o CPP · Output Enrichment Layer', W / 2, 55);
 
-    // ── Variáveis para o Sankey v13.5.0-PURE ────────────────────────────
+    // ── Variáveis para o Sankey v13.5.1-MILITARY-HARDENED ────────────────────────────
     // NODO RAIZ: Volume Transacional Real = Ganhos Extrato (fonte: extrato bancário)
     var ganhos    = t.ganhos    || 0;
     var dac7      = t.dac7TotalPeriodo || 0;
@@ -394,7 +394,7 @@ async function renderSankeyToImage(analysis) {
     });
 
     var dataURL = canvas.toDataURL('image/png');
-    // ── PATCH UNIFED-v13.5.0-PURE: Forçar limpeza de memória RAM ──────────
+    // ── PATCH UNIFED-v13.5.1-MILITARY-HARDENED: Forçar limpeza de memória RAM ──────────
     // Evita memory leaks em sessões longas com múltiplas exportações PDF
     canvas.width  = 0;
     canvas.height = 0;
@@ -436,7 +436,7 @@ function generateIntegritySeal(masterHash, doc, x, y, sealSize) {
     doc.setFont('courier', 'bold');
     doc.setTextColor(0, 229, 255);
     doc.text('PROBATUM INTEGRITY SEAL', CX, y + 3.5, { align: 'center' });
-    doc.text('v13.5.0-PURE \u00b7 SHA-256', CX, y + 6.5, { align: 'center' });
+    doc.text('v13.5.1-MILITARY-HARDENED \u00b7 SHA-256', CX, y + 6.5, { align: 'center' });
 
     doc.setDrawColor(30, 60, 100);
     doc.setLineWidth(0.2);
@@ -499,7 +499,7 @@ window.generateIntegritySeal = generateIntegritySeal;
 //    "document.createElement is not a function"
 //    O objeto global document e agora usado corretamente no final.
 //
-//    FIX-4 (v13.5.0-PURE): Parâmetro opcional xmlInject.
+//    FIX-4 (v13.5.1-MILITARY-HARDENED): Parâmetro opcional xmlInject.
 //    O NEXUS RAG passa o XML jurisprudencial diretamente como argumento.
 //    O string replacement seguro ocorre em _docXml (variável local) ANTES
 //    da instanciação do new JSZip() — elimina o risco de prototype pollution
@@ -519,7 +519,7 @@ async function exportDOCX(xmlInject) {
         return;
     }
 
-    if (typeof logAudit === 'function') logAudit('\ud83d\udcc4 [v13.5.0-PURE] A gerar Minuta de Peticao Inicial (DOCX)...', 'info');
+    if (typeof logAudit === 'function') logAudit('\ud83d\udcc4 [v13.5.1-MILITARY-HARDENED] A gerar Minuta de Peticao Inicial (DOCX)...', 'info');
 
     var sys  = window.UNIFEDSystem;
     var t    = sys.analysis.totals    || {};
@@ -616,7 +616,7 @@ async function exportDOCX(xmlInject) {
         para('', false), hr(),
         para('Processo N.o: ' + xe(sys.sessionId || 'UNIFED-PENDING'), false, '20', '333333'),
         para('Data de Elaboracao: ' + date, false, '20', '333333'),
-        para('Sistema: UNIFED - PROBATUM v13.5.0-PURE - ADMISSIBILIDADE ART. 125.º CPP - DORA COMPLIANT', false, '18', '666666'),
+        para('Sistema: UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED - ADMISSIBILIDADE ART. 125.º CPP - DORA COMPLIANT', false, '18', '666666'),
         para('Referencia de Integridade: Master Hash SHA-256: ' + xe(sys.masterHash || 'N/A'), false, '16', '888888'),
         hr(), para('', false),
 
@@ -658,7 +658,7 @@ async function exportDOCX(xmlInject) {
         para('', false), hr(), para('', false),
 
         para('IV. SÍNTESE JURÍDICA PERICIAL — ANÁLISE DETERMINÍSTICA', true, '26', '003366'),
-        para('Elaborada sob metodologia forense UNIFED-PROBATUM v13.5.0-PURE. Análise algorítmica de base determinística (non-probabilistic). Conformidade: Art. 125.º CPP · ISO/IEC 27037:2012 · DORA (UE) 2022/2554.', false, '16', '555555'),
+        para('Elaborada sob metodologia forense UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED. Análise algorítmica de base determinística (non-probabilistic). Conformidade: Art. 125.º CPP · ISO/IEC 27037:2012 · DORA (UE) 2022/2554.', false, '16', '555555'),
         para('NOTA: A jurisprudência citada constitui referência doutrinária para orientação do advogado mandatário. Toda a referência a acórdãos deve ser validada pelo advogado antes de qualquer uso processual. O perito responsabiliza-se pelos dados forenses e pela metodologia UNIFED-PROBATUM.', false, '16', '888888'),
         para('', false)
     ].concat(narrativeParas).concat([
@@ -688,7 +688,7 @@ async function exportDOCX(xmlInject) {
         para('', false),
         para('Porto, ' + date, false, '20', '333333'), para('', false),
         para('_____________________________________________', false, '20', '333333'),
-        para('Analista e Consultor Forense Independente - UNIFED - PROBATUM v13.5.0-PURE', false, '18', '555555'),
+        para('Analista e Consultor Forense Independente - UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED', false, '18', '555555'),
         para('Reconstituicao da Verdade Material Digital · Art. 153.o CPP · ISO/IEC 27037:2012', false, '16', '888888'),
         para('', false),
         para('AVISO: Esta minuta e destinada ao advogado mandatario. Nao constitui por si so peca processual.', false, '16', 'AA0000')
@@ -770,7 +770,7 @@ async function exportDOCX(xmlInject) {
             try { URL.revokeObjectURL(url); document.body.removeChild(link); } catch (_) {}
         }, 2000);
 
-        if (typeof logAudit === 'function') logAudit('\u2705 [v13.5.0-PURE] Minuta DOCX exportada com sucesso.', 'success');
+        if (typeof logAudit === 'function') logAudit('\u2705 [v13.5.1-MILITARY-HARDENED] Minuta DOCX exportada com sucesso.', 'success');
         if (typeof showToast === 'function') showToast('Minuta DOCX exportada - Peticao Inicial pronta', 'success');
         if (typeof ForensicLogger !== 'undefined') ForensicLogger.addEntry('DOCX_EXPORT_COMPLETED', { sessionId: sys.sessionId });
     } catch (zipErr) {
@@ -1029,7 +1029,7 @@ async function generateTemporalChartImage(monthlyData, analysis) {
     });
 
     var dataURL = canvas.toDataURL('image/png');
-    // ── PATCH UNIFED-v13.5.0-PURE: Forçar limpeza de memória RAM ──────────
+    // ── PATCH UNIFED-v13.5.1-MILITARY-HARDENED: Forçar limpeza de memória RAM ──────────
     // Evita memory leaks em sessões longas com múltiplas exportações PDF (ATF)
     canvas.width  = 0;
     canvas.height = 0;
@@ -1070,7 +1070,7 @@ function openATFModal() {
         '<div style="width:100%;max-width:1100px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,229,255,0.3);padding-bottom:12px;margin-bottom:20px">' +
             '<div>' +
-                '<div style="color:#00E5FF;font-size:1.1rem;font-weight:bold;letter-spacing:0.08em">\u23f3 ANALISE TEMPORAL FORENSE (ATF) \u00b7 v13.5.0-PURE</div>' +
+                '<div style="color:#00E5FF;font-size:1.1rem;font-weight:bold;letter-spacing:0.08em">\u23f3 ANALISE TEMPORAL FORENSE (ATF) \u00b7 v13.5.1-MILITARY-HARDENED</div>' +
                 '<div style="color:rgba(255,255,255,0.5);font-size:0.72rem;margin-top:4px">Tendencias \u00b7 Outliers 2\u03c3 \u00b7 Indice de Recidiva Algorítmica \u00b7 Read-Only</div>' +
             '</div>' +
             '<button onclick="document.getElementById(\'atfModal\').remove()" ' +
@@ -1221,7 +1221,7 @@ window.generateLegalNarrative  = generateLegalNarrative;
 window.renderSankeyToImage     = renderSankeyToImage;
 
 // ============================================================================
-// UNIFED-v13.5.0-PURE — generateBurdenOfProofSection()
+// UNIFED-v13.5.1-MILITARY-HARDENED — generateBurdenOfProofSection()
 // Adenda de Alta Inteligência Jurídica: Inversão do Ónus da Prova
 // Fundamento: Art. 344.º n.º 2 CC · Princípio da Proximidade da Prova
 //             Acórdão STJ 11/07/2013 · Art. 100.º CPPT
@@ -1713,7 +1713,7 @@ window.addEventListener('UNIFED_ANALYSIS_COMPLETE', function(evt) {
     _obs.observe(_wrapper, { attributes: true, attributeFilter: ['style'] });
 })();
 
-console.log('[UNIFED-ENRICHMENT] \u2705 Output Enrichment Layer v13.5.0-PURE carregado.');
+console.log('[UNIFED-ENRICHMENT] \u2705 Output Enrichment Layer v13.5.1-MILITARY-HARDENED carregado.');
 console.log('[UNIFED-ENRICHMENT]   . generateLegalNarrative()     - IA Argumentativa + AI Adversarial Simulator');
 console.log('[UNIFED-ENRICHMENT]   . renderSankeyToImage()        - Dynamic Canvas-to-PDF (Sankey)');
 console.log('[UNIFED-ENRICHMENT]   . generateIntegritySeal()      - Integrity Visual Signature (Selo Holografico)');
@@ -1725,7 +1725,7 @@ console.log('[UNIFED-ENRICHMENT]   . openATFModal()               - ATF Dashboar
 console.log('[UNIFED-ENRICHMENT]   . Modo: Read-Only - Fonte: UNIFEDSystem.analysis + monthlyData');
 
 /* =====================================================================
-   FIM DO FICHEIRO ENRICHMENT.JS - v13.5.0-PURE
+   FIM DO FICHEIRO ENRICHMENT.JS - v13.5.1-MILITARY-HARDENED
    UNIFED - PROBATUM - OUTPUT ENRICHMENT LAYER
 
    BUGS CORRIGIDOS:
