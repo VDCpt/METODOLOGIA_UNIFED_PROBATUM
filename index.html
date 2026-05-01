@@ -1045,15 +1045,9 @@
      Core Freeze: não altera fórmulas de script.js nem módulos enrichment/nexus.
      ══════════════════════════════════════════════════════════════════════════ -->
 <link rel="stylesheet" href="style_additions.css">
+<!-- CORRECÇÃO v13.5.1: Activação do painel com binding do botão ATF -->
 <script>
     // ── Activação do Painel v13.5.1-MILITARY-HARDENED ───────────────────────────────────
-    // Aguarda UNIFEDSystem estar disponível, depois:
-    //   1. Injeta o HTML do painel no wrapper
-    //   2. Chama loadAnonymizedRealCase() para popular os dados
-    //   3. Torna o wrapper visível
-    // O fetch do panel.html é local — sem dependências externas.
-    // Painel v13.5.1-MILITARY-HARDENED: NÃO auto-executa.
-    // Activação exclusiva via window._activatePurePanel() chamado em activateDemoMode().
     window._activatePurePanel = function() {
         fetch('panel.html')
             .then(function(r) { return r.text(); })
@@ -1063,13 +1057,36 @@
                     wrapper.innerHTML = html;
                     wrapper.style.display = 'block';
                 }
+                
+                // 1. Carrega os dados reais (incluindo o monthlyData que corrigimos acima)
                 if (typeof UNIFEDSystem !== 'undefined' && typeof UNIFEDSystem.loadAnonymizedRealCase === 'function') {
                     UNIFEDSystem.loadAnonymizedRealCase();
                 }
-                console.info('[UNIFED-PURE] ✅ Painel v13.5.1-MILITARY-HARDENED activado.');
+                
+                // 2. RETIFICAÇÃO v13.5.1: Forçar sincronização imediata dos IDs
+                if (typeof window._syncPureDashboard === 'function') {
+                    window._syncPureDashboard();
+                }
+
+                // 3. RESOLUÇÃO DO EVENTO DO BOTÃO ATF (DeepSeek Fix)
+                // Procura o botão injetado no DOM e atribui o clique imediatamente
+                var atfBtn = document.getElementById('pure-atf-btn');
+                if (atfBtn) {
+                    atfBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (typeof window.openATFModal === 'function') {
+                            window.openATFModal();
+                        } else {
+                            console.warn('[UNIFED-PURE] window.openATFModal não encontrada.');
+                        }
+                    });
+                    console.info('[UNIFED-PURE] ⏳ EventListener vinculado com sucesso ao #pure-atf-btn.');
+                }
+                
+                console.info('[UNIFED-PURE] ✅ Painel v13.5.1-MILITARY-HARDENED activado com sucesso.');
             })
-            .catch(function() {
-                console.info('[UNIFED-PURE] [i] panel.html não encontrado — modo standalone.');
+            .catch(function(err) {
+                console.info('[UNIFED-PURE] [i] panel.html não encontrado — modo standalone.', err);
             });
     };
 </script>
