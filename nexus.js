@@ -554,13 +554,38 @@
         }
     }
 
-    /** Injeta painel "RISCO FUTURO" no modal ATF */
+    /** Injeta painel "RISCO FUTURO" no modal ATF (com suporte a tradução) */
     function _injectRiscoFuturoPanel(forecast) {
         if (!forecast.valid) return;
         var modal = document.getElementById('atfModal');
         if (!modal) return;
         var existing = document.getElementById('nexusForecastPanel');
         if (existing) existing.remove();
+
+        var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+        var isEN = (lang === 'en');
+
+        var dict = {
+            title: isEN ? '🔮 NEXUS ATF PREDICTIVE ENGINE · FUTURE RISK (6 MONTHS)' : '🔮 MOTOR PREDITIVO NEXUS ATF · RISCO FUTURO (6 MESES)',
+            subtitle: isEN ? 'Linear Regression + EMA · Confidence: ' : 'Regressão Linear + EMA · Confiança: ',
+            trendLabel: isEN ? 'Trend:' : 'Tendência:',
+            projectedOmission: isEN ? 'PROJECTED OMISSION (6M)' : 'OMISSÃO PROJETADA (6M)',
+            totalEstimatedLiability: isEN ? 'Total estimated liability' : 'Passivo total estimado',
+            projectedMissingVAT: isEN ? 'PROJECTED MISSING VAT (6M)' : 'IVA EM FALTA PROJETADO (6M)',
+            vatOnProjOmission: isEN ? '23% on projected omission' : '23% sobre omissão proj.',
+            peakRisk: isEN ? 'PEAK RISK PROJECTED' : 'PICO DE RISCO PROJETADO',
+            period: isEN ? 'Period' : 'Período',
+            projOmissionShort: isEN ? 'Proj. Omission' : 'Omissão Proj.',
+            projVATShort: isEN ? 'Proj. VAT (23%)' : 'IVA 23% Proj.',
+            risk: isEN ? 'Risk' : 'Risco',
+            high: isEN ? '[!] HIGH' : '[!] ALTO',
+            medium: isEN ? '[^] MED' : '[^] MED',
+            low: isEN ? '[OK] LOW' : '[OK] MOD',
+            methodology: isEN ? '⚙ Predictive Methodology (NEXUS ATF): Simple Linear Regression (OLS) + Exponential Moving Average (EMA α=0.3) on omission time series. Weighted combination 60/40. Projection without seasonal data — confidence index: ' : '⚙ Metodologia Preditiva (NEXUS ATF): Regressão Linear Simples (OLS) + Média Móvel Exponencial (EMA α=0.3) sobre série temporal de omissões. Combinação ponderada 60/40. Projeção sem dados sazonais — índice de confiança: ',
+            historicMonths: isEN ? 'Historic months: ' : 'Histórico: ',
+            monthsLabel: isEN ? 'months' : 'meses',
+            thisPanelDoesNotAlter: isEN ? 'This panel DOES NOT alter PROBATUM fiscal calculations (Read-Only).' : 'Este painel NÃO altera os cálculos fiscais do motor PROBATUM (Read-Only).'
+        };
 
         var fmtEur = function(v) {
             return new Intl.NumberFormat('pt-PT', {style:'currency',currency:'EUR',minimumFractionDigits:2}).format(v || 0);
@@ -579,44 +604,40 @@
 
         panel.innerHTML =
             '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">' +
-                '<div style="color:#A855F7;font-size:0.9rem;font-weight:bold;letter-spacing:0.06em">&#x1F52E; MOTOR PREDITIVO NEXUS ATF · RISCO FUTURO (6 MESES)</div>' +
-                '<div style="color:rgba(255,255,255,0.4);font-size:0.65rem">Regressão Linear + EMA · Confiança: <span style="color:#A855F7">' + forecast.confidence + '</span></div>' +
-                '<div style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.6rem">Tendência: ' + forecast.trend + '</div>' +
+                '<div style="color:#A855F7;font-size:0.9rem;font-weight:bold;letter-spacing:0.06em">' + dict.title + '</div>' +
+                '<div style="color:rgba(255,255,255,0.4);font-size:0.65rem">' + dict.subtitle + '<span style="color:#A855F7">' + forecast.confidence + '</span></div>' +
+                '<div style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:0.6rem">' + dict.trendLabel + ' ' + forecast.trend + '</div>' +
             '</div>' +
             '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px">' +
-                // Card 1: Omissão Total Projetada
                 '<div style="background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);border-radius:6px;padding:14px;text-align:center">' +
-                    '<div style="color:rgba(255,255,255,0.5);font-size:0.62rem;margin-bottom:4px;letter-spacing:0.04em">OMISSÃO PROJETADA (6M)</div>' +
+                    '<div style="color:rgba(255,255,255,0.5);font-size:0.62rem;margin-bottom:4px;letter-spacing:0.04em">' + dict.projectedOmission + '</div>' +
                     '<div style="color:#A855F7;font-size:1.45rem;font-weight:900">' + fmtEur(forecast.risco) + '</div>' +
-                    '<div style="color:rgba(255,255,255,0.35);font-size:0.6rem;margin-top:2px">Passivo total estimado</div>' +
+                    '<div style="color:rgba(255,255,255,0.35);font-size:0.6rem;margin-top:2px">' + dict.totalEstimatedLiability + '</div>' +
                 '</div>' +
-                // Card 2: IVA em Falta Projetado
                 '<div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:14px;text-align:center">' +
-                    '<div style="color:rgba(255,255,255,0.5);font-size:0.62rem;margin-bottom:4px;letter-spacing:0.04em">IVA EM FALTA PROJETADO (6M)</div>' +
+                    '<div style="color:rgba(255,255,255,0.5);font-size:0.62rem;margin-bottom:4px;letter-spacing:0.04em">' + dict.projectedMissingVAT + '</div>' +
                     '<div style="color:#F97316;font-size:1.45rem;font-weight:900">' + fmtEur(forecast.ivaRisco) + '</div>' +
-                    '<div style="color:rgba(255,255,255,0.35);font-size:0.6rem;margin-top:2px">23% sobre omissão proj.</div>' +
+                    '<div style="color:rgba(255,255,255,0.35);font-size:0.6rem;margin-top:2px">' + dict.vatOnProjOmission + '</div>' +
                 '</div>' +
-                // Card 3: Pior mês projetado
                 (function() {
                     var maxIdx = 0, maxVal = 0;
                     forecast.discSeries.forEach(function(v, i) { if (v > maxVal) { maxVal = v; maxIdx = i; } });
                     return '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:6px;padding:14px;text-align:center">' +
-                        '<div style="color:rgba(255,255,255,0.5);font-size:0.62rem;margin-bottom:4px;letter-spacing:0.04em">PICO DE RISCO PROJETADO</div>' +
+                        '<div style="color:rgba(255,255,255,0.5);font-size:0.62rem;margin-bottom:4px;letter-spacing:0.04em">' + dict.peakRisk + '</div>' +
                         '<div style="color:#EF4444;font-size:1.1rem;font-weight:900">' + (forecast.labels[maxIdx] || 'N/A') + '</div>' +
                         '<div style="color:#EF4444;font-size:0.9rem;font-weight:700">' + fmtEur(maxVal) + '</div>' +
                     '</div>';
                 })() +
             '</div>' +
-            // Tabela mensal de previsão
             '<div style="overflow-x:auto">' +
                 '<table style="width:100%;border-collapse:collapse;font-size:0.7rem;color:rgba(255,255,255,0.8)">' +
                     '<thead>' +
                         '<tr>' +
-                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#A855F7;text-align:left">Período</th>' +
-                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#A855F7;text-align:right">Omissão Proj.</th>' +
-                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#F97316;text-align:right">IVA 23% Proj.</th>' +
-                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:rgba(255,255,255,0.5);text-align:center">Risco</th>' +
-                        '</tr>' +
+                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#A855F7;text-align:left">' + dict.period + '</th>' +
+                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#A855F7;text-align:right">' + dict.projOmissionShort + '</th>' +
+                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#F97316;text-align:right">' + dict.projVATShort + '</th>' +
+                            '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:rgba(255,255,255,0.5);text-align:center">' + dict.risk + '</th>' +
+                        '</table>' +
                     '</thead>' +
                     '<tbody>' +
                         forecast.labels.map(function(lbl, i) {
@@ -625,14 +646,13 @@
                             var rMax = Math.max.apply(null, forecast.discSeries.concat([1]));
                             var pct  = rMax > 0 ? (disc / rMax * 100) : 0;
                             var rColor = pct > 75 ? '#EF4444' : pct > 45 ? '#F59E0B' : '#10B981';
+                            var riskText = pct > 75 ? dict.high : pct > 45 ? dict.medium : dict.low;
                             return '<tr>' +
                                 '<td style="border:1px solid rgba(168,85,247,0.15);padding:5px 10px;color:#A855F7">' + lbl + '</td>' +
                                 '<td style="border:1px solid rgba(168,85,247,0.15);padding:5px 10px;text-align:right">' + fmtEur(disc) + '</td>' +
                                 '<td style="border:1px solid rgba(168,85,247,0.15);padding:5px 10px;text-align:right;color:#F97316">' + fmtEur(iva) + '</td>' +
                                 '<td style="border:1px solid rgba(168,85,247,0.15);padding:5px 10px;text-align:center">' +
-                                    '<div style="display:inline-block;background:' + rColor + ';border-radius:3px;padding:2px 8px;font-size:0.62rem;color:#fff">' +
-                                        (pct > 75 ? '[!] ALTO' : pct > 45 ? '[^] MED' : '[OK] MOD') +
-                                    '</div>' +
+                                    '<div style="display:inline-block;background:' + rColor + ';border-radius:3px;padding:2px 8px;font-size:0.62rem;color:#fff">' + riskText + '</div>' +
                                 '</td>' +
                             '</tr>';
                         }).join('') +
@@ -640,17 +660,14 @@
                 '</table>' +
             '</div>' +
             '<div style="margin-top:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(168,85,247,0.2);border-radius:4px;padding:8px 12px;font-size:0.65rem;color:rgba(255,255,255,0.4);line-height:1.6">' +
-                '<strong style="color:rgba(168,85,247,0.8)">⚙ Metodologia Preditiva (NEXUS ATF):</strong> ' +
-                'Regressão Linear Simples (OLS) + Média Móvel Exponencial (EMA α=0.3) sobre série temporal de omissões. ' +
-                'Combinação ponderada 60/40. Projeção sem dados sazonais — índice de confiança: <strong style="color:#A855F7">' + forecast.confidence + '</strong>. ' +
-                'Histórico: <strong>' + forecast.historicN + '</strong> meses. ' +
-                'Este painel NÃO altera os cálculos fiscais do motor PROBATUM (Read-Only). ' +
-                'Art. 103.o e 104.o RGIT · ISO/IEC 27037:2012' +
+                '<strong style="color:rgba(168,85,247,0.8)">' + dict.methodology + '<strong style="color:#A855F7">' + forecast.confidence + '</strong>. ' +
+                dict.historicMonths + '<strong>' + forecast.historicN + '</strong> ' + dict.monthsLabel + '. ' +
+                dict.thisPanelDoesNotAlter + ' ' +
+                'Art. 103º e 104º RGIT · ISO/IEC 27037:2012' +
             '</div>';
 
         frag.appendChild(panel);
 
-        // Injectar antes do botão FECHAR no modal (no final do conteúdo)
         var wrapper = modal.querySelector('div[style*="max-width:1100px"]');
         if (wrapper) {
             wrapper.appendChild(frag);
@@ -659,7 +676,7 @@
         }
     }
 
-    /** Hook em openATFModal */
+    /** Hook em openATFModal -> com tradução */
     function _installATFHook() {
         if (typeof window.openATFModal !== 'function') {
             setTimeout(_installATFHook, 300);
@@ -770,7 +787,7 @@
             control:    { label: 'Controlo de Autenticidade', icon: '🔐', color: '#E2B87A' },
             saft:       { label: 'SAF-T / Relatório CSV',     icon: '📊', color: '#3B82F6' },
             invoices:   { label: 'Fatura Fiscal',             icon: '🧾', color: '#10B981' },
-            statements: { label: 'Extrato de Ganhos',         icon: '💳', color: '#06B6D4' },
+            statements: { label: 'Extrato de Ganhos',         icon: '💰', color: '#06B6D4' },
             dac7:       { label: 'Declaração DAC7',           icon: '🏛️', color: '#8B5CF6' }
         };
 
@@ -1246,4 +1263,7 @@ console.info(
         DocumentFragment injection — modal flutuante glassmorphism/dark mode
         SHA-256 via Web Crypto API + fallback hash por ficheiro
         Status: ANCORADO (cadeia de custódia existente) / PENDENTE (hash NEXUS)
+   M5 — Full-Disclosure Protocol:
+        revela todos os .pure-card, smoking-gun-2, pureATFCard, pureDashboardWrapper
+        Gatilhos: UNIFED_ANALYSIS_COMPLETE, activeForensicSession, unifed:interfaceShown
    ========================================================================= */

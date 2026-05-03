@@ -3,11 +3,11 @@
  * UNIFED - PROBATUM · v13.5.1-PURE · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
- * Versão        : 1.1.0-TRIADA (PACOTE ADVOGADO CORRIGIDO)
+ * Versão        : 1.2.0-TRIADA (CORREÇÃO DE TRADUÇÃO)
  * 
- * RETIFICAÇÃO v1.1.0:
+ * RETIFICAÇÃO v1.2.0:
+ *   - Adicionados atributos data-pt/data-en aos botões injetados.
  *   - Garantia de que o Pacote Advogado NÃO gera "Perícia" (apenas Relatório, Anexo, Matriz + JSON)
- *   - Isolamento da função _executarPacoteAdvogado para evitar conflitos
  * ============================================================================
  */
 
@@ -645,14 +645,16 @@
     }
     
     // =========================================================================
-    // CRIAÇÃO DOS BOTÕES
+    // CRIAÇÃO DOS BOTÕES (COM SUPORTE DE TRADUÇÃO)
     // =========================================================================
-    function criarBotao(id, iconClass, label, cor, handler) {
+    function criarBotao(id, iconClass, labelPt, labelEn, cor, handler) {
         var btn = document.createElement('button');
         btn.id = id;
         btn.className = 'btn-tool';
-        btn.innerHTML = '<i class="fas ' + iconClass + '"></i> ' + label;
-        btn.title = label;
+        btn.innerHTML = '<i class="fas ' + iconClass + '"></i> ' + labelPt;
+        btn.title = labelPt;
+        btn.setAttribute('data-pt', labelPt);
+        btn.setAttribute('data-en', labelEn);
         btn.onclick = handler;
         
         btn.style.cssText = [
@@ -693,12 +695,12 @@
             return true;
         }
         var botoes = [
-            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
-            { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA',   cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
-            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        }
+            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      labelPt: 'RELATÓRIO PERICIAL', labelEn: 'EXPERT REPORT',        cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
+            { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', labelPt: 'ANEXO · CUSTÓDIA',   labelEn: 'ANNEX · CUSTODY',      cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
+            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     labelPt: 'MATRIZ JURÍDICA',    labelEn: 'LEGAL MATRIX',         cor: '#10B981', handler: _unifedExportDocxMatriz        }
         ];
         botoes.forEach(function(b) {
-            container.appendChild(criarBotao(b.id, b.icon, b.label, b.cor, b.handler));
+            container.appendChild(criarBotao(b.id, b.icon, b.labelPt, b.labelEn, b.cor, b.handler));
             console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
         
@@ -707,6 +709,8 @@
             btnPacote.id = 'downloadPacoteAdvogadoBtn';
             btnPacote.className = 'pure-btn-led led-cyan';
             btnPacote.innerHTML = '<span>📦 PACOTE ADVOGADO</span>';
+            btnPacote.setAttribute('data-pt', '📦 PACOTE ADVOGADO');
+            btnPacote.setAttribute('data-en', '📦 LAWYER BUNDLE');
             btnPacote.addEventListener('click', function() {
                 if (typeof window.descarregarPacoteAdvogado === 'function') {
                     window.descarregarPacoteAdvogado();

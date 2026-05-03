@@ -1044,7 +1044,7 @@ window.generateTemporalChartImage = generateTemporalChartImage;
 
 
 /**
- * openATFModal() - Modal Dashboard interativo com Chart.js
+ * openATFModal() - Modal Dashboard interativo com Chart.js (com suporte a tradução)
  */
 function openATFModal() {
     var sys = window.UNIFEDSystem;
@@ -1055,6 +1055,34 @@ function openATFModal() {
     var existing = document.getElementById('atfModal');
     if (existing) existing.remove();
 
+    // Detectar idioma
+    var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+    var isEN = (lang === 'en');
+
+    // Dicionário de strings
+    var dict = {
+        title: isEN ? '⏳ FORENSIC TEMPORAL ANALYSIS (ATF) · v13.5.1-MILITARY-HARDENED' : '⏳ ANÁLISE TEMPORAL FORENSE (ATF) · v13.5.1-MILITARY-HARDENED',
+        subtitle: isEN ? 'Trends · Outliers 2σ · Algorithmic Recidivism Index · Read-Only' : 'Tendências · Outliers 2σ · Índice de Recidiva Algorítmica · Read-Only',
+        closeBtn: isEN ? '✕ CLOSE' : '✕ FECHAR',
+        spLabel: isEN ? 'PERSISTENCE SCORE (SP)' : 'SCORE DE PERSISTÊNCIA (SP)',
+        monthsLabel: isEN ? 'MONTHS ANALYZED' : 'MESES ANALISADOS',
+        outliersLabel: isEN ? 'OUTLIERS > 2σ' : 'OUTLIERS > 2σ',
+        trendLabel: isEN ? 'TREND' : 'TENDÊNCIA',
+        opportunisticLabel: isEN ? 'OPPORTUNISTIC PATTERN' : 'PADRÃO OPORTUNÍSTICO',
+        detected: isEN ? 'DETECTED' : 'DETETADO',
+        notDetected: isEN ? 'NOT DETECTED' : 'NÃO DETETADO',
+        ascending: isEN ? '📈 ASCENDING' : '📈 ASCENDENTE',
+        descending: isEN ? '📉 DESCENDING' : '📉 DESCENDENTE',
+        stable: isEN ? '➡ STABLE' : '➡ ESTÁVEL',
+        chartTitle: isEN ? 'TEMPORAL CHART — GAINS · EXPENSES · DISCREPANCY' : 'GRÁFICO TEMPORAL — GANHOS · DESPESAS · DISCREPÂNCIA',
+        noDataMsg: isEN ? 'No monthly data. Load files with YYYYMM naming.' : 'Sem dados mensais. Carregue extratos com nome incluindo AAAAMM.',
+        outlierTitle: function(count) { return isEN ? (count + ' MONTHS WITH OUTLIER (DEV > 2σ) — Qualified evidence Art. 104º RGIT' : (count + ' MESES COM OUTLIER (DESVIO > 2σ) — Indício qualificado Art. 104º RGIT'); },
+        footerText: isEN ? 'Legal Foundation: Art. 103 and 104 of RGIT distinguish isolated error from fraudulent conduct through demonstration of iteration. The Persistence Score quantifies systematic omissions. Opportunistic pattern (outliers in revenue peaks) reinforces specific intent. Art. 125 CPP · ISO/IEC 27037:2012' : 'Fundamentação Jurídica: O Art. 103º e 104º do RGIT distinguem o erro pontual da conduta dolosa mediante a demonstração de iteração. O Score de Persistência quantifica a sistematicidade das omissões. O Padrão Oportunístico (outliers em picos de faturação) reforça o dolo específico. Art. 125º CPP · ISO/IEC 27037:2012'
+    };
+
+    var spColor = atf.persistenceScore >= 80 ? '#EF4444' : atf.persistenceScore >= 55 ? '#F59E0B' : '#10B981';
+    var spRGB   = atf.persistenceScore >= 80 ? '239,68,68' : atf.persistenceScore >= 55 ? '245,158,11' : '16,185,129';
+
     var modal = document.createElement('div');
     modal.id = 'atfModal';
     modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(8,18,36,0.97);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;padding:20px 16px 40px;font-family:Courier New,monospace';
@@ -1063,29 +1091,27 @@ function openATFModal() {
         return m.length === 6 ? m.substring(0, 4) + '/' + m.substring(4) : m;
     });
 
-    var spColor = atf.persistenceScore >= 80 ? '#EF4444' : atf.persistenceScore >= 55 ? '#F59E0B' : '#10B981';
-    var spRGB   = atf.persistenceScore >= 80 ? '239,68,68' : atf.persistenceScore >= 55 ? '245,158,11' : '16,185,129';
-
     modal.innerHTML =
         '<div style="width:100%;max-width:1100px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(0,229,255,0.3);padding-bottom:12px;margin-bottom:20px">' +
             '<div>' +
-                '<div style="color:#00E5FF;font-size:1.1rem;font-weight:bold;letter-spacing:0.08em">\u23f3 ANALISE TEMPORAL FORENSE (ATF) \u00b7 v13.5.1-MILITARY-HARDENED</div>' +
-                '<div style="color:rgba(255,255,255,0.5);font-size:0.72rem;margin-top:4px">Tendencias \u00b7 Outliers 2\u03c3 \u00b7 Indice de Recidiva Algorítmica \u00b7 Read-Only</div>' +
+                '<div style="color:#00E5FF;font-size:1.1rem;font-weight:bold;letter-spacing:0.08em">' + dict.title + '</div>' +
+                '<div style="color:rgba(255,255,255,0.5);font-size:0.72rem;margin-top:4px">' + dict.subtitle + '</div>' +
             '</div>' +
             '<button onclick="document.getElementById(\'atfModal\').remove()" ' +
                 'style="background:none;border:1px solid rgba(0,229,255,0.4);color:#00E5FF;cursor:pointer;padding:6px 14px;font-family:Courier New,monospace;font-size:0.8rem;border-radius:4px">' +
-                '\u2715 FECHAR</button>' +
+                dict.closeBtn +
+            '</button>' +
         '</div>' +
 
         '<div style="background:rgba(' + spRGB + ',0.12);border:1px solid ' + spColor + ';border-radius:8px;padding:16px 20px;margin-bottom:20px">' +
             '<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">' +
                 '<div style="text-align:center;min-width:80px">' +
                     '<div style="font-size:2.4rem;font-weight:900;color:' + spColor + '">' + atf.persistenceScore + '</div>' +
-                    '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem">/100 \u2014 SP</div>' +
+                    '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem">/100 — SP</div>' +
                 '</div>' +
                 '<div style="flex:1">' +
-                    '<div style="color:' + spColor + ';font-weight:bold;font-size:0.9rem;margin-bottom:4px">SCORE DE PERSISTENCIA (SP)</div>' +
+                    '<div style="color:' + spColor + ';font-weight:bold;font-size:0.9rem;margin-bottom:4px">' + dict.spLabel + '</div>' +
                     '<div style="color:rgba(255,255,255,0.75);font-size:0.8rem;line-height:1.5">' + atf.persistenceLabel + '</div>' +
                 '</div>' +
             '</div>' +
@@ -1096,31 +1122,31 @@ function openATFModal() {
 
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px">' +
             '<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.4);border-radius:6px;padding:12px;text-align:center">' +
-                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">MESES ANALISADOS</div>' +
+                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">' + dict.monthsLabel + '</div>' +
                 '<div style="color:#3B82F6;font-size:1.5rem;font-weight:bold">' + months.length + '</div></div>' +
             '<div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:12px;text-align:center">' +
-                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">OUTLIERS &gt; 2\u03c3</div>' +
+                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">' + dict.outliersLabel + '</div>' +
                 '<div style="color:#EF4444;font-size:1.5rem;font-weight:bold">' + atf.outlierMonths.length + '</div></div>' +
             '<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.4);border-radius:6px;padding:12px;text-align:center">' +
-                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">TENDENCIA</div>' +
+                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">' + dict.trendLabel + '</div>' +
                 '<div style="color:#F59E0B;font-size:1rem;font-weight:bold;margin-top:6px">' +
-                    (atf.trend === 'ascending' ? '\ud83d\udcc8 ASCENDENTE' : atf.trend === 'descending' ? '\ud83d\udcc9 DESCENDENTE' : '\u27a1\ufe0f ESTAVEL') + '</div></div>' +
+                    (atf.trend === 'ascending' ? dict.ascending : atf.trend === 'descending' ? dict.descending : dict.stable) + '</div></div>' +
             '<div style="background:rgba(' + (atf.opportunisticPattern ? '239,68,68' : '16,185,129') + ',0.1);border:1px solid rgba(' + (atf.opportunisticPattern ? '239,68,68' : '16,185,129') + ',0.4);border-radius:6px;padding:12px;text-align:center">' +
-                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">PADRAO OPORTUNISTICO</div>' +
+                '<div style="color:rgba(255,255,255,0.5);font-size:0.65rem;margin-bottom:4px">' + dict.opportunisticLabel + '</div>' +
                 '<div style="color:' + (atf.opportunisticPattern ? '#EF4444' : '#10B981') + ';font-size:0.9rem;font-weight:bold;margin-top:6px">' +
-                    (atf.opportunisticPattern ? '\u26a0 DETETADO' : '\u2713 NAO DETETADO') + '</div></div>' +
+                    (atf.opportunisticPattern ? dict.detected : dict.notDetected) + '</div></div>' +
         '</div>' +
 
         '<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:16px;margin-bottom:20px">' +
-            '<div style="color:#00E5FF;font-size:0.8rem;margin-bottom:12px;font-weight:bold">GRAFICO TEMPORAL \u2014 GANHOS \u00b7 DESPESAS \u00b7 DISCREPANCIA</div>' +
+            '<div style="color:#00E5FF;font-size:0.8rem;margin-bottom:12px;font-weight:bold">' + dict.chartTitle + '</div>' +
             (months.length === 0
-                ? '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px">Sem dados mensais. Carregue extratos com nome incluindo AAAAMM.</div>'
+                ? '<div style="color:rgba(255,255,255,0.4);text-align:center;padding:40px">' + dict.noDataMsg + '</div>'
                 : '<canvas id="atfChartCanvas" style="width:100%;max-height:320px"></canvas>') +
         '</div>' +
 
         (atf.outlierMonths.length > 0
             ? '<div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:16px;margin-bottom:20px">' +
-              '<div style="color:#EF4444;font-weight:bold;font-size:0.8rem;margin-bottom:8px">\u26a0 MESES COM OUTLIER (DESVIO &gt; 2\u03c3) \u2014 Indicio qualificado Art. 104.o RGIT</div>' +
+              '<div style="color:#EF4444;font-weight:bold;font-size:0.8rem;margin-bottom:8px">' + dict.outlierTitle(atf.outlierMonths.length) + '</div>' +
               '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
               atf.outlierMonths.map(function(m) {
                   var idx  = months.indexOf(m);
@@ -1135,11 +1161,7 @@ function openATFModal() {
             : '') +
 
         '<div style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.15);border-radius:6px;padding:12px;font-size:0.72rem;color:rgba(255,255,255,0.5);line-height:1.6">' +
-            '<strong style="color:rgba(0,229,255,0.7)">Fundamentacao Juridica:</strong> ' +
-            'O Art. 103.o e 104.o do RGIT distinguem o erro pontual da conduta dolosa mediante a demonstracao de iteracao. ' +
-            'O Score de Persistencia quantifica a sistematicidade das omissoes. ' +
-            'O Padrao Oportunistico (outliers em picos de faturacao) reforca o dolo especifico. ' +
-            'Art. 125.o CPP \u00b7 ISO/IEC 27037:2012' +
+            '<strong style="color:rgba(0,229,255,0.7)">' + (isEN ? 'Legal Foundation:' : 'Fundamentação Jurídica:') + '</strong> ' + dict.footerText +
         '</div>' +
         '</div>';
 
@@ -1150,38 +1172,36 @@ function openATFModal() {
         try {
             var cvs = document.getElementById('atfChartCanvas');
             if (cvs) {
-                // ── FIX-1: MITIGAÇÃO DE MEMORY LEAK (WebGL Context Accumulation) ──────
-                // Chart.js acumula contextos WebGL no mesmo <canvas> se não for
-                // explicitamente destruído. A API oficial Chart.getChart(canvas) permite
-                // recuperar a instância ativa sem aceder a internals privados.
-                // Se existir uma instância prévia, invoca .destroy() para libertar
-                // o contexto na Garbage Collection antes de instanciar o novo render.
-                // Conformidade: DORA (UE) 2022/2554 — Resiliência de Sistemas Críticos.
-                // ──────────────────────────────────────────────────────────────────────
                 var _existingChart = Chart.getChart(cvs);
                 if (_existingChart) {
                     _existingChart.destroy();
                     console.info('[UNIFED-ATF] [i] Instância Chart.js prévia destruída (memory leak mitigado).');
                 }
-                // ── FIM FIX-1 ──────────────────────────────────────────────────────────
 
                 var mean2s = atf.mean + 2 * atf.stdDev;
+
+                // Dataset labels traduzidas
+                var gainLabel = isEN ? 'Gains' : 'Ganhos';
+                var expenseLabel = isEN ? 'Expenses' : 'Despesas';
+                var discrepancyLabel = isEN ? 'Discrepancy' : 'Discrepância';
+                var thresholdLabel = isEN ? 'Threshold 2σ' : 'Limiar 2σ';
+
                 new Chart(cvs, {
                     type: 'line',
                     data: {
                         labels: monthLabels,
                         datasets: [
-                            { label: 'Ganhos',    data: atf.ganhosSeries,    borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.1)',  borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                            { label: 'Despesas',  data: atf.despesasSeries,  borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)',  borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                            { label: gainLabel,    data: atf.ganhosSeries,    borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.1)',  borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                            { label: expenseLabel,  data: atf.despesasSeries,  borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.1)',  borderWidth: 2, tension: 0.3, pointRadius: 4 },
                             {
-                                label: 'Discrepancia', data: atf.discrepancySeries, borderColor: '#F59E0B',
+                                label: discrepancyLabel, data: atf.discrepancySeries, borderColor: '#F59E0B',
                                 backgroundColor: 'rgba(245,158,11,0.15)', borderWidth: 3, tension: 0.3,
                                 pointRadius: atf.discrepancySeries.map(function(v, i) { return atf.outlierMonths.indexOf(months[i]) !== -1 ? 9 : 5; }),
                                 pointBackgroundColor: atf.discrepancySeries.map(function(v, i) { return atf.outlierMonths.indexOf(months[i]) !== -1 ? '#EF4444' : '#F59E0B'; }),
                                 pointBorderColor: atf.discrepancySeries.map(function(v, i) { return atf.outlierMonths.indexOf(months[i]) !== -1 ? '#FFFFFF' : '#F59E0B'; }),
                                 pointBorderWidth: atf.discrepancySeries.map(function(v, i) { return atf.outlierMonths.indexOf(months[i]) !== -1 ? 2 : 1; })
                             },
-                            { label: 'Limiar 2\u03c3', data: Array(months.length).fill(mean2s), borderColor: 'rgba(239,68,68,0.5)', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, fill: false }
+                            { label: thresholdLabel, data: Array(months.length).fill(mean2s), borderColor: 'rgba(239,68,68,0.5)', borderDash: [5,5], borderWidth: 1.5, pointRadius: 0, fill: false }
                         ]
                     },
                     options: {
@@ -1549,6 +1569,14 @@ function renderATFChart(atf, containerId) {
 
     var mean2s = (atf.mean || 0) + 2 * (atf.stdDev || 0);
 
+    // Detectar idioma para labels do gráfico inline
+    var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+    var isEN = (lang === 'en');
+    var gainLabel = isEN ? 'Gains' : 'Ganhos';
+    var expenseLabel = isEN ? 'Expenses' : 'Despesas';
+    var discrepancyLabel = isEN ? 'Discrepancy' : 'Discrepância';
+    var thresholdLabel = isEN ? 'Threshold 2σ' : 'Limiar 2σ';
+
     try {
         new Chart(canvas, {
             type: 'line',
@@ -1556,19 +1584,19 @@ function renderATFChart(atf, containerId) {
                 labels: monthLabels,
                 datasets: [
                     {
-                        label: 'Ganhos',
+                        label: gainLabel,
                         data: atf.ganhosSeries || [],
                         borderColor: '#3B82F6', backgroundColor: 'rgba(59,130,246,0.08)',
                         borderWidth: 2, tension: 0.3, pointRadius: 4
                     },
                     {
-                        label: 'Despesas',
+                        label: expenseLabel,
                         data: atf.despesasSeries || [],
                         borderColor: '#10B981', backgroundColor: 'rgba(16,185,129,0.08)',
                         borderWidth: 2, tension: 0.3, pointRadius: 4
                     },
                     {
-                        label: 'Discrepância',
+                        label: discrepancyLabel,
                         data: atf.discrepancySeries || [],
                         borderColor: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.12)',
                         borderWidth: 3, tension: 0.3,
@@ -1586,7 +1614,7 @@ function renderATFChart(atf, containerId) {
                         })
                     },
                     {
-                        label: 'Limiar 2σ',
+                        label: thresholdLabel,
                         data: Array(months.length).fill(mean2s),
                         borderColor: 'rgba(239,68,68,0.45)', borderDash: [5, 5],
                         borderWidth: 1.5, pointRadius: 0, fill: false

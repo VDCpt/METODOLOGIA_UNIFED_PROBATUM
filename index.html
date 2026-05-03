@@ -386,11 +386,11 @@
                         <div class="info-item">
                             <span class="info-label" id="lblPeriodo"><i class="fas fa-clock"></i> PERÍODO TEMPORAL</span>
                             <select id="periodoAnalise">
-                                <option value="anual">Exercício Completo (Anual)</option>
-                                <option value="1s">1.º Semestre</option>
-                                <option value="2s">2.º Semestre</option>
-                                <option value="trimestral">Trimestral</option>
-                                <option value="mensal">Mensal</option>
+                                <option value="anual" data-pt="Exercício Completo (Anual)" data-en="Full Fiscal Year (Annual)">Exercício Completo (Anual)</option>
+                                <option value="1s" data-pt="1.º Semestre" data-en="1st Semester">1.º Semestre</option>
+                                <option value="2s" data-pt="2.º Semestre" data-en="2nd Semester">2.º Semestre</option>
+                                <option value="trimestral" data-pt="Trimestral" data-en="Quarterly">Trimestral</option>
+                                <option value="mensal" data-pt="Mensal" data-en="Monthly">Mensal</option>
                             </select>
                         </div>
                         <!-- SELECTOR DE TRIMESTRE — visível apenas quando periodoAnalise = trimestral -->
@@ -481,13 +481,13 @@
                         title="Análise Temporal Forense — Tendências · Outliers 2σ · Score de Persistência">
                         ⏳ TENDÊNCIA ATF
                     </button>
-                    <button id="exportJSONBtn" class="pure-btn-led led-silver l1-btn">
+                    <button id="exportJSONBtn" class="pure-btn-led led-silver l1-btn" data-pt="EXPORTAR JSON" data-en="EXPORT JSON">
                         EXPORTAR JSON
                     </button>
-                    <button id="resetBtn" class="pure-btn-led led-silver l1-btn">
+                    <button id="resetBtn" class="pure-btn-led led-silver l1-btn" data-pt="REINICIAR" data-en="RESET">
                         REINICIAR
                     </button>
-                    <button id="clearConsoleBtn" class="pure-btn-led led-silver l1-btn">
+                    <button id="clearConsoleBtn" class="pure-btn-led led-silver l1-btn" data-pt="LIMPAR CONSOLE" data-en="CLEAR CONSOLE">
                         <span id="clearConsoleBtnText">LIMPAR CONSOLE</span>
                     </button>
 
@@ -1022,7 +1022,6 @@
 <!-- UNIFED PROBATUM v13.5.1-MILITARY-HARDENED — Output Enrichment Layer -->
 <!-- REORDENADO TECNICAMENTE: script.js e script_injection.js carregados PRIMEIRO (evita erros de memória/campos vazios) -->
 <!-- enrichment.js e nexus.js carregados em seguida, consumindo o UNIFEDSystem já inicializado -->
-</script>
 <script src="script.js"></script>
 <script src="script_injection.js"></script>
 <script src="enrichment.js"></script>

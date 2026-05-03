@@ -1968,8 +1968,10 @@ const translations = {
         quantumTitle: "CÁLCULO TRIBUTÁRIO PERICIAL · PROVA RAINHA",
         quantumFormula: "Diferencial de Base em Análise vs Faturada",
         quantumNote: "IVA em falta (23%): 0,00 € | IVA (6%): 0,00 €",
+        quantumNoteIVA23: "IVA 23% em falta:",
+        quantumNoteIVA6: "IVA 6% em falta:",
         
-        // Veredicto
+        // Verdict
         verdictPercent: "PARECER TÉCNICO N.º",
         
         // Alertas
@@ -2142,6 +2144,8 @@ const translations = {
         quantumTitle: "TAX CALCULATION · SMOKING GUN",
         quantumFormula: "Base Differential Under Analysis vs Invoiced",
         quantumNote: "Missing VAT (23%): 0,00 € | VAT (6%): 0,00 €",
+        quantumNoteIVA23: "Missing VAT 23%:",
+        quantumNoteIVA6: "Missing VAT 6%:",
         
         // Verdict
         verdictPercent: "EXPERT OPINION No.",
@@ -2229,10 +2233,69 @@ const translations = {
     }
 };
 
+// ============================================================================
+// Helper para tradução dinâmica de strings geradas em runtime
+// ============================================================================
+const _t = (key) => {
+    const dict = {
+        'expenseGapLabel': { pt: 'OMISSÃO DE CUSTOS/IVA', en: 'COST/VAT OMISSION' },
+        'revenueGapLabel': { pt: 'OMISSÃO DE FATURAÇÃO', en: 'REVENUE OMISSION' },
+        'discrepancyLabel': { pt: 'DISCREPÂNCIA', en: 'DISCREPANCY' },
+        'highRisk': { pt: 'RISCO ELEVADO', en: 'HIGH RISK' },
+        'sectionI': { pt: 'I. ANÁLISE PERICIAL', en: 'I. EXPERT ANALYSIS' },
+        'sectionII': { pt: 'II. FACTOS CONSTATADOS', en: 'II. ESTABLISHED FACTS' },
+        'sectionIII': { pt: 'III. ENQUADRAMENTO LEGAL', en: 'III. LEGAL FRAMEWORK' },
+        'sectionIV': { pt: 'IV. IMPACTO FISCAL E AGRAVAMENTO DE GESTÃO', en: 'IV. TAX IMPACT AND MANAGEMENT AGGRAVATION' },
+        'sectionV': { pt: 'V. CADEIA DE CUSTÓDIA', en: 'V. CHAIN OF CUSTODY' },
+        'sectionVI': { pt: 'VI. CONCLUSÃO', en: 'VI. CONCLUSION' },
+        'campaigns': { pt: 'Campanhas', en: 'Campaigns' },
+        'tolls': { pt: 'Portagens', en: 'Tolls' },
+        'tips': { pt: 'Gorjetas', en: 'Tips' },
+        'cancellations': { pt: 'Taxas de cancelamento', en: 'Cancellation fees' },
+        'commissionExempt': { pt: 'Isento comissão · 0%', en: 'Commission exempt · 0%' },
+        'p2pTransfer': { pt: 'Transferência P2P · 0%', en: 'P2P Transfer · 0%' },
+        'operationalReimbursement': { pt: 'Reembolso operacional', en: 'Operational reimbursement' },
+        'alreadyInExpenses': { pt: 'já em Despesas · comissão incluída', en: 'already in Expenses · commission included' },
+        'persistenceScore': { pt: 'SCORE DE PERSISTÊNCIA', en: 'PERSISTENCE SCORE' },
+        'trend': { pt: 'TENDÊNCIA', en: 'TREND' },
+        'outliers': { pt: 'OUTLIERS > 2σ', en: 'OUTLIERS > 2σ' },
+        'history': { pt: 'HISTÓRICO', en: 'HISTORY' },
+        'moderateRisk': { pt: 'OMISSÃO PONTUAL / RISCO MODERADO', en: 'POINT OMISSION / MODERATE RISK' },
+        'descending': { pt: '📉 DESCENDENTE', en: '📉 DESCENDING' },
+        'stable': { pt: '➡ ESTÁVEL', en: '➡ STABLE' },
+        'ascending': { pt: '📈 ASCENDENTE', en: '📈 ASCENDING' }
+    };
+    if (dict[key] && dict[key][currentLang]) return dict[key][currentLang];
+    return key;
+};
+
+// ============================================================================
+// Função para atualizar conteúdo dinâmico após mudança de idioma
+// ============================================================================
+function updateDynamicContent() {
+    if (UNIFEDSystem.analysis && UNIFEDSystem.analysis.totals) {
+        updateDashboard();
+        showAlerts();
+        updateModulesUI();
+        renderChart();
+        renderDiscrepancyChart();
+        showTwoAxisAlerts();
+    }
+    const verdictPercentLabel = document.getElementById('verdictPercentLabel');
+    if (verdictPercentLabel) verdictPercentLabel.textContent = translations[currentLang].verdictPercent;
+    
+    // Atualizar labels dos gráficos
+    if (UNIFEDSystem.chart) renderChart();
+    if (UNIFEDSystem.discrepancyChart) renderDiscrepancyChart();
+    
+    // Atualizar módulo ATF se presente
+    if (window._syncPureDashboard) window._syncPureDashboard(UNIFEDSystem);
+}
+
 let currentLang = 'pt';
 
 // ============================================================================
-// 7.1 FUNÇÃO DE ATUALIZAÇÃO DE IDIOMA - 100% COMPLETA
+// 7.1 FUNÇÃO DE ATUALIZAÇÃO DE IDIOMA - 100% COMPLETA (COM updateDynamicContent)
 // ============================================================================
 function switchLanguage() {
     console.log('[UNIFED-LANG] switchLanguage chamado. currentLang antes:', currentLang);
@@ -2610,6 +2673,9 @@ function switchLanguage() {
     
     // Atualizar data e hora com novo locale
     startClockAndDate();
+    
+    // NOVO: Atualizar conteúdo dinâmico (gráficos, cards, etc.)
+    updateDynamicContent();
     
     logAudit(`Idioma alterado para: ${currentLang.toUpperCase()}`, 'info');
     ForensicLogger.addEntry('LANGUAGE_CHANGED', { lang: currentLang });
@@ -3340,9 +3406,6 @@ function showMainInterface() {
             main.style.display = 'block';
             setTimeout(() => main.style.opacity = '1', 50);
             ForensicLogger.addEntry('MAIN_INTERFACE_SHOWN');
-            // ── Notifica módulos externos (Tríade Documental, etc.) ──────────
-            // O MutationObserver em unifed_triada_export.js também detecta esta
-            // alteração de estilo — este evento é um reforço explícito.
             window.dispatchEvent(new CustomEvent('unifed:interfaceShown'));
         }, 500);
     }
@@ -4477,16 +4540,11 @@ function performAudit() {
 
             forensicDataSynchronization();
 
-            // ── PATCH v13.12.3: DESPACHO GLOBAL DE CONCLUSÃO ─────────────────
-            // Acorda os módulos dependentes (ATF, PURE Dashboard, Tríade)
-            // após consolidação completa de UNIFEDSystem.analysis.
-            // NÃO altera cálculos — apenas sinaliza o estado de completude.
             window._unifedAnalysisPending = false;
             window.dispatchEvent(new CustomEvent('UNIFED_ANALYSIS_COMPLETE', {
                 detail: UNIFEDSystem.analysis
             }));
             console.log('[UNIFED-SYNC] ✅ UNIFED_ANALYSIS_COMPLETE despachado.');
-            // ── FIM PATCH ─────────────────────────────────────────────────────
 
         } catch(error) {
             console.error('Erro na perícia:', error);
@@ -4729,19 +4787,24 @@ function filterDAC7ByPeriod() {
     return periodoTotal;
 }
 
+// ============================================================================
+// 3.1 FUNÇÃO showTwoAxisAlerts ATUALIZADA (com traduções dinâmicas)
+// ============================================================================
 function showTwoAxisAlerts() {
     const twoAxis = UNIFEDSystem.analysis.twoAxis;
     const totals  = UNIFEDSystem.analysis.totals;
     const t = translations[currentLang];
 
     const revenueGapCard = document.getElementById('revenueGapCard');
-    const revenueGapValue = document.getElementById('revenueGapValue');
-
-    if (revenueGapCard && revenueGapValue) {
+    const revenueGapTitle = document.getElementById('revenueGapTitle');
+    const revenueGapDesc = document.getElementById('revenueGapDesc');
+    if (revenueGapTitle) revenueGapTitle.textContent = t.revenueGapTitle;
+    if (revenueGapDesc) revenueGapDesc.textContent = t.revenueGapDesc;
+    
+    if (revenueGapCard && document.getElementById('revenueGapValue')) {
         if (twoAxis.revenueGapActive) {
             revenueGapCard.style.display = 'block';
-            revenueGapValue.textContent = formatCurrency(twoAxis.revenueGap);
-
+            document.getElementById('revenueGapValue').textContent = formatCurrency(twoAxis.revenueGap);
             if (Math.abs(twoAxis.revenueGap) > 100) {
                 revenueGapCard.classList.add('alert-intermitent');
             } else {
@@ -4753,13 +4816,15 @@ function showTwoAxisAlerts() {
     }
 
     const expenseGapCard = document.getElementById('expenseGapCard');
-    const expenseGapValue = document.getElementById('expenseGapValue');
-
-    if (expenseGapCard && expenseGapValue) {
+    const expenseGapTitle = document.getElementById('expenseGapTitle');
+    const expenseGapDesc = document.getElementById('expenseGapDesc');
+    if (expenseGapTitle) expenseGapTitle.textContent = t.expenseGapTitle;
+    if (expenseGapDesc) expenseGapDesc.textContent = t.expenseGapDesc;
+    
+    if (expenseGapCard && document.getElementById('expenseGapValue')) {
         if (twoAxis.expenseGapActive) {
             expenseGapCard.style.display = 'block';
-            expenseGapValue.textContent = formatCurrency(twoAxis.expenseGap);
-
+            document.getElementById('expenseGapValue').textContent = formatCurrency(twoAxis.expenseGap);
             if (Math.abs(twoAxis.expenseGap) > 50) {
                 expenseGapCard.classList.add('alert-intermitent');
             } else {
@@ -4770,29 +4835,28 @@ function showTwoAxisAlerts() {
         }
     }
 
-    const omissaoCard  = document.getElementById('omissaoDespesasPctCard');
+    const omissaoCard = document.getElementById('omissaoDespesasPctCard');
+    const omissaoTitle = document.getElementById('omissaoDespesasPctTitle');
+    if (omissaoTitle) omissaoTitle.textContent = t.omissaoDespesasPctTitle;
+    
     const omissaoValue = document.getElementById('omissaoDespesasPctValue');
-    const omissaoDesc  = document.getElementById('omissaoDespesasPctDesc');
-
+    const omissaoDesc = document.getElementById('omissaoDespesasPctDesc');
     if (omissaoCard && omissaoValue) {
         const despesas = totals.despesas || 0;
         const ganhos   = totals.ganhos   || 0;
         const pct      = (ganhos > 0) ? (despesas / ganhos) * 100 : 0;
-
         if (ganhos > 0 && despesas > 0) {
             omissaoCard.style.display = 'block';
-            omissaoValue.textContent  = pct.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
+            omissaoValue.textContent = pct.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
             if (omissaoDesc) {
-                omissaoDesc.textContent = `(${formatCurrency(despesas)} / ${formatCurrency(ganhos)}) × 100  [Despesas/Comissões / Ganhos]`;
+                omissaoDesc.textContent = `(${formatCurrency(despesas)} / ${formatCurrency(ganhos)}) × 100  [${t.expenseGapLabel}]`;
             }
             if (pct > 25) {
                 omissaoCard.classList.add('omissao-threshold-alert');
                 omissaoCard.classList.remove('alert-intermitent');
-                omissaoCard.classList.remove('box-border-blink');
             } else {
                 omissaoCard.classList.remove('omissao-threshold-alert');
                 omissaoCard.classList.remove('alert-intermitent');
-                omissaoCard.classList.remove('box-border-blink');
             }
         } else {
             omissaoCard.style.display = 'none';
@@ -4800,12 +4864,14 @@ function showTwoAxisAlerts() {
     }
 }
 
-let _nifafAlertedHash = null;
-
+// ============================================================================
+// 3.2 FUNÇÃO updateDashboard ATUALIZADA (com traduções dinâmicas e quantum)
+// ============================================================================
 function updateDashboard() {
     const totals = UNIFEDSystem.analysis.totals;
     const cross = UNIFEDSystem.analysis.crossings;
     const twoAxis = UNIFEDSystem.analysis.twoAxis;
+    const t = translations[currentLang];
 
     const netValue = totals.ganhosLiquidos || 0;
 
@@ -4826,16 +4892,26 @@ function updateDashboard() {
 
     setElementText('quantumValue', formatCurrency(cross.impactoSeteAnosMercado || 0));
 
+    // Atualizar labels estáticos que podem ter sido alterados
+    const kpiCommText = document.getElementById('kpiCommText');
+    if (kpiCommText) kpiCommText.textContent = t.kpiCommText;
+    const kpiNetText = document.getElementById('kpiNetText');
+    if (kpiNetText) kpiNetText.textContent = t.kpiNetText;
+    const kpiInvText = document.getElementById('kpiInvText');
+    if (kpiInvText) kpiInvText.textContent = t.kpiInvText;
+    const kpiGross = document.getElementById('kpiGross');
+    if (kpiGross) kpiGross.textContent = t.kpiGross;
+
     const mesesDados = UNIFEDSystem.dataMonths.size || 1;
 
     const quantumFormulaEl = document.getElementById('quantumFormula');
     if (quantumFormulaEl) {
-        quantumFormulaEl.textContent = `Diferencial de Base em Análise (Despesas/Comissões vs Fatura): ${formatCurrency(cross.discrepanciaCritica)} | ${cross.percentagemOmissao.toFixed(2)}%`;
+        quantumFormulaEl.textContent = `${t.quantumFormula}: ${formatCurrency(cross.discrepanciaCritica)} | ${cross.percentagemOmissao.toFixed(2)}%`;
     }
 
     const quantumNoteEl = document.getElementById('quantumNote');
     if (quantumNoteEl) {
-        quantumNoteEl.textContent = `IVA 23%: ${formatCurrency(cross.ivaFalta)} | IVA 6%: ${formatCurrency(cross.ivaFalta6)} | SAF-T/DAC7: ${formatCurrency(cross.discrepanciaSaftVsDac7)}`;
+        quantumNoteEl.textContent = `${t.quantumNoteIVA23} ${formatCurrency(cross.ivaFalta)} | ${t.quantumNoteIVA6} ${formatCurrency(cross.ivaFalta6)} | SAF-T/DAC7: ${formatCurrency(cross.discrepanciaSaftVsDac7)}`;
     }
 
     const quantumBreakdownEl = document.getElementById('quantumBreakdown');
@@ -8408,3 +8484,863 @@ window.resetAuxiliaryData = resetAuxiliaryData;
 })();
 
 console.log('UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · ATF · INTEGRITY SEAL · DOCX · AI ADVERSARIAL · NIFAF GUARD · NEXUS · ATIVADO');
+
+// ============================================================================
+// 31. FUNÇÕES ADICIONAIS DE SUPORTE
+// ============================================================================
+
+/**
+ * Atualiza o botão de análise e sinais de disponibilidade
+ * @deprecated Usar updateAnalysisButton() em vez desta
+ */
+function updateAnalyzeButton() {
+    updateAnalysisButton();
+}
+
+/**
+ * Exibe mensagem no painel de console com timestamp
+ * @param {string} message - Mensagem a exibir
+ * @param {string} type - Tipo: info, success, warning, error
+ */
+function addConsoleMessage(message, type = 'info') {
+    const consoleOutput = document.getElementById('consoleOutput');
+    if (!consoleOutput) return;
+
+    const timestamp = new Date().toLocaleTimeString('pt-PT');
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry log-${type}`;
+    logEntry.textContent = `[${timestamp}] ${message}`;
+    consoleOutput.appendChild(logEntry);
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+
+    // Limitar a 500 entradas para performance
+    while (consoleOutput.children.length > 500) {
+        consoleOutput.removeChild(consoleOutput.firstChild);
+    }
+}
+
+/**
+ * Normaliza um valor percentual para exibição
+ * @param {number} value - Valor decimal (ex: 0.25 = 25%)
+ * @returns {string} String formatada com duas casas decimais e símbolo %
+ */
+function formatPercent(value) {
+    if (isNaN(value)) return '0,00%';
+    return (value * 100).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+}
+
+/**
+ * Calcula a média de um array de números
+ * @param {number[]} arr - Array de números
+ * @returns {number} Média aritmética
+ */
+function arrayAverage(arr) {
+    if (!arr || arr.length === 0) return 0;
+    const sum = arr.reduce((a, b) => a + b, 0);
+    return sum / arr.length;
+}
+
+/**
+ * Calcula o desvio padrão de um array de números
+ * @param {number[]} arr - Array de números
+ * @returns {number} Desvio padrão populacional
+ */
+function arrayStdDev(arr) {
+    if (!arr || arr.length < 2) return 0;
+    const avg = arrayAverage(arr);
+    const squareDiffs = arr.map(value => Math.pow(value - avg, 2));
+    const avgSquareDiff = arrayAverage(squareDiffs);
+    return Math.sqrt(avgSquareDiff);
+}
+
+/**
+ * Identifica outliers num array (valores > 2 desvios padrão)
+ * @param {number[]} arr - Array de números
+ * @param {number} threshold - Número de desvios padrão (padrão: 2)
+ * @returns {number[]} Array com os índices dos outliers
+ */
+function findOutliers(arr, threshold = 2) {
+    if (!arr || arr.length === 0) return [];
+    const mean = arrayAverage(arr);
+    const stdDev = arrayStdDev(arr);
+    if (stdDev === 0) return [];
+
+    return arr.reduce((outliers, value, index) => {
+        if (Math.abs(value - mean) > threshold * stdDev) {
+            outliers.push(index);
+        }
+        return outliers;
+    }, []);
+}
+
+/**
+ * Simula um atraso (útil para animações ou rate limiting)
+ * @param {number} ms - Milissegundos para aguardar
+ * @returns {Promise<void>}
+ */
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Copia texto para a área de transferência
+ * @param {string} text - Texto a copiar
+ * @returns {Promise<boolean>}
+ */
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        showToast(currentLang === 'pt' ? 'Copiado para a área de transferência' : 'Copied to clipboard', 'success');
+        return true;
+    } catch (err) {
+        console.error('Falha ao copiar:', err);
+        showToast(currentLang === 'pt' ? 'Não foi possível copiar' : 'Unable to copy', 'error');
+        return false;
+    }
+}
+
+// ============================================================================
+// 32. GERENCIAMENTO DE SESSÃO E PERSISTÊNCIA
+// ============================================================================
+
+/**
+ * Salva o estado atual da sessão no sessionStorage
+ */
+function persistSession() {
+    try {
+        const sessionState = {
+            sessionId: UNIFEDSystem.sessionId,
+            client: UNIFEDSystem.client,
+            selectedYear: UNIFEDSystem.selectedYear,
+            selectedPeriodo: UNIFEDSystem.selectedPeriodo,
+            selectedPlatform: UNIFEDSystem.selectedPlatform,
+            demoMode: UNIFEDSystem.demoMode,
+            timestamp: Date.now()
+        };
+        sessionStorage.setItem('unifed_session_state', JSON.stringify(sessionState));
+        ForensicLogger.addEntry('SESSION_PERSISTED', { sessionId: UNIFEDSystem.sessionId });
+    } catch (e) {
+        console.warn('Não foi possível persistir a sessão:', e);
+    }
+}
+
+/**
+ * Recupera o estado da sessão do sessionStorage
+ * @returns {object|null}
+ */
+function restoreSession() {
+    try {
+        const saved = sessionStorage.getItem('unifed_session_state');
+        if (!saved) return null;
+        const state = JSON.parse(saved);
+        // Verificar se a sessão não expirou (limite de 24 horas)
+        if (Date.now() - state.timestamp > 24 * 60 * 60 * 1000) {
+            sessionStorage.removeItem('unifed_session_state');
+            return null;
+        }
+        return state;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Encerra a sessão atual e limpa dados temporários
+ */
+function endSession() {
+    if (confirm(currentLang === 'pt' ? 'Deseja encerrar a sessão atual? Os dados não salvos serão perdidos.' : 'Do you want to end the current session? Unsaved data will be lost.')) {
+        sessionStorage.removeItem('unifed_session_state');
+        sessionStorage.removeItem('currentSession');
+        ForensicLogger.addEntry('SESSION_ENDED', { sessionId: UNIFEDSystem.sessionId });
+        // Recarregar a página para reiniciar
+        location.reload();
+    }
+}
+
+// ============================================================================
+// 33. FUNÇÕES DE RELATÓRIO ADICIONAIS
+// ============================================================================
+
+/**
+ * Exporta apenas o resumo executivo em formato TXT
+ */
+function exportExecutiveSummary() {
+    if (!UNIFEDSystem.client) {
+        showToast(currentLang === 'pt' ? 'Registe o sujeito passivo primeiro.' : 'Register the taxpayer first.', 'error');
+        return;
+    }
+
+    const t = translations[currentLang];
+    const totals = UNIFEDSystem.analysis.totals;
+    const cross = UNIFEDSystem.analysis.crossings;
+
+    const lines = [];
+    lines.push('=' .repeat(60));
+    lines.push(`UNIFED - PROBATUM - ${t.termExpertOpinion}`);
+    lines.push('=' .repeat(60));
+    lines.push('');
+    lines.push(`${t.pdfLabelName}: ${UNIFEDSystem.client.name}`);
+    lines.push(`${t.pdfLabelNIF}: ${UNIFEDSystem.client.nif}`);
+    lines.push(`${t.pdfLabelPlatform}: ${PLATFORM_DATA[UNIFEDSystem.selectedPlatform]?.name || 'N/A'}`);
+    lines.push(`${t.pdfLabelSession}: ${UNIFEDSystem.sessionId}`);
+    lines.push(`${t.pdfLabelTimestamp}: ${Math.floor(Date.now() / 1000)}`);
+    lines.push('');
+    lines.push('--- ' + t.pdfSection2 + ' ---');
+    lines.push(`${t.kpiGross}: ${formatCurrency(totals.ganhos || 0)}`);
+    lines.push(`${t.kpiCommText}: ${formatCurrency(totals.despesas || 0)}`);
+    lines.push(`${t.kpiNetText}: ${formatCurrency(totals.ganhosLiquidos || 0)}`);
+    lines.push(`${t.kpiInvText}: ${formatCurrency(totals.faturaPlataforma || 0)}`);
+    lines.push('');
+    lines.push('--- ' + t.termSmokingGun + ' ---');
+    lines.push(`${t.termExpenseGap}: ${formatCurrency(cross.discrepanciaCritica || 0)} (${(cross.percentagemOmissao || 0).toFixed(2)}%)`);
+    lines.push(`${t.termRevenueGap}: ${formatCurrency(cross.discrepanciaSaftVsDac7 || 0)} (${(cross.percentagemSaftVsDac7 || 0).toFixed(2)}%)`);
+    lines.push('');
+    lines.push('--- ' + t.pdfSection3 + ' ---');
+    lines.push(`${t.verdictPercent}: ${UNIFEDSystem.analysis.verdict?.level[currentLang] || 'N/A'}`);
+    lines.push(UNIFEDSystem.analysis.verdict?.description[currentLang] || '');
+    lines.push('');
+    lines.push('--- ' + t.clausulaCadeiaCustodia + ' ---');
+    lines.push(`Master Hash: ${UNIFEDSystem.masterHash || 'N/A'}`);
+    lines.push('=' .repeat(60));
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `UNIFED_SUMMARY_${UNIFEDSystem.sessionId}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    showToast(currentLang === 'pt' ? 'Resumo executivo exportado' : 'Executive summary exported', 'success');
+    ForensicLogger.addEntry('EXECUTIVE_SUMMARY_EXPORTED');
+}
+
+/**
+ * Exporta os dados de evidências em formato JSON puro (sem análise)
+ */
+function exportEvidenceOnly() {
+    const evidenceData = {
+        exportedAt: new Date().toISOString(),
+        sessionId: UNIFEDSystem.sessionId,
+        evidence: UNIFEDSystem.analysis.evidenceIntegrity,
+        documents: {
+            saft: UNIFEDSystem.documents.saft,
+            statements: UNIFEDSystem.documents.statements,
+            invoices: UNIFEDSystem.documents.invoices,
+            dac7: UNIFEDSystem.documents.dac7,
+            control: UNIFEDSystem.documents.control
+        },
+        auxiliaryData: UNIFEDSystem.auxiliaryData
+    };
+
+    const blob = new Blob([JSON.stringify(evidenceData, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `UNIFED_EVIDENCE_${UNIFEDSystem.sessionId}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    showToast(currentLang === 'pt' ? 'Evidências exportadas' : 'Evidence exported', 'success');
+    ForensicLogger.addEntry('EVIDENCE_ONLY_EXPORTED');
+}
+
+// ============================================================================
+// 34. INICIALIZAÇÃO DE COMPONENTES ADICIONAIS
+// ============================================================================
+
+/**
+ * Configura os tooltips dinâmicos (usando atributo data-tooltip)
+ */
+function setupDynamicTooltips() {
+    const elements = document.querySelectorAll('[data-tooltip]');
+    elements.forEach(el => {
+        if (!el.hasAttribute('title')) {
+            const tooltipText = el.getAttribute('data-tooltip');
+            if (tooltipText) {
+                el.setAttribute('title', tooltipText);
+            }
+        }
+    });
+}
+
+/**
+ * Atualiza dinamicamente os textos dos cards com base no idioma
+ */
+function updateCardLabels() {
+    const t = translations[currentLang];
+    const cardMappings = [
+        { id: 'cardNet', text: t.cardNet },
+        { id: 'cardComm', text: t.cardComm },
+        { id: 'cardJuros', text: t.cardJuros },
+        { id: 'discrepancy5CardTitle', text: t.discrepancy5 },
+        { id: 'agravamentoBrutoCardTitle', text: t.agravamentoBruto },
+        { id: 'ircCardTitle', text: t.irc },
+        { id: 'iva6CardTitle', text: t.iva6 },
+        { id: 'iva23CardTitle', text: t.iva23 }
+    ];
+
+    cardMappings.forEach(({ id, text }) => {
+        const el = document.getElementById(id);
+        if (el && text) {
+            // Preservar ícone se existir
+            const icon = el.querySelector('i');
+            if (icon) {
+                el.innerHTML = '';
+                el.appendChild(icon);
+                el.appendChild(document.createTextNode(' ' + text));
+            } else {
+                el.textContent = text;
+            }
+        }
+    });
+}
+
+/**
+ * Reaplica todos os estilos dinâmicos após mudança de idioma
+ */
+function reapplyDynamicStyles() {
+    // Reaplicar classes de alerta intermitente
+    activateIntermittentAlerts();
+    // Reaplicar classes de omissão
+    showTwoAxisAlerts();
+    // Reaplicar tooltips
+    setupDynamicTooltips();
+    // Reaplicar labels dos cards
+    updateCardLabels();
+}
+
+// ============================================================================
+// 35. VALIDAÇÃO DE INTEGRIDADE DOS MÓDULOS EXTERNOS
+// ============================================================================
+
+/**
+ * Verifica se todos os módulos externos necessários estão carregados
+ * @returns {object} Status de cada módulo
+ */
+function checkExternalModules() {
+    const modules = {
+        pdfjs: typeof pdfjsLib !== 'undefined',
+        Chart: typeof Chart !== 'undefined',
+        CryptoJS: typeof CryptoJS !== 'undefined',
+        QRCode: typeof QRCode !== 'undefined',
+        Papa: typeof Papa !== 'undefined',
+        OpenTimestamps: typeof window.OpenTimestamps !== 'undefined' || typeof window.opentimestamps !== 'undefined',
+        jsPDF: typeof window.jspdf !== 'undefined'
+    };
+
+    const missing = Object.entries(modules).filter(([, loaded]) => !loaded).map(([name]) => name);
+    if (missing.length > 0) {
+        console.warn('[UNIFED] Módulos externos ausentes:', missing.join(', '));
+        logAudit(`⚠️ Módulos externos ausentes: ${missing.join(', ')}. Algumas funcionalidades podem estar indisponíveis.`, 'warning');
+    } else {
+        console.log('[UNIFED] ✅ Todos os módulos externos estão carregados.');
+    }
+
+    ForensicLogger.addEntry('EXTERNAL_MODULES_CHECK', { modules, missing });
+
+    return { modules, missing };
+}
+
+// ============================================================================
+// 36. FUNÇÕES DE RELATÓRIO TEMPORAL (ATF) - INTEGRAÇÃO
+// ============================================================================
+
+/**
+ * Prepara os dados mensais para o gráfico ATF
+ * @returns {object} Dados formatados para o gráfico
+ */
+function prepareATFData() {
+    const monthlyData = UNIFEDSystem.monthlyData;
+    const months = Object.keys(monthlyData).sort();
+    
+    const ganhos = [];
+    const despesas = [];
+    const liquidos = [];
+    const labels = [];
+
+    months.forEach(month => {
+        const data = monthlyData[month];
+        ganhos.push(data.ganhos || 0);
+        despesas.push(data.despesas || 0);
+        liquidos.push(data.ganhosLiq || 0);
+        // Formatar label: YYYY-MM
+        labels.push(month.substring(0, 4) + '-' + month.substring(4, 6));
+    });
+
+    return { months, labels, ganhos, despesas, liquidos };
+}
+
+/**
+ * Calcula a tendência (crescimento/decrescimento) da série
+ * @param {number[]} series - Série numérica
+ * @returns {string} 'ascending', 'descending' ou 'stable'
+ */
+function calculateTrend(series) {
+    if (series.length < 2) return 'stable';
+    
+    let up = 0, down = 0;
+    for (let i = 1; i < series.length; i++) {
+        if (series[i] > series[i - 1]) up++;
+        else if (series[i] < series[i - 1]) down++;
+    }
+    
+    if (up > down * 1.5) return 'ascending';
+    if (down > up * 1.5) return 'descending';
+    return 'stable';
+}
+
+/**
+ * Calcula o Score de Persistência (SP) - 0 a 100
+ * Quanto maior, mais consistente é a discrepância ao longo do tempo
+ * @returns {number} Score de persistência
+ */
+function calculatePersistenceScore() {
+    const monthlyData = UNIFEDSystem.monthlyData;
+    const months = Object.keys(monthlyData).sort();
+    if (months.length < 2) return 0;
+    
+    const discrepancies = [];
+    months.forEach(month => {
+        const data = monthlyData[month];
+        const discrepancy = (data.despesas || 0) - (data.ganhosLiq || 0);
+        discrepancies.push(Math.abs(discrepancy));
+    });
+    
+    const avg = arrayAverage(discrepancies);
+    const stdDev = arrayStdDev(discrepancies);
+    
+    // SP = 100 - (coeficiente de variação normalizado)
+    // Quanto menor a variação relativa, maior o score
+    const cv = avg > 0 ? stdDev / avg : 1;
+    const score = Math.max(0, Math.min(100, 100 * (1 - Math.min(1, cv))));
+    
+    return score;
+}
+
+// ============================================================================
+// 37. GERENCIAMENTO DE ERROS GLOBAIS
+// ============================================================================
+
+/**
+ * Configura o handler global de erros não capturados
+ */
+function setupGlobalErrorHandler() {
+    window.addEventListener('error', (event) => {
+        console.error('[UNIFED] Erro global:', event.error || event.message);
+        ForensicLogger.addEntry('GLOBAL_ERROR', {
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+            error: event.error ? event.error.stack : null
+        });
+        
+        // Não mostrar toast para erros de rede ou CORS para não incomodar
+        if (event.message && !event.message.includes('CORS') && !event.message.includes('NetworkError')) {
+            // Limitar a um erro por segundo para não spam
+            if (Date.now() - (window._lastErrorToast || 0) > 1000) {
+                showToast(currentLang === 'pt' ? `Erro: ${event.message.substring(0, 80)}` : `Error: ${event.message.substring(0, 80)}`, 'error');
+                window._lastErrorToast = Date.now();
+            }
+        }
+    });
+    
+    window.addEventListener('unhandledrejection', (event) => {
+        console.error('[UNIFED] Promise rejeitada não tratada:', event.reason);
+        ForensicLogger.addEntry('UNHANDLED_REJECTION', {
+            reason: event.reason ? (event.reason.message || event.reason) : 'Unknown'
+        });
+    });
+}
+
+// ============================================================================
+// 38. FUNÇÃO DE PRÉ-CARREGAMENTO (OTIMIZAÇÃO)
+// ============================================================================
+
+/**
+ * Pré-carrega recursos pesados (ex: bibliotecas de terceiros)
+ */
+function preloadResources() {
+    // Pré-conexão a CDNs comuns
+    const preconnectUrls = [
+        'https://cdnjs.cloudflare.com',
+        'https://cdn.jsdelivr.net',
+        'https://freetsa.org'
+    ];
+    
+    preconnectUrls.forEach(url => {
+        const link = document.createElement('link');
+        link.rel = 'preconnect';
+        link.href = url;
+        document.head.appendChild(link);
+    });
+    
+    console.log('[UNIFED] Recursos pré-carregados.');
+}
+
+// ============================================================================
+// 39. GERENCIAMENTO DE ESTADO DO DASHBOARD (SINCRONIZAÇÃO)
+// ============================================================================
+
+/**
+ * Sincroniza o dashboard externo (PURE Dashboard) se disponível
+ */
+function syncExternalDashboard() {
+    if (typeof window._syncPureDashboard === 'function') {
+        try {
+            window._syncPureDashboard(UNIFEDSystem);
+            console.log('[UNIFED] Dashboard externo sincronizado.');
+        } catch (e) {
+            console.warn('[UNIFED] Falha ao sincronizar dashboard externo:', e);
+        }
+    }
+}
+
+// ============================================================================
+// 40. EXPOSIÇÃO DE CONSTANTES PARA MÓDULOS EXTERNOS
+// ============================================================================
+
+/**
+ * Registra constantes e configurações no objeto global UNIFED_CONFIG
+ */
+function registerGlobalConfig() {
+    window.UNIFED_CONFIG = {
+        version: UNIFEDSystem.version,
+        buildDate: '2025-03-15',
+        supportedPlatforms: Object.keys(PLATFORM_DATA),
+        forensicStandards: ['ISO/IEC 27037:2012', 'DORA (EU) 2022/2554', 'eIDAS (EU) 910/2014', 'RFC 3161'],
+        i18n: {
+            supportedLangs: ['pt', 'en'],
+            defaultLang: 'pt'
+        },
+        modules: {
+            ots: typeof window.OpenTimestamps !== 'undefined',
+            pdfExtraction: typeof pdfjsLib !== 'undefined',
+            charts: typeof Chart !== 'undefined',
+            docx: typeof window.exportDOCX === 'function'
+        }
+    };
+    
+    console.log('[UNIFED] Configuração global registrada:', window.UNIFED_CONFIG);
+}
+
+// ============================================================================
+// 41. INICIALIZAÇÃO TARDIA (APÓS DOM)
+// ============================================================================
+
+/**
+ * Inicializa componentes que dependem do DOM completamente carregado
+ */
+function initializeLateComponents() {
+    // Configurar tooltips dinâmicos
+    setupDynamicTooltips();
+    
+    // Atualizar labels dos cards com base no idioma
+    updateCardLabels();
+    
+    // Registrar configuração global
+    registerGlobalConfig();
+    
+    // Verificar módulos externos
+    checkExternalModules();
+    
+    // Configurar handler de erros global
+    setupGlobalErrorHandler();
+    
+    // Pré-carregar recursos
+    preloadResources();
+    
+    // Restaurar sessão se disponível
+    const savedSession = restoreSession();
+    if (savedSession && !UNIFEDSystem.client) {
+        if (savedSession.client) {
+            UNIFEDSystem.client = savedSession.client;
+            UNIFEDSystem.selectedYear = savedSession.selectedYear || 2024;
+            UNIFEDSystem.selectedPeriodo = savedSession.selectedPeriodo || 'anual';
+            UNIFEDSystem.selectedPlatform = savedSession.selectedPlatform || 'bolt';
+            UNIFEDSystem.demoMode = savedSession.demoMode || false;
+            
+            // Atualizar UI
+            const clientStatusEl = document.getElementById('clientStatusFixed');
+            if (clientStatusEl) clientStatusEl.style.display = 'flex';
+            setElementText('clientNameDisplayFixed', savedSession.client.name);
+            setElementText('clientNifDisplayFixed', savedSession.client.nif);
+            
+            const anoFiscalEl = document.getElementById('anoFiscal');
+            if (anoFiscalEl) anoFiscalEl.value = savedSession.selectedYear;
+            
+            const periodoEl = document.getElementById('periodoAnalise');
+            if (periodoEl) periodoEl.value = savedSession.selectedPeriodo;
+            
+            const platformEl = document.getElementById('selPlatformFixed');
+            if (platformEl) platformEl.value = savedSession.selectedPlatform;
+            
+            logAudit(`Sessão restaurada para: ${savedSession.client.name}`, 'info');
+            ForensicLogger.addEntry('SESSION_RESTORED', { client: savedSession.client.name });
+        }
+    }
+    
+    // Sincronizar dashboard externo
+    syncExternalDashboard();
+    
+    // Emitir evento de inicialização completa
+    window.dispatchEvent(new CustomEvent('UNIFED_INITIALIZED', {
+        detail: { version: UNIFEDSystem.version, sessionId: UNIFEDSystem.sessionId }
+    }));
+}
+
+// ============================================================================
+// 42. EXPOSIÇÃO GLOBAL ADICIONAL
+// ============================================================================
+
+// Exportar funções utilitárias adicionais
+window.exportExecutiveSummary = exportExecutiveSummary;
+window.exportEvidenceOnly = exportEvidenceOnly;
+window.endSession = endSession;
+window.persistSession = persistSession;
+window.prepareATFData = prepareATFData;
+window.calculateTrend = calculateTrend;
+window.calculatePersistenceScore = calculatePersistenceScore;
+window.copyToClipboard = copyToClipboard;
+window.arrayAverage = arrayAverage;
+window.arrayStdDev = arrayStdDev;
+window.findOutliers = findOutliers;
+
+// Adicionar aliases para compatibilidade com versões anteriores
+window.updateDashboardLabels = updateCardLabels;
+window.refreshTooltips = setupDynamicTooltips;
+
+// ============================================================================
+// 43. INICIALIZAÇÃO AUTOMÁTICA (APÓS DOMContentLoaded)
+// ============================================================================
+
+// Já existe um DOMContentLoaded no início do script, mas este é para componentes tardios
+// Usamos um segundo listener que será executado após o primeiro
+document.addEventListener('DOMContentLoaded', function() {
+    // Pequeno atraso para garantir que o DOM principal já foi processado
+    setTimeout(initializeLateComponents, 100);
+});
+
+// Também inicializar quando o mainContainer for mostrado (em caso de splash screen)
+const mainObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+            const main = document.getElementById('mainContainer');
+            if (main && main.style.display === 'block' && main.style.opacity === '1') {
+                initializeLateComponents();
+                mainObserver.disconnect();
+            }
+        }
+    });
+});
+
+const mainContainer = document.getElementById('mainContainer');
+if (mainContainer) {
+    mainObserver.observe(mainContainer, { attributes: true });
+}
+
+// ============================================================================
+// 44. GARANTIA DE INTEGRIDADE DO SCRIPT (FINAL)
+// ============================================================================
+
+/**
+ * Verifica se todas as funções críticas estão definidas
+ * @returns {boolean} True se tudo estiver ok
+ */
+function validateScriptIntegrity() {
+    const criticalFunctions = [
+        'performAudit', 'exportPDF', 'exportDataJSON', 'switchLanguage',
+        'updateDashboard', 'showAlerts', 'renderChart', 'generateMasterHash',
+        'processFile', 'registerClient', 'forensicDataSynchronization'
+    ];
+    
+    const missing = criticalFunctions.filter(fn => typeof window[fn] !== 'function' && typeof eval(fn) !== 'function');
+    
+    if (missing.length > 0) {
+        console.error('[UNIFED] Funções críticas ausentes:', missing);
+        ForensicLogger.addEntry('INTEGRITY_CHECK_FAILED', { missing });
+        return false;
+    }
+    
+    console.log('[UNIFED] ✅ Verificação de integridade do script concluída com sucesso.');
+    ForensicLogger.addEntry('INTEGRITY_CHECK_PASSED');
+    return true;
+}
+
+// Executar verificação de integridade após carregamento completo
+window.addEventListener('load', function() {
+    validateScriptIntegrity();
+});
+
+console.log('UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · Todos os módulos carregados · Sistema operacional · Pronto para uso forense.');
+
+// ============================================================================
+// 45. METADADOS FINAIS DO SISTEMA
+// ============================================================================
+
+/**
+ * Retorna informações detalhadas da versão do sistema
+ * @returns {object} Metadados da versão
+ */
+function getSystemMetadata() {
+    return {
+        version: UNIFEDSystem.version,
+        name: 'UNIFED - PROBATUM',
+        build: 'v13.5.1-MILITARY-HARDENED-DORA-COMPLIANT',
+        releaseDate: '2025-03-15',
+        compliance: [
+            'ISO/IEC 27037:2012',
+            'DORA (EU) 2022/2554',
+            'eIDAS (EU) 910/2014',
+            'RFC 3161',
+            'GDPR (EU) 2016/679',
+            'RGIT (Portugal)',
+            'CIVA (Portugal)',
+            'DL 28/2019'
+        ],
+        features: [
+            'Forensic Data Extraction',
+            'SHA-256 Cryptographic Sealing',
+            'OpenTimestamps Blockchain Anchoring',
+            'RFC 3161 TSA Sealing',
+            'Multi-language Support (PT/EN)',
+            'Real-time Dashboard',
+            'SAF-T / DAC7 Reconciliation',
+            'BTOR vs BTF Forensic Triangulation',
+            'Chain of Custody Logging',
+            'PDF Expert Report Generation',
+            'DOCX Draft Generation',
+            'ATF Temporal Analysis'
+        ],
+        dependencies: {
+            'pdf.js': '3.11.174',
+            'Chart.js': '4.4.0',
+            'CryptoJS': '3.1.9-1',
+            'QRCode.js': '1.0.0',
+            'PapaParse': '5.3.0',
+            'jsPDF': '2.5.1'
+        }
+    };
+}
+
+// Expor metadados do sistema
+window.getSystemMetadata = getSystemMetadata;
+
+// ============================================================================
+// 46. ASSINATURA DIGITAL DO SCRIPT (INTEGRIDADE DO CÓDIGO)
+// ============================================================================
+
+/**
+ * Gera um hash SHA-256 do próprio código deste script para verificação de integridade
+ * (útil para auditoria de que o script não foi adulterado após a entrega)
+ * @returns {Promise<string>}
+ */
+async function generateSelfIntegrityHash() {
+    // Esta função obtém o conteúdo do script atual (se disponível) e gera seu hash
+    // Nota: Em ambiente browser, a recuperação do código fonte pode ser limitada por CORS.
+    // Esta é uma funcionalidade opcional para ambientes controlados.
+    try {
+        const scripts = document.getElementsByTagName('script');
+        let currentScript = null;
+        for (let i = 0; i < scripts.length; i++) {
+            if (scripts[i].src && scripts[i].src.includes('script.js')) {
+                currentScript = scripts[i];
+                break;
+            }
+        }
+        if (currentScript && currentScript.src) {
+            const response = await fetch(currentScript.src);
+            const code = await response.text();
+            const hash = await generateForensicHash(code);
+            console.log('[UNIFED] Self-integrity hash (SHA-256):', hash);
+            ForensicLogger.addEntry('SELF_INTEGRITY_HASH', { hash });
+            return hash;
+        }
+    } catch (e) {
+        console.warn('[UNIFED] Não foi possível calcular o self-integrity hash:', e);
+    }
+    return null;
+}
+
+// Calcular hash de integridade do script em segundo plano (não bloqueante)
+if (window.crypto && window.crypto.subtle) {
+    setTimeout(() => generateSelfIntegrityHash(), 3000);
+}
+
+// ============================================================================
+// 47. REGISTRO DE EVENTOS DE SAÍDA (BEFOREUNLOAD)
+// ============================================================================
+
+/**
+ * Registra o encerramento da página para fins de auditoria
+ */
+function registerPageUnload() {
+    window.addEventListener('beforeunload', () => {
+        ForensicLogger.addEntry('PAGE_UNLOAD', {
+            sessionId: UNIFEDSystem.sessionId,
+            timestamp: new Date().toISOString()
+        });
+        // Persistir logs antes de sair
+        ForensicLogger._persist();
+        persistSession();
+    });
+}
+
+registerPageUnload();
+
+// ============================================================================
+// 48. FUNÇÃO DE RESET PARCIAL (SEM RECARREGAR PÁGINA)
+// ============================================================================
+
+/**
+ * Reseta apenas os dados de evidências e análise, mantendo o cliente se existir
+ */
+function resetEvidenceOnly() {
+    if (!confirm(currentLang === 'pt' ? 'Deseja limpar apenas as evidências carregadas? O sujeito passivo será mantido.' : 'Do you want to clear only the loaded evidence? The taxpayer will be kept.')) {
+        return;
+    }
+    
+    ForensicLogger.addEntry('EVIDENCE_ONLY_RESET');
+    
+    // Limpar documentos
+    UNIFEDSystem.documents = {
+        control: { files: [], hashes: {}, totals: { records: 0 } },
+        saft: { files: [], hashes: {}, totals: { records: 0, iliquido: 0, iva: 0, bruto: 0 } },
+        invoices: { files: [], hashes: {}, totals: { records: 0, invoiceValue: 0 } },
+        statements: { files: [], hashes: {}, totals: { records: 0, ganhos: 0, despesas: 0, ganhosLiquidos: 0 } },
+        dac7: { files: [], hashes: {}, totals: { records: 0, q1: 0, q2: 0, q3: 0, q4: 0, total: 0 } }
+    };
+    
+    UNIFEDSystem.analysis.evidenceIntegrity = [];
+    UNIFEDSystem.dataMonths = new Set();
+    UNIFEDSystem.monthlyData = {};
+    UNIFEDSystem.processedFiles = new Set();
+    UNIFEDSystem.auxiliaryData = {
+        campanhas: 0, portagens: 0, gorjetas: 0, cancelamentos: 0,
+        totalNaoSujeitos: 0, processedFrom: [], extractedAt: null
+    };
+    ValueSource.sources.clear();
+    
+    resetAllValues();
+    
+    logAudit('🧹 Evidências limpas. Sujeito passivo mantido.', 'success');
+    showToast(currentLang === 'pt' ? 'Evidências removidas' : 'Evidence cleared', 'success');
+}
+
+window.resetEvidenceOnly = resetEvidenceOnly;
+
+// ============================================================================
+// 49. MENSAGEM FINAL DE PRONTIDÃO
+// ============================================================================
+
+console.log('%c╔════════════════════════════════════════════════════════════════════╗', 'color: #00e5ff');
+console.log('%c║                   UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED                    ║', 'color: #00e5ff');
+console.log('%c║                           SISTEMA OPERACIONAL                                 ║', 'color: #00e5ff');
+console.log('%c║                      PRONTO PARA USO FORENSE                                   ║', 'color: #00e5ff');
+console.log('%c╚════════════════════════════════════════════════════════════════════╝', 'color: #00e5ff');
+console.log('[UNIFED] Sistema inicializado. Aguardando interação do perito.');
+console.log('[UNIFED] Hash de integridade do sistema:', UNIFEDSystem.masterHash || 'A calcular...');
+console.log('[UNIFED] Session ID:', UNIFEDSystem.sessionId);
+
+// ============================================================================
+// FIM DO SCRIPT
+// ============================================================================
