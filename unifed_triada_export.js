@@ -3,12 +3,11 @@
  * UNIFED - PROBATUM · v13.5.1-PURE · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
- * Versão        : 1.0.7-TRIADA (RETIFICADO - BOTÃO PACOTE ADVOGADO PERSISTENTE)
+ * Versão        : 1.0.8-TRIADA (PACOTE ADVOGADO + JSON)
  * 
- * RETIFICAÇÃO v1.0.7:
- *   - Injeção permanente do botão "PACOTE ADVOGADO" na UI
- *   - Criação do alias global window.descarrregarPacoteAdvogado()
- *   - Garantia de que o botão não desaparece ao carregar CASO SIMULADO
+ * RETIFICAÇÃO v1.0.8:
+ *   - Inclusão do ficheiro JSON no Pacote Advogado
+ *   - Ajuste dos delays para exportação sequencial dos 4 ficheiros
  * ============================================================================
  */
 
@@ -61,23 +60,18 @@
     }
     
     function _getSys() {
-        // ✅ SINCRONIZAÇÃO CRÍTICA v13.5.1: Verificar que dados estão ACTUAIS
         if (!window.UNIFEDSystem) {
             throw new Error('❌ UNIFEDSystem não inicializado — execute loadAnonymizedRealCase()');
         }
-        
         if (!window.UNIFEDSystem.analysis) {
             throw new Error('❌ UNIFEDSystem.analysis não disponível');
         }
-        
         if (!window.UNIFEDSystem.analysis.totals) {
             throw new Error('❌ analysis.totals não encontrado — sincronização falhou');
         }
-        
         if (!window.UNIFEDSystem.analysis.crossings) {
             throw new Error('❌ analysis.crossings não encontrado — sincronização falhou');
         }
-        
         var t = window.UNIFEDSystem.analysis.totals;
         var c = window.UNIFEDSystem.analysis.crossings;
         
@@ -107,19 +101,16 @@
     // =========================================================================
     async function _unifedExportPdfRelatorio() {
         _log('📄 Exportando PDF Relatório Pericial...', 'info');
-        
         if (typeof window.jspdf === 'undefined') {
             _log('jsPDF não carregado', 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro: jsPDF não disponível.', 'error');
             return;
         }
-        
         var sys;
         try { sys = _getSys(); } catch (e) {
             if (typeof window.showToast === 'function') window.showToast(e.message, 'error');
             return;
         }
-        
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -135,7 +126,6 @@
             var W = R - L;
             var hoje = _dataHoje();
             
-            // Computar hash do snapshot
             var _snapshotStr = JSON.stringify({
                 sessionId: sessId,
                 ganhos: t.ganhos,
@@ -145,7 +135,6 @@
                 discC1: c.discrepanciaSaftVsDac7
             });
             var _runtimeHash = await _sha256(_snapshotStr);
-            
             var _pageNum = 1;
             
             function _watermark() {
@@ -215,7 +204,6 @@
                 return y + 6;
             }
             
-            // PÁGINA 1
             _watermark();
             doc.setFillColor(5, 20, 50);
             doc.rect(0, 0, pageW, 38, 'F');
@@ -310,7 +298,6 @@
             
             _footer(false);
             
-            // PÁGINA 2 (simplificada)
             _newPage();
             y = 18;
             y = _sectionHeader('IV. INTRODUÇÃO — CONTEXTO NORMATIVO', y, [10, 60, 110]);
@@ -356,19 +343,16 @@
     // =========================================================================
     async function _unifedExportPdfAnexoCustodia() {
         _log('📄 Exportando PDF Anexo Custódia...', 'info');
-        
         if (typeof window.jspdf === 'undefined') {
             _log('jsPDF não carregado', 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro: jsPDF não disponível.', 'error');
             return;
         }
-        
         var sys;
         try { sys = _getSys(); } catch (e) {
             if (typeof window.showToast === 'function') window.showToast(e.message, 'error');
             return;
         }
-        
         try {
             var jsPDF = window.jspdf.jsPDF;
             var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
@@ -383,8 +367,6 @@
             var hoje = _dataHoje();
             
             var _hashSessionJson = await _sha256(JSON.stringify({ sessionId: sessId, totals: t, crossings: c }));
-            
-            // --- BLOCO CORRIGIDO v13.5.1 — 15 ficheiros reais da cadeia de custódia ---
             var _evidencias = [];
             var evidList = (sys.analysis.evidence && sys.analysis.evidence.integrity)
                         || sys.analysis.evidenceIntegrity
@@ -514,19 +496,16 @@
     // =========================================================================
     async function _unifedExportDocxMatriz() {
         _log('📄 Exportando DOCX Matriz Jurídica...', 'info');
-        
         if (typeof JSZip === 'undefined') {
             _log('JSZip não disponível', 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro: JSZip não carregado.', 'error');
             return;
         }
-        
         var sys;
         try { sys = _getSys(); } catch (e) {
             if (typeof window.showToast === 'function') window.showToast(e.message, 'error');
             return;
         }
-        
         try {
             var t = sys.analysis.totals || {};
             var c = sys.analysis.crossings || {};
@@ -626,7 +605,7 @@
     }
     
     // =========================================================================
-    // CRIAÇÃO DOS BOTÕES (COM AS FUNÇÕES REAIS)
+    // CRIAÇÃO DOS BOTÕES
     // =========================================================================
     function criarBotao(id, iconClass, label, cor, handler) {
         var btn = document.createElement('button');
@@ -657,9 +636,6 @@
         return btn;
     }
     
-    // =========================================================================
-    // FUNÇÃO GLOBAL: descarregarPacoteAdvogado
-    // =========================================================================
     window.descarrregarPacoteAdvogado = function() {
         if (typeof window._exportPacoteAdvogado === 'function') {
             window._exportPacoteAdvogado();
@@ -671,44 +647,32 @@
         }
     };
     
-    // =========================================================================
-    // INJEÇÃO DOS BOTÕES (INCLUINDO O PACOTE ADVOGADO)
-    // =========================================================================
     function injetarBotoes() {
         console.log('[UNIFED-TRIADA] Procurando #triadaContainer...');
-
         var container = document.getElementById('triadaContainer');
         if (!container) {
             console.error('[UNIFED-TRIADA] ❌ #triadaContainer não encontrado');
             return false;
         }
-
-        // Barreira anti-duplicação
         if (container.classList.contains('botoes-injetados') || document.getElementById('unifedPdfRelatorioBtn')) {
             console.log('[UNIFED-TRIADA] Botões já existem — injeção bloqueada.');
             return true;
         }
-
-        // Botões originais (Relatório, Custódia, Matriz)
         var botoes = [
             { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      label: 'RELATÓRIO PERICIAL', cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
             { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', label: 'ANEXO · CUSTÓDIA',   cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
             { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     label: 'MATRIZ JURÍDICA',    cor: '#10B981', handler: _unifedExportDocxMatriz        }
         ];
-
         botoes.forEach(function(b) {
             container.appendChild(criarBotao(b.id, b.icon, b.label, b.cor, b.handler));
             console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
-
-        // --- BOTÃO ADICIONAL: PACOTE ADVOGADO (CORREÇÃO CIRÚRGICA) ---
+        
         if (!document.getElementById('downloadPacoteAdvogadoBtn')) {
             var btnPacote = document.createElement('button');
             btnPacote.id = 'downloadPacoteAdvogadoBtn';
-            btnPacote.className = 'pure-btn-led led-cyan'; // estilo consistente com os outros
+            btnPacote.className = 'pure-btn-led led-cyan';
             btnPacote.innerHTML = '<span>📦 PACOTE ADVOGADO</span>';
-            
-            // Adiciona o evento de clique para descarregar o pacote (JSON + PDF, ou apenas tríade)
             btnPacote.addEventListener('click', function() {
                 if (typeof window.descarrregarPacoteAdvogado === 'function') {
                     window.descarrregarPacoteAdvogado();
@@ -719,17 +683,11 @@
                     }
                 }
             });
-
-            // Insere o botão junto aos outros (dentro do mesmo container)
             container.appendChild(btnPacote);
             console.log('[UNIFED-TRIADA] ✅ Botão PACOTE ADVOGADO injetado em #triadaContainer.');
         }
-        // --- FIM DA CORREÇÃO ---
-
-        // Selar contentor
+        
         container.classList.add('botoes-injetados');
-
-        // Garantir visibilidade
         if (container.style.display === 'none' || container.style.display === '') {
             container.style.display = 'flex';
         }
@@ -737,13 +695,12 @@
         if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
             _rightWrapper.style.display = 'flex';
         }
-
         console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (inclui PACOTE ADVOGADO)!');
         return true;
     }
     
     // =========================================================================
-    // PACOTE ANALISTA E ADVOGADO (JÁ EXISTENTES)
+    // PACOTE ANALISTA E ADVOGADO (COM JSON)
     // =========================================================================
     window._exportPacoteAnalista = async function() {
         _log('Iniciando PACOTE ANALISTA: Ficheiro PERITIA + Dados JSON', 'info');
@@ -767,33 +724,48 @@
         }
     };
     
+    // --- PACOTE ADVOGADO: JSON + RELATÓRIO + ANEXO + MATRIZ ---
     window._exportPacoteAdvogadoOffline = async function() {
-        console.log('[UNIFED] Iniciando PACOTE ADVOGADO (Tríade Processual)...');
+        console.log('[UNIFED] Iniciando PACOTE ADVOGADO (JSON + Tríade Processual)...');
         try {
+            // 1. Relatório Pericial (PDF)
             if (typeof window._unifedExportPdfRelatorio === 'function') {
                 await window._unifedExportPdfRelatorio();
             }
+            // 2. Anexo Custódia (PDF)
             setTimeout(async function() {
                 if (typeof _unifedExportPdfAnexoCustodia === 'function') {
                     await _unifedExportPdfAnexoCustodia();
                 }
             }, 1500);
+            // 3. Matriz Jurídica (DOCX)
             setTimeout(async function() {
                 if (typeof _unifedExportDocxMatriz === 'function') {
                     await _unifedExportDocxMatriz();
                 }
             }, 3000);
+            // 4. Ficheiro JSON (dados da perícia)
+            setTimeout(function() {
+                if (typeof exportDataJSON === 'function') {
+                    exportDataJSON();
+                    _log('✅ JSON do Pacote Advogado exportado.', 'success');
+                } else if (typeof window._exportJsonSistema === 'function') {
+                    window._exportJsonSistema('ADVOGADO');
+                    _log('✅ JSON do Pacote Advogado exportado (via _exportJsonSistema).', 'success');
+                } else {
+                    _log('❌ Função exportDataJSON não disponível. JSON não gerado.', 'error');
+                }
+            }, 4500);
             if (typeof window.showToast === 'function') {
-                window.showToast('PACOTE ADVOGADO GERADO: Relatório, Custódia e Matriz.', 'success');
+                window.showToast('PACOTE ADVOGADO GERADO: Relatório, Custódia, Matriz e JSON.', 'success');
             }
         } catch (e) {
-            console.error('[UNIFED] Falha na exportação da Tríade:', e.message);
+            console.error('[UNIFED] Falha na exportação do Pacote Advogado:', e.message);
         }
     };
     
     window._exportPacoteAdvogado = window._exportPacoteAdvogadoOffline;
     
-    // Vincular botão existente (caso exista na DOM)
     (function _bindPacoteAdvogado() {
         function _attach() {
             var btn = document.getElementById('exportPacoteAdvogadoBtn');
@@ -845,7 +817,6 @@
     
     window.UNIFED_TRIADA_REINJETAR = injetarBotoes;
     
-    // MutationObserver para quando #mainContainer ficar visível
     (function() {
         var _fired = false;
         var _mc    = document.getElementById('mainContainer');
