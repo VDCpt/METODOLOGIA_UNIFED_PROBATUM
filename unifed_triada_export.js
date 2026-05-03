@@ -636,7 +636,7 @@
         return btn;
     }
     
-    window.descarrregarPacoteAdvogado = function() {
+    window.descarregarPacoteAdvogado = function() {
         if (typeof window._exportPacoteAdvogado === 'function') {
             window._exportPacoteAdvogado();
         } else {
