@@ -1011,12 +1011,15 @@
     </div>
 
     <!-- SCRIPTS (UNIFED PROBATUM v13.5.1-MILITARY-HARDENED - SEM DUPLICAÇÕES) -->
+
 <script>
     window.pdfjsLib = window['pdfjs-dist/build/pdf'];
     if (window.pdfjsLib) {
         window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     }
+</script>
 
+<!-- SCP: Fallback document.write removido ... -->
 <!-- SCP: Fallback document.write removido — substituído pelo OTS Dynamic Loader no <head> -->
 <!-- UNIFED PROBATUM v13.5.1-MILITARY-HARDENED — Output Enrichment Layer -->
 <!-- REORDENADO TECNICAMENTE: script.js e script_injection.js carregados PRIMEIRO (evita erros de memória/campos vazios) -->

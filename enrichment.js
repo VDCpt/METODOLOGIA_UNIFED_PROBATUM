@@ -1076,7 +1076,7 @@ function openATFModal() {
         stable: isEN ? '➡ STABLE' : '➡ ESTÁVEL',
         chartTitle: isEN ? 'TEMPORAL CHART — GAINS · EXPENSES · DISCREPANCY' : 'GRÁFICO TEMPORAL — GANHOS · DESPESAS · DISCREPÂNCIA',
         noDataMsg: isEN ? 'No monthly data. Load files with YYYYMM naming.' : 'Sem dados mensais. Carregue extratos com nome incluindo AAAAMM.',
-        outlierTitle: function(count) { return isEN ? (count + ' MONTHS WITH OUTLIER (DEV > 2σ) — Qualified evidence Art. 104º RGIT' : (count + ' MESES COM OUTLIER (DESVIO > 2σ) — Indício qualificado Art. 104º RGIT'); },
+        outlierTitle: function(count) { return isEN ? count + ' MONTHS WITH OUTLIER (DEV > 2σ) — Qualified evidence Art. 104º RGIT' : count + ' MESES COM OUTLIER (DESVIO > 2σ) — Indício qualificado Art. 104º RGIT'; },
         footerText: isEN ? 'Legal Foundation: Art. 103 and 104 of RGIT distinguish isolated error from fraudulent conduct through demonstration of iteration. The Persistence Score quantifies systematic omissions. Opportunistic pattern (outliers in revenue peaks) reinforces specific intent. Art. 125 CPP · ISO/IEC 27037:2012' : 'Fundamentação Jurídica: O Art. 103º e 104º do RGIT distinguem o erro pontual da conduta dolosa mediante a demonstração de iteração. O Score de Persistência quantifica a sistematicidade das omissões. O Padrão Oportunístico (outliers em picos de faturação) reforça o dolo específico. Art. 125º CPP · ISO/IEC 27037:2012'
     };
 
