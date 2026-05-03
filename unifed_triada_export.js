@@ -3,10 +3,11 @@
  * UNIFED - PROBATUM · v13.5.1-PURE · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
- * Versão        : 1.0.8-TRIADA (PACOTE ADVOGADO + JSON)
+ * Versão        : 1.1.0-TRIADA (PACOTE ADVOGADO CORRIGIDO)
  * 
- * RETIFICAÇÃO v1.0.9:
- *   - Corrigido erro de digitação no botão "PACOTE ADVOGADO" (descarrregar → descarregar)
+ * RETIFICAÇÃO v1.1.0:
+ *   - Garantia de que o Pacote Advogado NÃO gera "Perícia" (apenas Relatório, Anexo, Matriz + JSON)
+ *   - Isolamento da função _executarPacoteAdvogado para evitar conflitos
  * ============================================================================
  */
 
@@ -99,7 +100,7 @@
     // EXPORTAÇÃO PDF RELATÓRIO PERICIAL (COMPLETA)
     // =========================================================================
     async function _unifedExportPdfRelatorio() {
-        _log('📄 Exportando PDF Relatório Pericial...', 'info');
+        _log('📄 [PACOTE ADVOGADO] Exportando PDF Relatório Pericial...', 'info');
         if (typeof window.jspdf === 'undefined') {
             _log('jsPDF não carregado', 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro: jsPDF não disponível.', 'error');
@@ -341,7 +342,7 @@
     // EXPORTAÇÃO PDF ANEXO CUSTÓDIA (COMPLETA)
     // =========================================================================
     async function _unifedExportPdfAnexoCustodia() {
-        _log('📄 Exportando PDF Anexo Custódia...', 'info');
+        _log('📄 [PACOTE ADVOGADO] Exportando PDF Anexo Custódia...', 'info');
         if (typeof window.jspdf === 'undefined') {
             _log('jsPDF não carregado', 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro: jsPDF não disponível.', 'error');
@@ -494,7 +495,7 @@
     // EXPORTAÇÃO DOCX MATRIZ JURÍDICA (COMPLETA)
     // =========================================================================
     async function _unifedExportDocxMatriz() {
-        _log('📄 Exportando DOCX Matriz Jurídica...', 'info');
+        _log('📄 [PACOTE ADVOGADO] Exportando DOCX Matriz Jurídica...', 'info');
         if (typeof JSZip === 'undefined') {
             _log('JSZip não disponível', 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro: JSZip não carregado.', 'error');
@@ -604,6 +605,46 @@
     }
     
     // =========================================================================
+    // FUNÇÃO INTERNA DO PACOTE ADVOGADO (EXCLUSIVA, SEM PERÍCIA)
+    // =========================================================================
+    async function _executarPacoteAdvogado() {
+        console.log('[UNIFED] 🚀 Iniciando PACOTE ADVOGADO (JSON + Tríade Processual - SEM PERÍCIA)...');
+        try {
+            // 1. Relatório Pericial (PDF)
+            await _unifedExportPdfRelatorio();
+            
+            // 2. Anexo Custódia (PDF)
+            setTimeout(async function() {
+                await _unifedExportPdfAnexoCustodia();
+            }, 1500);
+            
+            // 3. Matriz Jurídica (DOCX)
+            setTimeout(async function() {
+                await _unifedExportDocxMatriz();
+            }, 3000);
+            
+            // 4. Ficheiro JSON (dados da perícia)
+            setTimeout(function() {
+                if (typeof exportDataJSON === 'function') {
+                    exportDataJSON();
+                    _log('✅ JSON do Pacote Advogado exportado.', 'success');
+                } else if (typeof window._exportJsonSistema === 'function') {
+                    window._exportJsonSistema('ADVOGADO');
+                    _log('✅ JSON do Pacote Advogado exportado (via _exportJsonSistema).', 'success');
+                } else {
+                    _log('❌ Função exportDataJSON não disponível. JSON não gerado.', 'error');
+                }
+            }, 4500);
+            
+            if (typeof window.showToast === 'function') {
+                window.showToast('PACOTE ADVOGADO: Relatório, Custódia, Matriz e JSON gerados.', 'success');
+            }
+        } catch (e) {
+            console.error('[UNIFED] Falha no Pacote Advogado:', e.message);
+        }
+    }
+    
+    // =========================================================================
     // CRIAÇÃO DOS BOTÕES
     // =========================================================================
     function criarBotao(id, iconClass, label, cor, handler) {
@@ -636,14 +677,8 @@
     }
     
     window.descarregarPacoteAdvogado = function() {
-        if (typeof window._exportPacoteAdvogado === 'function') {
-            window._exportPacoteAdvogado();
-        } else {
-            console.error('[UNIFED-TRIADA] window._exportPacoteAdvogado não está definido.');
-            if (typeof window.showToast === 'function') {
-                window.showToast('Erro: função de exportação do pacote advogado não disponível.', 'error');
-            }
-        }
+        console.log('[UNIFED-TRIADA] Botão PACOTE ADVOGADO clicado — a chamar _executarPacoteAdvogado()');
+        _executarPacoteAdvogado();
     };
     
     function injetarBotoes() {
@@ -673,7 +708,6 @@
             btnPacote.className = 'pure-btn-led led-cyan';
             btnPacote.innerHTML = '<span>📦 PACOTE ADVOGADO</span>';
             btnPacote.addEventListener('click', function() {
-                // CORREÇÃO: descarregar (dois 'r') em vez de descarrregar
                 if (typeof window.descarregarPacoteAdvogado === 'function') {
                     window.descarregarPacoteAdvogado();
                 } else {
@@ -695,12 +729,12 @@
         if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
             _rightWrapper.style.display = 'flex';
         }
-        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (inclui PACOTE ADVOGADO)!');
+        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (PACOTE ADVOGADO CORRIGIDO)!');
         return true;
     }
     
     // =========================================================================
-    // PACOTE ANALISTA E ADVOGADO (COM JSON)
+    // PACOTE ANALISTA (mantido original)
     // =========================================================================
     window._exportPacoteAnalista = async function() {
         _log('Iniciando PACOTE ANALISTA: Ficheiro PERITIA + Dados JSON', 'info');
@@ -723,69 +757,6 @@
             _log('Falha na exportação do Analista: ' + e.message, 'error');
         }
     };
-    
-    // --- PACOTE ADVOGADO: JSON + RELATÓRIO + ANEXO + MATRIZ ---
-    window._exportPacoteAdvogadoOffline = async function() {
-        console.log('[UNIFED] Iniciando PACOTE ADVOGADO (JSON + Tríade Processual)...');
-        try {
-            // 1. Relatório Pericial (PDF)
-            if (typeof window._unifedExportPdfRelatorio === 'function') {
-                await window._unifedExportPdfRelatorio();
-            }
-            // 2. Anexo Custódia (PDF)
-            setTimeout(async function() {
-                if (typeof _unifedExportPdfAnexoCustodia === 'function') {
-                    await _unifedExportPdfAnexoCustodia();
-                }
-            }, 1500);
-            // 3. Matriz Jurídica (DOCX)
-            setTimeout(async function() {
-                if (typeof _unifedExportDocxMatriz === 'function') {
-                    await _unifedExportDocxMatriz();
-                }
-            }, 3000);
-            // 4. Ficheiro JSON (dados da perícia)
-            setTimeout(function() {
-                if (typeof exportDataJSON === 'function') {
-                    exportDataJSON();
-                    _log('✅ JSON do Pacote Advogado exportado.', 'success');
-                } else if (typeof window._exportJsonSistema === 'function') {
-                    window._exportJsonSistema('ADVOGADO');
-                    _log('✅ JSON do Pacote Advogado exportado (via _exportJsonSistema).', 'success');
-                } else {
-                    _log('❌ Função exportDataJSON não disponível. JSON não gerado.', 'error');
-                }
-            }, 4500);
-            if (typeof window.showToast === 'function') {
-                window.showToast('PACOTE ADVOGADO GERADO: Relatório, Custódia, Matriz e JSON.', 'success');
-            }
-        } catch (e) {
-            console.error('[UNIFED] Falha na exportação do Pacote Advogado:', e.message);
-        }
-    };
-    
-    window._exportPacoteAdvogado = window._exportPacoteAdvogadoOffline;
-    
-    (function _bindPacoteAdvogado() {
-        function _attach() {
-            var btn = document.getElementById('exportPacoteAdvogadoBtn');
-            if (btn && !btn._pacoteBound) {
-                btn._pacoteBound = true;
-                btn.removeAttribute('onclick');
-                btn.addEventListener('click', function() {
-                    if (typeof window._exportPacoteAdvogado === 'function') {
-                        window._exportPacoteAdvogado();
-                    }
-                });
-                console.log('[UNIFED-TRIADA] ✅ exportPacoteAdvogadoBtn vinculado.');
-            }
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', _attach);
-        } else {
-            setTimeout(_attach, 0);
-        }
-    })();
     
     // =========================================================================
     // EXECUÇÃO INICIAL E OBSERVADORES
