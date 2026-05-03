@@ -5,9 +5,8 @@
  * Ficheiro      : unifed_triada_export.js
  * Versão        : 1.0.8-TRIADA (PACOTE ADVOGADO + JSON)
  * 
- * RETIFICAÇÃO v1.0.8:
- *   - Inclusão do ficheiro JSON no Pacote Advogado
- *   - Ajuste dos delays para exportação sequencial dos 4 ficheiros
+ * RETIFICAÇÃO v1.0.9:
+ *   - Corrigido erro de digitação no botão "PACOTE ADVOGADO" (descarrregar → descarregar)
  * ============================================================================
  */
 
@@ -674,8 +673,9 @@
             btnPacote.className = 'pure-btn-led led-cyan';
             btnPacote.innerHTML = '<span>📦 PACOTE ADVOGADO</span>';
             btnPacote.addEventListener('click', function() {
-                if (typeof window.descarrregarPacoteAdvogado === 'function') {
-                    window.descarrregarPacoteAdvogado();
+                // CORREÇÃO: descarregar (dois 'r') em vez de descarrregar
+                if (typeof window.descarregarPacoteAdvogado === 'function') {
+                    window.descarregarPacoteAdvogado();
                 } else {
                     console.error('[UNIFED-TRIADA] Função descarregarPacoteAdvogado não encontrada.');
                     if (typeof window.showToast === 'function') {
