@@ -11,6 +11,9 @@
 
 'use strict';
 
+// Inicialização segura de variáveis globais de extensões
+window._nifafAlertedHash = window._nifafAlertedHash || new Set();
+
 console.log('UNIFED - PROBATUM SCRIPT v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · ATF · INTEGRITY SEAL · DOCX · AI ADVERSARIAL · NIFAF GUARD · NEXUS · ATIVADO');
 
 // ============================================================================
