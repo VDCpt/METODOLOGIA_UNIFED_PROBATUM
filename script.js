@@ -9120,7 +9120,7 @@ window.refreshTooltips = setupDynamicTooltips;
 // Usamos um segundo listener que será executado após o primeiro
 document.addEventListener('DOMContentLoaded', function() {
     // Pequeno atraso para garantir que o DOM principal já foi processado
-    setTimeout(initializeLateComponents, 100);
+    setTimeout(initializeLateComponents, 250);
 });
 
 // Também inicializar quando o mainContainer for mostrado (em caso de splash screen)

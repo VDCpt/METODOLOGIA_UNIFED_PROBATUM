@@ -10,7 +10,35 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
 
     <!-- CARGA DIRECTA DO OPENTIMESTAMPS (CDN SEGURA) -->
-    <script src="https://unpkg.com/javascript-opentimestamps@0.4.5/dist/opentimestamps.js" crossorigin="anonymous"></script>
+
+    <script src="https://unpkg.com/javascript-opentimestamps@0.4.5/dist/opentimestamps.js"></script>
+<script>
+  (function() {
+    if (typeof window.OpenTimestamps === 'undefined' && typeof window.opentimestamps === 'undefined') {
+      console.warn('[UNIFED-OTS] Fallback unpkg falhou. A carregar via jsDelivr...');
+      var script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/javascript-opentimestamps@0.4.5/dist/opentimestamps.min.js';
+      
+      var timeout = setTimeout(function() {
+        if (typeof window.OpenTimestamps === 'undefined' && typeof window.opentimestamps === 'undefined') {
+          console.info('[UNIFED-OTS] ⚙ Timeout – OpenTimestamps não carregado. Selagem de Nível 1 ativa.');
+        }
+      }, 5000);
+      
+      script.onload = function() {
+        clearTimeout(timeout);
+        console.info('[UNIFED-OTS] ✅ Biblioteca OpenTimestamps carregada via jsDelivr.');
+      };
+      
+      script.onerror = function() {
+        clearTimeout(timeout);
+        console.info('[UNIFED-OTS] ⚙ Biblioteca OpenTimestamps não disponível – Selagem de Nível 1 ativa (SHA-256 interno).');
+      };
+      
+      document.head.appendChild(script);
+    }
+  })();
+</script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
