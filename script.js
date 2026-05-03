@@ -3067,7 +3067,7 @@ const SchemaRegistry = {
 const UNIFEDSystem = {
     version: 'v13.5.1-MILITARY-HARDENED-DORA-COMPLIANT',
     name: 'UNIFED - PROBATUM',
-    sessionId: null,
+    sessionId: generateSessionId(),
     selectedYear: new Date().getFullYear(),
     selectedPeriodo: 'anual',
     selectedPlatform: 'bolt',
