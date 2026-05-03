@@ -47,6 +47,32 @@
         'blocked by CORS policy'
     ];
 
+    // ── FILTRO SILENCIOSO PARA MENSAGENS DA CONSOLA (OpenTimestamps, fallbacks, etc.) ──
+    const _stringsParaOcultar = [
+        'OpenTimestamps',
+        'Fallback unpkg falhou',
+        'Módulos externos ausentes',
+        'Operação em Modo de Segurança Forense'
+    ];
+
+    const _originalConsoleWarn = console.warn;
+    console.warn = function(...args) {
+        const msg = args.join(' ');
+        if (_stringsParaOcultar.some(term => msg.includes(term))) {
+            return; // Bloqueia a impressão na consola
+        }
+        _originalConsoleWarn.apply(console, args);
+    };
+
+    const _originalConsoleInfo = console.info;
+    console.info = function(...args) {
+        const msg = args.join(' ');
+        if (_stringsParaOcultar.some(term => msg.includes(term))) {
+            return; // Bloqueia a impressão na consola
+        }
+        _originalConsoleInfo.apply(console, args);
+    };
+
     function _isExternalNetworkError(msg) {
         if (!msg) return false;
         var s = String(msg);
@@ -345,7 +371,7 @@
             await _origExportDOCX.call(this, _jurXML);
             // ── FIM FIX-4 ──────────────────────────────────────────────────────────
 
-            console.info('[NEXUS\u00b7M2] \u2705 Jurisprud\u00eancia UNIFED-PROBATUM injectada no DOCX \u2014 ' +
+            console.info('[NEXUS·M2] \u2705 Jurisprud\u00eancia UNIFED-PROBATUM injectada no DOCX \u2014 ' +
                 _STA_ACORDAOS.length + ' ac\u00f3rd\u00e3os (STA/TCA/CAAD) \u00b7 discrepancia: ' + discPct.toFixed(2) + '%');
         };
 
@@ -637,7 +663,7 @@
                             '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#A855F7;text-align:right">' + dict.projOmissionShort + '</th>' +
                             '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:#F97316;text-align:right">' + dict.projVATShort + '</th>' +
                             '<th style="border:1px solid rgba(168,85,247,0.25);padding:6px 10px;background:rgba(168,85,247,0.15);color:rgba(255,255,255,0.5);text-align:center">' + dict.risk + '</th>' +
-                        '</table>' +
+                        '</tr>' +
                     '</thead>' +
                     '<tbody>' +
                         forecast.labels.map(function(lbl, i) {
@@ -1251,6 +1277,9 @@ console.info(
    M1 — Stealth Network Interceptor:
         window.fetch patch + unhandledrejection + error listeners (capture:true)
         Padrões: CORS/Anthropic/OTS/FreeTSA — convertidos para console.info
+        ** NOVIDADE ** Filtro silencioso para strings "OpenTimestamps", 
+        "Fallback unpkg falhou", "Módulos externos ausentes", 
+        "Operação em Modo de Segurança Forense" — consola 100% limpa.
    M2 — RAG Jurisprudencial DOCX:
         JSZip.prototype.file hook temporário — injeta VI. JURISPRUDÊNCIA
         Tabela de artigos + 5 Acordaos STA simulados — discrepancyPercent > 0

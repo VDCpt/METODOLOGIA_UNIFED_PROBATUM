@@ -15,27 +15,29 @@
 <script>
   (function() {
     if (typeof window.OpenTimestamps === 'undefined' && typeof window.opentimestamps === 'undefined') {
-      console.warn('[UNIFED-OTS] Fallback unpkg falhou. A carregar via jsDelivr...');
+      // Silenciado: O fallback é executado em segundo plano sem registo na consola
       var script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/javascript-opentimestamps@0.4.5/dist/opentimestamps.min.js';
       
       var timeout = setTimeout(function() {
         if (typeof window.OpenTimestamps === 'undefined' && typeof window.opentimestamps === 'undefined') {
-          console.info('[UNIFED-OTS] ⚙ Timeout – OpenTimestamps não carregado. Selagem de Nível 1 ativa.');
+          window._otsStatus = 'OFFLINE_LEVEL1';
         }
       }, 5000);
       
       script.onload = function() {
         clearTimeout(timeout);
-        console.info('[UNIFED-OTS] ✅ Biblioteca OpenTimestamps carregada via jsDelivr.');
+        window._otsStatus = 'LOADED_FALLBACK';
       };
       
       script.onerror = function() {
         clearTimeout(timeout);
-        console.info('[UNIFED-OTS] ⚙ Biblioteca OpenTimestamps não disponível – Selagem de Nível 1 ativa (SHA-256 interno).');
+        window._otsStatus = 'OFFLINE_LEVEL1';
       };
       
       document.head.appendChild(script);
+    } else {
+      window._otsStatus = 'LOADED_PRIMARY';
     }
   })();
 </script>
