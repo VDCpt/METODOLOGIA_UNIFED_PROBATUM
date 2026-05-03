@@ -9,76 +9,8 @@
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
 
-    <!-- ══ UNIFED - PROBATUM v13.3.0-DIAMOND · OTS DYNAMIC LOADER ══════════════════
-         SCP: Bloco de injeção dinâmica — substitui document.write e tag síncrona.
-         Implementa Dynamic Script Injection com fallback CDN sequencial.
-         Elimina parser-blocking e o aviso "document.write" do Chrome.
-         A Cadeia de Custódia (Nível 1 · PROBATUM INTERNAL SEAL) mantém-se
-         activa independentemente da disponibilidade dos CDN externos.
-         Conformidade: DORA (UE) 2022/2554 · RFC 3161 · ISO/IEC 27037:2012
-         ══════════════════════════════════════════════════════════════════ -->
-    <script>
-    (function loadOTSWithFallback() {
-        var CDN_PRIMARY   = 'https://unpkg.com/javascript-opentimestamps@0.0.12/dist/opentimestamps.min.js';
-        var CDN_SECONDARY = 'https://cdn.jsdelivr.net/npm/javascript-opentimestamps@0.0.12/dist/opentimestamps.min.js';
-
-        function normalizeOTS() {
-            // SHIM integrado: normaliza o global independentemente do nome UMD exposto
-            if (typeof window.OpenTimestamps === 'undefined') {
-                if (typeof window.opentimestamps !== 'undefined') {
-                    window.OpenTimestamps = window.opentimestamps;
-                } else if (typeof opentimestamps !== 'undefined') {
-                    window.OpenTimestamps = opentimestamps;
-                }
-            }
-        }
-
-        function injectScript(src, onSuccess, onError) {
-            var s = document.createElement('script');
-            s.src = src;
-            // async:true — não bloqueia o parser; script.js usa window.load para
-            // verificar OTS, garantindo que a sequência de execução é respeitada.
-            s.async = true;
-            s.onload  = onSuccess;
-            s.onerror = onError;
-            document.head.appendChild(s);
-        }
-
-        // Se já em cache (reload), normalizar e sair imediatamente
-        if (typeof window.OpenTimestamps !== 'undefined' ||
-            typeof window.opentimestamps  !== 'undefined') {
-            normalizeOTS();
-            console.log('[UNIFED-OTS] ✅ Biblioteca em cache. window.OpenTimestamps ✓');
-            return;
-        }
-
-        // Tentativa 1: CDN primário (unpkg)
-        injectScript(CDN_PRIMARY,
-            function() {
-                normalizeOTS();
-                console.log('[UNIFED-OTS] ✅ CDN primário (unpkg) — window.OpenTimestamps ✓');
-            },
-            function() {
-                console.info('[UNIFED-OTS] ⚙ Operação em Modo de Segurança Forense — CDN primário indisponível. A activar mirror jsdelivr automaticamente...');
-                // Tentativa 2: CDN espelho (jsdelivr)
-                injectScript(CDN_SECONDARY,
-                    function() {
-                        normalizeOTS();
-                        console.log('[UNIFED-OTS] ✅ CDN secundário (jsdelivr) — window.OpenTimestamps ✓');
-                    },
-                    function() {
-                        // Ambos os CDN indisponíveis — degradação graciosa
-                        // O sistema opera em Nível 1 (PROBATUM INTERNAL SEAL).
-                        // A Cadeia de Custódia SHA-256 não é interrompida.
-                        console.info('[UNIFED-OTS] ⚙ Operação em Modo de Segurança Forense — Nível 1 (PROBATUM INTERNAL SEAL) activo. ' +
-                            'Selagem de Nível 1 Ativa: Conformidade assegurada por Hash SHA-256 interno (Art.º 125.º CPP). ' +
-                            'OTS/Blockchain em standby até restauro de conectividade.');
-                    }
-                );
-            }
-        );
-    })();
-    </script>
+    <!-- CARGA DIRECTA DO OPENTIMESTAMPS (CDN SEGURA) -->
+    <script src="https://cdn.jsdelivr.net/npm/javascript-opentimestamps@0.4.5/dist/opentimestamps.min.js" crossorigin="anonymous"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,7 +26,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <!-- SCP: SHIM OTS integrado no OTS Dynamic Loader acima (Core Freeze) -->
 
     <link rel="stylesheet" href="style.css">
 </head>
