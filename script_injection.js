@@ -16,6 +16,8 @@
  *   · Todas as chaves fechadas
  *   · CORREÇÃO: monthlyData reconstituído para o caso real (ATF)
  *   · CORREÇÃO: Event listener dinâmico para botão #pure-atf-btn
+ *   · RETIFICAÇÃO ADICIONAL: _syncPureDashboard com relaxamento de guard clause,
+ *     retry mechanism, optional chaining e logs silenciosos.
  *
  * PRINCÍPIO DE INTEGRIDADE (Core Freeze):
  *   · Todos os valores injetados provêm diretamente do JSON verificado.
@@ -200,108 +202,64 @@ const _REAL_CASE_MMLADX8Q = deepFreeze({
 });
 
 // ============================================================================
-// loadAnonymizedRealCase()
-// Carrega o caso real anonimizado no UNIFEDSystem.
-// AGORA com monthlyData preenchido para o motor ATF.
+// _syncPureDashboard - VERSÃO RETIFICADA (v13.5.1-MILITARY-HARDENED)
 // ============================================================================
 
-UNIFEDSystem.loadAnonymizedRealCase = function _loadAnonymizedRealCase() {
-
-    // ── 1. Metadados anonimizados ─────────────────────────────────────────────
-    this.metadata        = this.metadata || {};
-    this.metadata.demoMode  = false;   // Dados reais — não demo
-    this.metadata.client    = {
-        name: 'OPERADOR_ANONIMIZADO_REF_2024',
-        nif:  '*** ANONIMIZADO ***',
-        platform: _REAL_CASE_MMLADX8Q.platform
-    };
-    this.metadata.anoFiscal     = _REAL_CASE_MMLADX8Q.anoFiscal;
-    this.metadata.periodoAnalise = _REAL_CASE_MMLADX8Q.periodoAnalise;
-
-    // ── 2. Injetar totais verificados ─────────────────────────────────────────
-    this.analysis          = this.analysis || {};
-    this.analysis.totals   = Object.assign({}, _REAL_CASE_MMLADX8Q.totals);
-    this.analysis.crossings = Object.assign({}, _REAL_CASE_MMLADX8Q.crossings);
-    this.analysis.verdict  = Object.assign({}, _REAL_CASE_MMLADX8Q.verdict);
-
-    // ── 3. Dados mensais para o motor ATF (CORREÇÃO CRÍTICA) ─────────────────
-    // Em vez de copiar o objecto vazio, usamos os dados reais definidos acima.
-    this.monthlyData = Object.assign({}, _REAL_CASE_MMLADX8Q.monthlyData);
-
-    // Também expõe os meses como array para referência (opcional)
-    this.dataMonths = new Set(['2024-09', '2024-10', '2024-11', '2024-12']);
-
-    // ── 4. Valores auxiliares (zona cinzenta) ─────────────────────────────────
-    this.nonCommissionable = Object.assign({}, _REAL_CASE_MMLADX8Q.nonCommissionable);
-
-    // ── 5. Integridade ────────────────────────────────────────────────────────
-    this.masterHash = _REAL_CASE_MMLADX8Q.masterHash;
-    this.sessionId  = _REAL_CASE_MMLADX8Q.sessionId;
-
-    // ── 6. Log Custódia ───────────────────────────────────────────────────────
-    logCustodyChain('CASE_LOADED', {
-        sessionId: _REAL_CASE_MMLADX8Q.sessionId,
-        masterHash: _REAL_CASE_MMLADX8Q.masterHash,
-        timestamp: new Date().toISOString()
-    });
-
-    // ── 7. Sincronizar UI ─────────────────────────────────────────────────────
-    _syncPureDashboard(this);
-
-    console.info(
-        '[UNIFED-PURE] ✅ Caso real anonimizado carregado.\n' +
-        '  Sessão: ' + _REAL_CASE_MMLADX8Q.sessionId + '\n' +
-        '  Hash  : ' + _REAL_CASE_MMLADX8Q.masterHash.substring(0, 32) + '...\n' +
-        '  Período: ' + _REAL_CASE_MMLADX8Q.periodoAnalise + ' ' + _REAL_CASE_MMLADX8Q.anoFiscal + '\n' +
-        '  📆 monthlyData: 4 meses reconstituídos (Set–Dez 2024)'
-    );
-};
-
-// ============================================================================
-// _syncPureDashboard(sys)
-// Sincronizar dados verificados para a UI (Pure Dashboard)
-// ============================================================================
+let _syncRetryCount = 0;
+const _SYNC_MAX_RETRIES = 10;
+const _SYNC_RETRY_DELAY_MS = 150;
 
 function _syncPureDashboard(sys) {
-    // Função de configuração de elemento
-    function _set(id, val) {
-        var el = document.getElementById(id);
-        if (el) {
-            if (typeof val === 'number') {
-                el.textContent = val.toLocaleString('pt-PT', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                });
-            } else {
-                el.innerHTML = String(val);
-            }
-        }
-    }
-
-    // Função EUR locale
+    // Função de formatação de moeda com fallback seguro
     function _eur(val) {
-        if (!val && val !== 0) return '—';
-        return parseFloat(val).toLocaleString('pt-PT', {
+        if (val === undefined || val === null) return '—';
+        const num = parseFloat(val);
+        if (isNaN(num)) return '—';
+        return num.toLocaleString('pt-PT', {
             style: 'currency',
-            currency: 'EUR'
+            currency: 'EUR',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         });
     }
 
-    // Validação
-    if (!sys || !sys.analysis || !sys.analysis.totals) {
-        console.error('[UNIFED-PURE] ❌ Dados inválidos para sincronização.');
+    // Guard Clause relaxada: verifica apenas a existência da estrutura mínima
+    if (!sys?.analysis?.totals) {
+        if (_syncRetryCount < _SYNC_MAX_RETRIES) {
+            _syncRetryCount++;
+            console.info(`[UNIFED-PURE] [WAIT] Sincronização pendente: aguardando hidratação de dados. Tentativa ${_syncRetryCount}/${_SYNC_MAX_RETRIES}`);
+            setTimeout(() => _syncPureDashboard(sys), _SYNC_RETRY_DELAY_MS);
+        } else {
+            console.warn('[UNIFED-PURE] ⚠ Sincronização cancelada: dados não disponíveis após múltiplas tentativas.');
+        }
         return;
     }
 
-    // Referências
-    var t = sys.analysis.totals;
-    var c = sys.analysis.crossings;
-    var v = sys.analysis.verdict;
+    // Reinicia contador de tentativas quando a sincronização é bem‑sucedida
+    _syncRetryCount = 0;
 
-    // Calcular C2 (discrepância crítica)
-    var _pctC2 = c.percentagemOmissao || 89.26;
+    // Referências com optional chaining e fallbacks estáticos
+    const t = sys.analysis.totals ?? {};
+    const c = sys.analysis.crossings ?? {};
+    const v = sys.analysis.verdict ?? {};
 
-    // ── Painel I — Verdade Material (SAF-T + DAC7 + Extratos) ─────────────────
+    const _pctC2 = c.percentagemOmissao ?? 89.26;
+
+    // Helper para actualizar elementos do DOM (seguro contra null)
+    function _set(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (typeof val === 'number') {
+            el.textContent = val.toLocaleString('pt-PT', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        } else {
+            el.innerHTML = String(val);
+        }
+    }
+
+    // ── Painel I – Verdade Material ─────────────────────────────────────
     _set('pure-saft-bruto',      _eur(t.saftBruto));
     _set('pure-saft-iliquido',   _eur(t.saftIliquido));
     _set('pure-saft-iva',        _eur(t.saftIva));
@@ -311,72 +269,120 @@ function _syncPureDashboard(sys) {
     _set('pure-dac7-total',      _eur(t.dac7TotalPeriodo));
     _set('pure-fatura-btf',      _eur(t.faturaPlataforma));
 
-    // ── Painel II — Smoking Gun (Discrepâncias) ─────────────────────────────
+    // ── Painel II – Smoking Guns ────────────────────────────────────────
     _set('pure-c2-delta',   _eur(c.discrepanciaCritica));
-    _set('pure-c2-pct',     _pctC2.toFixed(2) + '%');
+    _set('pure-c2-pct',     `${(_pctC2).toFixed(2)}%`);
     _set('pure-c1-delta',   _eur(c.discrepanciaSaftVsDac7));
-    _set('pure-c1-pct',     (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%');
+    _set('pure-c1-pct',     `${(c.percentagemSaftVsDac7 ?? 0).toFixed(2)}%`);
     _set('pure-iva-falta',  _eur(c.ivaFalta));
     _set('pure-irc-estim',  _eur(c.ircEstimado));
     _set('pure-impact-anual',   _eur(c.impactoAnualMercado));
-    _set('pure-impact-total',   _eur(c.impactoSeteAnosMercado || 1743598080));
+    _set('pure-impact-total',   _eur(c.impactoSeteAnosMercado ?? 1743598080));
 
-    // ── Painel III — ATF (agora será actualizado dinamicamente via computeTemporalAnalysis)
-    // Valores estáticos iniciais; o motor ATF irá sobrepor com dados reais.
+    // ── Painel III – ATF (valores estáticos iniciais) ───────────────────
     _set('pure-atf-sp',         '40<span style="font-size:1rem;opacity:0.6">/100</span>');
     _set('pure-atf-trend',      '📉 DESCENDENTE');
     _set('pure-atf-status',     'OMISSÃO PONTUAL / RISCO MODERADO');
     _set('pure-atf-meses',      '2.º Semestre 2024 — 4 meses com dados (Set–Dez)');
     _set('pure-atf-outliers',   '0 outliers &gt; 2σ');
 
-    // ── Painel IV — Zona Cinzenta ───────────────────────────────────────────
-    _set('pure-nc-campanhas',      _eur(sys.nonCommissionable && sys.nonCommissionable.campanhas));
-    _set('pure-nc-gorjetas',       _eur(sys.nonCommissionable && sys.nonCommissionable.gorjetas));
-    _set('pure-nc-portagens',      _eur(sys.nonCommissionable && sys.nonCommissionable.portagens));
-    _set('pure-nc-cancelamentos',  _eur(sys.nonCommissionable && sys.nonCommissionable.cancelamentos));
-    _set('pure-nc-total',          _eur(sys.nonCommissionable && sys.nonCommissionable.totalNaoSujeitos));
+    // ── Painel IV – Zona Cinzenta ───────────────────────────────────────
+    const nc = sys.nonCommissionable ?? {};
+    _set('pure-nc-campanhas',      _eur(nc.campanhas));
+    _set('pure-nc-gorjetas',       _eur(nc.gorjetas));
+    _set('pure-nc-portagens',      _eur(nc.portagens));
+    _set('pure-nc-cancelamentos',  _eur(nc.cancelamentos));
+    _set('pure-nc-total',          _eur(nc.totalNaoSujeitos));
 
-    // ── Painel V — Veredicto ──────────────────────────────────────────────────
-    var _verdictLevel = (v.level && v.level.pt) ? v.level.pt : 'RISCO ELEVADO';
-    var _verdictPct   = (_pctC2 > 0)
-                        ? _pctC2.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%'
-                        : (v.percent || '89,04%');
-
-    _set('pure-verdict', _verdictLevel);
-    _set('pure-verdict-pct', _verdictPct);
-
-    var _vEl = document.getElementById('pure-verdict');
-    if (_vEl && _pctC2 > 50) { _vEl.style.color = '#EF4444'; }
-
-    // ── Badge de integridade ─────────────────────────────────────────────────
-    var _sid = sys.sessionId
-            || (window.activeForensicSession && window.activeForensicSession.sessionId)
-            || (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.sessionId)
-            || '';
-    var _mh  = sys.masterHash
-            || (window.activeForensicSession && window.activeForensicSession.masterHash)
-            || (window._REAL_CASE_MMLADX8Q && window._REAL_CASE_MMLADX8Q.masterHash)
-            || '';
-    var _mhDisplay = _mh ? _mh.substring(0, 24) + '...' : 'GERANDO...';
-
-    _set('pure-session-id',          _sid);
-    _set('pure-hash-prefix',         _mhDisplay);
-    _set('pure-hash-prefix-verdict', _mhDisplay);
-    _set('pure-session-id-header',   _sid);
-    _set('verdictSessionId',         _sid);
-    _set('footerMasterHash',         _mhDisplay);
-    _set('custodyMasterHash',        _mhDisplay);
-
-    if (window.activeForensicSession) {
-        window.activeForensicSession.sessionId  = _sid;
-        window.activeForensicSession.masterHash = _mh;
+    // ── Painel V – Veredicto e Integridade ──────────────────────────────
+    const verdictLevel = v.level?.pt ?? 'RISCO ELEVADO';
+    const verdictPct   = _pctC2.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+    _set('pure-verdict',     verdictLevel);
+    _set('pure-verdict-pct', verdictPct);
+    if (document.getElementById('pure-verdict') && _pctC2 > 50) {
+        document.getElementById('pure-verdict').style.color = '#EF4444';
     }
 
-    console.log('[UNIFED-SSoT] ✅ SessionId sincronizado:', _sid, '| Hash:', _mhDisplay);
+    // ── Informações de sessão e integridade ─────────────────────────────
+    const sessionId = sys.sessionId
+                    || window.activeForensicSession?.sessionId
+                    || window._REAL_CASE_MMLADX8Q?.sessionId
+                    || '';
+    const masterHash = sys.masterHash
+                     || window.activeForensicSession?.masterHash
+                     || window._REAL_CASE_MMLADX8Q?.masterHash
+                     || '';
+    const mhDisplay = masterHash ? masterHash.substring(0, 24) + '...' : 'GERANDO...';
+
+    _set('pure-session-id',          sessionId);
+    _set('pure-hash-prefix',         mhDisplay);
+    _set('pure-hash-prefix-verdict', mhDisplay);
+    _set('pure-session-id-header',   sessionId);
+    _set('verdictSessionId',         sessionId);
+    _set('footerMasterHash',         mhDisplay);
+    _set('custodyMasterHash',        mhDisplay);
+
+    if (window.activeForensicSession) {
+        window.activeForensicSession.sessionId  = sessionId;
+        window.activeForensicSession.masterHash = masterHash;
+    }
+
+    console.log('[UNIFED-SSoT] ✅ SessionId sincronizado:', sessionId, '| Hash:', mhDisplay);
 }
 
-// Expor _syncPureDashboard globalmente
-window._syncPureDashboard = _syncPureDashboard;
+// ============================================================================
+// loadAnonymizedRealCase - VERSÃO ASSÍNCRONA COM RETRY
+// ============================================================================
+
+UNIFEDSystem.loadAnonymizedRealCase = function _loadAnonymizedRealCase() {
+    // Metadados anonimizados (dados reais)
+    this.metadata = this.metadata || {};
+    this.metadata.demoMode = false;
+    this.metadata.client = {
+        name: 'OPERADOR_ANONIMIZADO_REF_2024',
+        nif: '*** ANONIMIZADO ***',
+        platform: _REAL_CASE_MMLADX8Q.platform
+    };
+    this.metadata.anoFiscal       = _REAL_CASE_MMLADX8Q.anoFiscal;
+    this.metadata.periodoAnalise  = _REAL_CASE_MMLADX8Q.periodoAnalise;
+
+    // Injeção dos totais e cruzamentos
+    this.analysis = this.analysis || {};
+    this.analysis.totals   = Object.assign({}, _REAL_CASE_MMLADX8Q.totals);
+    this.analysis.crossings = Object.assign({}, _REAL_CASE_MMLADX8Q.crossings);
+    this.analysis.verdict  = Object.assign({}, _REAL_CASE_MMLADX8Q.verdict);
+
+    // Dados mensais (para motor ATF)
+    this.monthlyData = Object.assign({}, _REAL_CASE_MMLADX8Q.monthlyData);
+    this.dataMonths  = new Set(['2024-09', '2024-10', '2024-11', '2024-12']);
+
+    // Valores auxiliares (zona cinzenta)
+    this.nonCommissionable = Object.assign({}, _REAL_CASE_MMLADX8Q.nonCommissionable);
+
+    // Integridade da sessão
+    this.masterHash = _REAL_CASE_MMLADX8Q.masterHash;
+    this.sessionId  = _REAL_CASE_MMLADX8Q.sessionId;
+
+    // Registo na cadeia de custódia
+    logCustodyChain('CASE_LOADED', {
+        sessionId: _REAL_CASE_MMLADX8Q.sessionId,
+        masterHash: _REAL_CASE_MMLADX8Q.masterHash,
+        timestamp: new Date().toISOString()
+    });
+
+    // Sincronização assíncrona do dashboard (aguarda a actualização do DOM)
+    setTimeout(() => {
+        _syncPureDashboard(this);
+    }, 10);
+
+    console.info(
+        '[UNIFED-PURE] ✅ Caso real anonimizado carregado.\n' +
+        `  Sessão: ${_REAL_CASE_MMLADX8Q.sessionId}\n` +
+        `  Hash  : ${_REAL_CASE_MMLADX8Q.masterHash.substring(0, 32)}...\n` +
+        `  Período: ${_REAL_CASE_MMLADX8Q.periodoAnalise} ${_REAL_CASE_MMLADX8Q.anoFiscal}\n` +
+        '  📆 monthlyData: 4 meses reconstituídos (Set–Dez 2024)'
+    );
+};
 
 // ============================================================================
 // PATCH: Seeding de contadores de evidências (sem alterações)
