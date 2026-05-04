@@ -2064,7 +2064,7 @@ const translations = {
         splashLogsBtn: "ACTIVITY LOG (GDPR Art. 30)",
         
         // Navigation Buttons
-        navDemo: "REAL CASE (ANONYMISED)",
+        navDemo: "REAL CASE (MINIMIZATION)",
         langBtn: "PT",
         
         // Header
@@ -2700,6 +2700,11 @@ function switchLanguage() {
     
     // Traduzir elementos com data-pt/data-en
     translateDataLangElements();
+    
+    // Atualizar caixas auxiliares se o módulo existir
+    if (typeof window.refreshAuxiliaryBoxes === 'function') {
+        window.refreshAuxiliaryBoxes();
+    }
     
     logAudit(`Idioma alterado para: ${currentLang.toUpperCase()}`, 'info');
     ForensicLogger.addEntry('LANGUAGE_CHANGED', { lang: currentLang });
@@ -4301,11 +4306,13 @@ function activateDemoMode() {
     const _tsChk = new Date().toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     console.info(`[${_tsChk}] ✅ INTEGRITY CHECK: Dashboard Hash matches PDF Hash. Synchronization confirmed.`);
 
-    document.getElementById('clientNameFixed').value = 'SUJEITO PASSIVO ALFA (ANONIMIZADO)';
+    const isEn = (currentLang === 'en');
+    const clientName = isEn ? 'ANONYMIZED TAXPAYER ALPHA' : 'SUJEITO PASSIVO ALFA (ANONIMIZADO)';
+    document.getElementById('clientNameFixed').value = clientName;
     document.getElementById('clientNIFFixed').value = '999 999 990';
     registerClient();
     if (!UNIFEDSystem.client) UNIFEDSystem.client = {};
-    UNIFEDSystem.client.name = 'SUJEITO PASSIVO ALFA (ANONIMIZADO)';
+    UNIFEDSystem.client.name = clientName;
     UNIFEDSystem.client.nif  = '999 999 990';
     UNIFEDSystem.selectedPlatform = 'outra';
     const _platElAnon = document.getElementById('selPlatformFixed');
