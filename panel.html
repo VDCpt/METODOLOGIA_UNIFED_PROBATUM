@@ -309,4 +309,118 @@
   </div><!-- FIM: pure-card-grid -->
 
 </section>
-<!-- FIM: pureDashboard · v13.5.1-MILITARY-HARDENED -->
+
+<script>
+  (function() {
+    // ========================================================================
+    // UNIFED PANEL TRANSLATION v1.0
+    // Atualiza dinamicamente todos os elementos com atributos data-pt / data-en
+    // ========================================================================
+    
+    /**
+     * Traduz todos os elementos que possuem data-pt e data-en conforme o idioma informado.
+     * @param {string} lang - 'pt' ou 'en'
+     */
+    window.translateDataLangElements = function(lang) {
+      const elements = document.querySelectorAll('[data-pt][data-en]');
+      elements.forEach(el => {
+        const key = lang === 'en' ? 'data-en' : 'data-pt';
+        const translation = el.getAttribute(key);
+        if (translation !== null && translation.trim() !== '') {
+          // Se for input, textarea ou elemento com placeholder, atualiza o placeholder
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = translation;
+          } else {
+            // Para os restantes (span, div, p, button, etc.) atualiza o texto interno
+            // Preserva o conteúdo original que pode conter emojis e formatação básica.
+            // Nota: Se houver sub-elementos (como <strong> dentro), eles serão substituídos,
+            // mas os elementos alvo neste painel contêm apenas texto ou texto + emoji.
+            el.textContent = translation;
+          }
+        }
+      });
+    };
+
+    /**
+     * Obtém o idioma actual armazenado (localStorage, atributo html ou padrão 'pt')
+     * @returns {string}
+     */
+    function getCurrentLanguage() {
+      // Tentar obter do localStorage (se a aplicação usar)
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('unifed_lang')) {
+        return localStorage.getItem('unifed_lang');
+      }
+      // Tentar obter do atributo lang no elemento raiz
+      if (document.documentElement && document.documentElement.lang) {
+        const docLang = document.documentElement.lang.toLowerCase();
+        if (docLang === 'pt' || docLang === 'en') return docLang;
+      }
+      // Padrão: português
+      return 'pt';
+    }
+
+    /**
+     * Altera o idioma do painel e persiste a escolha.
+     * @param {string} lang - 'pt' ou 'en'
+     */
+    window.setUILanguage = function(lang) {
+      if (lang !== 'pt' && lang !== 'en') return;
+      // Persistir
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('unifed_lang', lang);
+      }
+      // Aplicar tradução
+      if (typeof window.translateDataLangElements === 'function') {
+        window.translateDataLangElements(lang);
+      }
+      // Disparar evento para que outros módulos possam reagir, se necessário
+      window.dispatchEvent(new CustomEvent('unifed:languageChanged', { detail: { lang } }));
+    };
+
+    // ========================================================================
+    // ACTIVATE PURE PANEL
+    // ========================================================================
+    window._activatePurePanel = function() {
+      // Aplica o idioma actual
+      const currentLang = getCurrentLanguage();
+      if (typeof window.translateDataLangElements === 'function') {
+        window.translateDataLangElements(currentLang);
+      }
+      
+      // Configura listener para mudanças de idioma externas (caso o sistema principal dispare)
+      window.addEventListener('unifed:languageChanged', function(e) {
+        if (e.detail && e.detail.lang) {
+          window.translateDataLangElements(e.detail.lang);
+        }
+      });
+      
+      // Alternativamente, escuta um evento genérico 'languageChanged' (para compatibilidade)
+      window.addEventListener('languageChanged', function(e) {
+        let lang = e.detail && e.detail.lang;
+        if (!lang && typeof e.detail === 'string') lang = e.detail;
+        if (lang && (lang === 'pt' || lang === 'en')) {
+          window.translateDataLangElements(lang);
+        }
+      });
+      
+      console.info('[UNIFED] _activatePurePanel executado. Tradução ativa. Idioma atual:', currentLang);
+    };
+
+    // Auto-inicialização: quando o DOM estiver pronto, activa o painel.
+    // Como este script pode ser carregado antes ou depois do carregamento do DOM,
+    // usamos o readyState para decidir.
+    function runActivation() {
+      if (typeof window._activatePurePanel === 'function') {
+        window._activatePurePanel();
+      } else {
+        console.warn('[UNIFED] _activatePurePanel não definido ao tentar inicializar.');
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runActivation);
+    } else {
+      runActivation();
+    }
+  })();
+</script>
