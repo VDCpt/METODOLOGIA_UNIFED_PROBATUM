@@ -1969,7 +1969,7 @@ const translations = {
         splashLogsBtn: "ACTIVITY LOG (GDPR Art. 30)",
         
         // Navigation Buttons
-        navDemo: "REAL CASE (MINIMIZATION)",
+        navDemo: "REAL CASE (ANONYMIZED)",
         langBtn: "PT",
         
         // Header
@@ -4770,10 +4770,17 @@ function showTwoAxisAlerts() {
     if (omissaoCard && omissaoValue) {
         const despesas = totals.despesas || 0;
         const ganhos   = totals.ganhos   || 0;
-        const pct = (ganhos > 0) ? ((despesas / ganhos) * 100) : 0;
-        if (ganhos > 0 && despesas > 0) {
+        // CORREÇÃO CIRÚRGICA (Diretiva 5): Fallback de divisão por zero + Bilinguismo
+        if (ganhos === 0 || despesas === 0) {
+            omissaoValue.textContent = '0.00 %';
+            omissaoCard.style.display = 'none';
+        } else {
+            const pct = ((despesas / ganhos) * 100);
+            const locale = currentLang === 'pt' ? 'pt-PT' : 'en-US';
+            const separator = currentLang === 'pt' ? ',' : '.';
+            const pctFormatted = pct.toFixed(2).replace('.', separator) + ' %';
+            omissaoValue.textContent = pctFormatted;
             omissaoCard.style.display = 'block';
-            omissaoValue.textContent = pct.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
             if (omissaoDesc) {
                 omissaoDesc.textContent = `(${formatCurrency(despesas)} / ${formatCurrency(ganhos)}) × 100  [${t.expenseGapLabel}]`;
             }
@@ -4784,8 +4791,6 @@ function showTwoAxisAlerts() {
                 omissaoCard.classList.remove('omissao-threshold-alert');
                 omissaoCard.classList.remove('alert-intermitent');
             }
-        } else {
-            omissaoCard.style.display = 'none';
         }
     }
 }
@@ -7923,7 +7928,7 @@ function generateMasterHash() {
             totalNaoSujeitos: UNIFEDSystem.auxiliaryData.totalNaoSujeitos,
             processedFrom:    UNIFEDSystem.auxiliaryData.processedFrom,
             extractedAt:      UNIFEDSystem.auxiliaryData.extractedAt,
-            legalBasis:       currentLang === 'pt' ? 'Lei TVDE · 0% comissão · Art. 125.º CPP' : 'TVDE Law · 0% commission · Art. 125 CPP'
+            legalBasis:       currentLang === 'pt' ? 'Termos da Plataforma · 0% comissão · Art. 125.º CPP' : 'Platform Terms · 0% commission · Art. 125 CPP'
         }
     };
 
@@ -7956,7 +7961,9 @@ function logAudit(message, type = 'info') {
     }
     lastLogTime = now;
 
-    const timestamp = new Date().toLocaleTimeString('pt-PT');
+    // CUSTODY LOG BILÍNGUE — Respeitando currentLang (Diretiva 6)
+    const locale = currentLang === 'pt' ? 'pt-PT' : 'en-US';
+    const timestamp = new Date().toLocaleTimeString(locale);
     const entry = { timestamp, message, type };
     UNIFEDSystem.logs.push(entry);
 
@@ -8114,6 +8121,15 @@ function resetAllValues() {
     UNIFEDSystem.demoMode = false;
     UNIFEDSystem.casoRealAnonimizado = false;
     if (UNIFEDSystem.fileSources) UNIFEDSystem.fileSources.clear();
+
+    // HARD RESET & STATE FLUSH — Zona Cinzenta (Diretiva 1)
+    UNIFEDSystem.auxiliaryData.campanhas = 0;
+    UNIFEDSystem.auxiliaryData.portagens = 0;
+    UNIFEDSystem.auxiliaryData.gorjetas = 0;
+    UNIFEDSystem.auxiliaryData.cancelamentos = 0;
+    UNIFEDSystem.auxiliaryData.totalNaoSujeitos = 0;
+    UNIFEDSystem.auxiliaryData.processedFrom = [];
+    UNIFEDSystem.auxiliaryData.extractedAt = null;
 
     const elementsToReset = [
         'saftIliquidoValue', 'saftIvaValue', 'saftBrutoValue',
@@ -8454,8 +8470,12 @@ function addConsoleMessage(message, type = 'info') {
 }
 
 function formatPercent(value) {
-    if (isNaN(value)) return '0,00%';
-    return (value * 100).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+    if (isNaN(value) || value === undefined) return '0.00%';
+    // CORREÇÃO CIRÚRGICA (Diretiva 5): Bilinguismo + Fallback de segurança
+    const locale = currentLang === 'pt' ? 'pt-PT' : 'en-US';
+    const separator = currentLang === 'pt' ? ',' : '.';
+    const percent = (value * 100).toFixed(2).replace('.', separator);
+    return percent + '%';
 }
 
 function arrayAverage(arr) {

@@ -1848,19 +1848,19 @@ function injectAuxiliaryHelperBoxes() {
             pureTips: 'GORJETAS',
             pureTolls: 'PORTAGENS',
             pureCancellations: 'CANCELAMENTOS',
-            pureTotal: 'TOTAL NÃO COMISSIONÁVEL',
+            pureTotal: 'TOTAL NÃO SUJEITOS',
             pureLegalDisclaimer: 'Estes valores foram retidos pela plataforma mas não constam da faturação delegada. Constituem elementos da matéria colectável omitida e reforçam o pedido de condenação na cláusula de Perda de Chance.'
         };
         if (lang === 'en') {
             t = {
-                pureAuxTitle: 'PERICIAL SUPPORT INDICATION — NON‑COMMISSIONABLE FLOWS',
+                pureAuxTitle: 'EXPERT SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION',
                 pureAuxSub: 'Amounts withheld by the platform but not subject to commission (Grey Zone) — Art. 36(11) CIVA',
                 pureCampaigns: 'CAMPAIGNS',
                 pureTips: 'TIPS',
                 pureTolls: 'TOLLS',
                 pureCancellations: 'CANCELLATIONS',
-                pureTotal: 'TOTAL NON‑COMMISSIONABLE',
-                pureLegalDisclaimer: 'These amounts were withheld by the platform but are absent from delegated invoicing. They constitute omitted taxable income and strengthen the claim for loss of chance damages.'
+                pureTotal: 'TOTAL NON COMMISSIONABLE',
+                pureLegalDisclaimer: 'These values were withheld by the platform but do not appear in the delegated invoicing. They constitute omitted taxable base elements and reinforce the claim for Loss of Chance damages.'
             };
         }
     }

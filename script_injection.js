@@ -271,6 +271,12 @@ function _syncPureDashboard(sys) {
 
     const _pctC2 = c.percentagemOmissao ?? 89.26;
 
+    // CORREÇÃO DIRETIVA 2: Percentagem com fallback de divisão por zero (script_injection.js)
+    function _formatPercent(earnings, expenses) {
+        if (!earnings || earnings === 0) return '0.00 %';
+        return (((expenses / earnings) * 100).toFixed(2) + ' %');
+    }
+
     // Helper para actualizar elementos do DOM (seguro contra null)
     function _set(id, val) {
         const el = document.getElementById(id);
@@ -326,7 +332,9 @@ function _syncPureDashboard(sys) {
     // ── Painel V – Veredicto e Integridade ──────────────────────────────
     // RETIFICAÇÃO BILINGUE: suporta window.currentLang (pt/en)
     const verdictLevel = v.level?.[window.currentLang] || (window.currentLang === 'en' ? 'HIGH RISK' : 'RISCO ELEVADO');
-    const verdictPct   = _pctC2.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+    const locale = window.currentLang === 'pt' ? 'pt-PT' : 'en-US';
+    const separator = window.currentLang === 'pt' ? ',' : '.';
+    const verdictPct = _pctC2.toFixed(2).replace('.', separator) + '%';
     _set('pure-verdict',     verdictLevel);
     _set('pure-verdict-pct', verdictPct);
     if (document.getElementById('pure-verdict') && _pctC2 > 50) {
@@ -351,6 +359,11 @@ function _syncPureDashboard(sys) {
     _set('verdictSessionId',         sessionId);
     _set('footerMasterHash',         mhDisplay);
     _set('custodyMasterHash',        mhDisplay);
+
+    // CORREÇÃO DIRETIVA 2: Atualizar percentagem de comissões da plataforma
+    const pctPlataforma = _formatPercent(t.ganhos, t.despesas);
+    const pctEl = document.getElementById('omissaoDespesasPctValue');
+    if (pctEl) pctEl.textContent = pctPlataforma;
 
     if (window.activeForensicSession) {
         window.activeForensicSession.sessionId  = sessionId;
