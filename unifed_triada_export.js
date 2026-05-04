@@ -155,7 +155,7 @@
                 doc.setTextColor(130, 130, 130);
                 doc.setDrawColor(200, 200, 200);
                 doc.line(L, pageH - 12, R, pageH - 12);
-                doc.text('UNIFED-PROBATUM v13.5.0-PURE · Sessão: ' + sessId + ' · SHA-256: ' + hashShort, L, pageH - 8);
+                doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Sessão: ' + sessId + ' · Master Hash SHA-256: ' + mhash, L, pageH - 8);
                 doc.text('Pág. ' + _pageNum + ' · ' + hoje + ' · ISO/IEC 27037:2012 · RFC 3161 · Art. 125.º CPP', R, pageH - 8, { align: 'right' });
                 if (isLast) {
                     doc.text('Master Hash SHA-256: ' + mhash, L, pageH - 4.5);
@@ -476,8 +476,8 @@
             doc.setTextColor(130, 130, 130);
             doc.setDrawColor(200, 200, 200);
             doc.line(L, pageH - 10, R, pageH - 10);
-            doc.text('UNIFED-PROBATUM v13.5.0-PURE · Sessão: ' + sessId, L, pageH - 6);
-            doc.text('Pág. 1 · ' + hoje + ' · ISO/IEC 27037:2012', R, pageH - 6, { align: 'right' });
+            doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Sessão: ' + sessId + ' · Master Hash SHA-256: ' + mhash, L, pageH - 8);
+	    doc.text('Pág. 1 · ' + hoje + ' · ISO/IEC 27037:2012 · RFC 3161', R, pageH - 6, { align: 'right' });
             
             var _fname = 'UNIFED_ANEXO_CUSTODIA_' + sessId + '_' + hoje.replace(/\//g, '-') + '.pdf';
             doc.save(_fname);

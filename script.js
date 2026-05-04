@@ -5425,6 +5425,14 @@ async function exportDataJSON() {
         forensicLogs: ForensicLogger.getLogs().slice(-20)
     };
 
+    // Sobrescrever twoAxis com os valores reais das discrepâncias
+    exportData.analysis.twoAxis = {
+        revenueGap: exportData.analysis.crossings.discrepanciaSaftVsDac7 || 0,
+        revenueGapActive: (exportData.analysis.crossings.discrepanciaSaftVsDac7 > 0.01),
+        expenseGap: exportData.analysis.crossings.discrepanciaCritica || 0,
+        expenseGapActive: (Math.abs(exportData.analysis.crossings.discrepanciaCritica) > 0.01)
+    };
+
     exportData.metadata.legalBasis = "Dada a latência administrativa na disponibilização do ficheiro SAF-T (.xml) pelas plataformas, ou a sua entrega em estado insuficiente e inconsistente (incompleto ou corrompido), o ficheiro SAF-T (.xml) é tecnicamente substituído pelo ficheiro Relatório (.csv) gerado na plataforma Fleet. O cruzamento de dados entre a plataforma e o parceiro é validado pelo ficheiro PDF de extratos 'Ganhos da Empresa'. Para efeitos de perícia, o ficheiro 'Ganhos da Empresa' (Fleet/Ledger) é aqui tratado como o Livro-Razão (Ledger) de suporte, detendo valor probatório material por constituir a fonte primária e fidedigna dos registos que deveriam integrar o reporte fiscal final. A integridade desta extração é blindada através da assinatura digital SHA-256 (Hash), garantindo que os dados analisados mantêm a inviolabilidade absoluta desde a sua recolha, em conformidade com o Decreto-Lei n.º 28/2019 e os princípios de cadeia de custódia previstos no Art. 125.º do CPP. FUNDAMENTAÇÃO DA PROVA MATERIAL: Para efeitos de prova legal de rendimentos reais, consideram-se os ficheiros operacionais que contêm o rasto digital de centenas de viagens efetivamente realizadas. Este conteúdo reflete a atividade económica real do motorista, sendo por isso elevado à categoria de Documento de Suporte (Ledger). Esta metodologia permite detetar e corrigir as discrepâncias omissas nos ficheiros de reporte simplificado, assegurando uma reconstrução financeira rigorosa e auditável em sede judicial.";
 
     const _dataPayload = JSON.stringify(exportData.analysis) + JSON.stringify(exportData.evidence) + exportData.metadata.legalBasis;
