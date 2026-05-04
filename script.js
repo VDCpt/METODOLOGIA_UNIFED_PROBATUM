@@ -2232,13 +2232,31 @@ const translations = {
         
         clausulaNormativoISO: "NORMATIVE FRAMEWORK:\nThe collection, preservation, and analysis of digital evidence followed the guidelines established by the ISO/IEC 27037 standard (Guidelines for identification, collection, acquisition, and preservation of digital evidence), in compliance with Decree-Law No. 28/2019.",
         
-        clausulaAssinaturaDigital: "TECHNICAL CONSULTANCY VALIDATION:\nThis report is sealed with the complete Master Hash SHA-256 and the attached QR Code, ensuring its integrity and non-repudiation. Its validation can be performed using any hash verification tool or QR Code reader, which redirects to the document's complete hash."
+        clausulaAssinaturaDigital: "TECHNICAL CONSULTANCY VALIDATION:\nThis report is sealed with the complete Master Hash SHA-256 and the attached QR Code, ensuring its integrity and non-repudiation. Its validation can be performed using any hash verification tool or QR Code reader, which redirects to the document's complete hash.",
+        
+        // ========== ADIÇÕES SOLICITADAS (EN) ==========
+        expertOpinionNo: "EXPERT OPINION No.",
+        certifications: "CERTIFICATIONS & COMPLIANCE",
+        custodyChainBtn: "CHAIN OF CUSTODY",
+        taxCalcTitle: "TAX CALCULATION · SMOKING GUN",
+        monthlyAvg: "Monthly average",
+        marketMonthlyImpact: "Monthly Market Impact (38k)",
+        marketAnnualImpact: "Annual Market Impact",
+        market7yImpact: "7-YEAR IMPACT",
+        saftVsDac7Discrepancy: "SAF-T vs DAC7 DISCREPANCY",
+        pureAuxTitle: "FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION",
+        pureCampaigns: "CAMPAIGNS",
+        pureTolls: "TOLLS",
+        pureTips: "TIPS",
+        pureTotalNotSubject: "TOTAL NOT SUBJECT",
+        pureCancellationFees: "CANCELLATION FEES",
+        pureDac7ReconNote: "DAC7 RECONCILIATION NOTE — GREY ZONE IDENTIFIED",
+        pureStrategicQuestion: "STRATEGIC QUESTIONNAIRE TO THE LAWYER (CONTRADICTION)",
+        pureQuestionText: "Considering that the UNIFED-PROBATUM system isolated {amount} in Tips and Campaigns, can the opposing party confirm whether these values (commission-exempt) were improperly included in the calculation basis for determining gross income reported in SAF-T? If so, why was a presumption of income applied to values that legally do not suffer withholding or commission by the platform (Terms and Conditions)?"
     }
 };
 
-// ============================================================================
 // Helper para tradução dinâmica de strings geradas em runtime
-// ============================================================================
 const _t = (key) => {
     const dict = {
         'expenseGapLabel': { pt: 'OMISSÃO DE CUSTOS/IVA', en: 'COST/VAT OMISSION' },
@@ -2680,10 +2698,35 @@ function switchLanguage() {
     // NOVO: Atualizar conteúdo dinâmico (gráficos, cards, etc.)
     updateDynamicContent();
     
+    // Traduzir elementos com data-pt/data-en
+    translateDataLangElements();
+    
     logAudit(`Idioma alterado para: ${currentLang.toUpperCase()}`, 'info');
     ForensicLogger.addEntry('LANGUAGE_CHANGED', { lang: currentLang });
     
     console.log('[UNIFED-LANG] Tradução concluída com sucesso.');
+}
+
+// Função para traduzir elementos com data-pt / data-en
+function translateDataLangElements() {
+    const elements = document.querySelectorAll('[data-pt][data-en]');
+    elements.forEach(el => {
+        const translation = el.getAttribute(`data-${currentLang}`);
+        if (translation) {
+            // Preserva conteúdo que não seja apenas texto (ex: innerHTML com ícones)
+            if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
+                el.textContent = translation;
+            } else {
+                // Se tiver filhos, tenta traduzir apenas o nó de texto principal
+                const original = el.innerHTML;
+                const ptText = el.getAttribute('data-pt') || '';
+                const enText = el.getAttribute('data-en') || '';
+                if (ptText && enText && original.includes(ptText)) {
+                    el.innerHTML = original.replace(ptText, enText);
+                }
+            }
+        }
+    });
 }
 
 // ============================================================================
@@ -4919,25 +4962,26 @@ function updateDashboard() {
 
     const quantumBreakdownEl = document.getElementById('quantumBreakdown');
     if (quantumBreakdownEl) {
+        const qLang = currentLang;
         quantumBreakdownEl.innerHTML = `
             <div class="quantum-breakdown-item">
-                <span>BTOR (Despesas/Comissões Extrato):</span>
+                <span>BTOR ${qLang === 'pt' ? '(Despesas/Comissões Extrato)' : '(Expenses/Commissions Statement)'}:</span>
                 <span>${formatCurrency(cross.btor)}</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>BTF (Faturas):</span>
+                <span>BTF ${qLang === 'pt' ? '(Faturas)' : '(Invoices)'}:</span>
                 <span>${formatCurrency(cross.btf)}</span>
             </div>
             <div class="quantum-breakdown-item" style="border-top: 1px solid rgba(0,229,255,0.3); margin-top:0.3rem; padding-top:0.3rem;">
-                <span>DISCREPÂNCIA DESPESAS/COMISSÕES:</span>
+                <span>${qLang === 'pt' ? 'DISCREPÂNCIA DESPESAS/COMISSÕES' : 'EXPENSE/COMMISSION DISCREPANCY'}:</span>
                 <span style="color:var(--warn-primary);">${formatCurrency(cross.discrepanciaCritica)} (${cross.percentagemOmissao.toFixed(2)}%)</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>Ganhos (Extrato):</span>
+                <span>${qLang === 'pt' ? 'Ganhos (Extrato)' : 'Earnings (Statement)'}:</span>
                 <span>${formatCurrency(totals.ganhos)}</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>SAF-T Bruto:</span>
+                <span>SAF-T ${qLang === 'pt' ? 'Bruto' : 'Gross'}:</span>
                 <span>${formatCurrency(totals.saftBruto)}</span>
             </div>
             <div class="quantum-breakdown-item">
@@ -4945,27 +4989,27 @@ function updateDashboard() {
                 <span>${formatCurrency(totals.dac7TotalPeriodo)}</span>
             </div>
             <div class="quantum-breakdown-item" style="border-top: 1px solid rgba(245,158,11,0.3); margin-top:0.3rem; padding-top:0.3rem;">
-                <span>DISCREPÂNCIA SAF-T vs DAC7:</span>
+                <span>SAF-T vs DAC7 ${qLang === 'pt' ? 'DISCREPÂNCIA' : 'DISCREPANCY'}:</span>
                 <span style="color:var(--warn-secondary);">${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>Meses com dados:</span>
+                <span>${qLang === 'pt' ? 'Meses com dados' : 'Months with data'}:</span>
                 <span>${mesesDados}</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>Média mensal:</span>
+                <span>${qLang === 'pt' ? 'Média mensal' : 'Monthly average'}:</span>
                 <span>${formatCurrency(cross.discrepanciaCritica / mesesDados)}</span>
             </div>
             <div class="quantum-breakdown-item" style="border-top: 1px solid rgba(0,229,255,0.3); margin-top:0.3rem; padding-top:0.3rem;">
-                <span>Impacto Mensal Mercado (38k):</span>
+                <span>${qLang === 'pt' ? 'Impacto Mensal Mercado (38k)' : 'Monthly Market Impact (38k)'}:</span>
                 <span>${formatCurrency(cross.impactoMensalMercado)}</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>Impacto Anual Mercado:</span>
+                <span>${qLang === 'pt' ? 'Impacto Anual Mercado' : 'Annual Market Impact'}:</span>
                 <span>${formatCurrency(cross.impactoAnualMercado)}</span>
             </div>
             <div class="quantum-breakdown-item">
-                <span>IMPACTO 7 ANOS:</span>
+                <span>${qLang === 'pt' ? 'IMPACTO 7 ANOS' : '7‑YEAR IMPACT'}:</span>
                 <span style="color:var(--accent-primary); font-weight:800;">${formatCurrency(cross.impactoSeteAnosMercado)}</span>
             </div>
         `;
@@ -5140,54 +5184,51 @@ function showAlerts() {
 
         const periodoTexto = {
             'anual': currentLang === 'pt' ? 'Anual' : 'Annual',
-            '1s': currentLang === 'pt' ? '1.º Semestre' : '1st Semester',
-            '2s': currentLang === 'pt' ? '2.º Semestre' : '2nd Semester',
-            'trimestral': currentLang === 'pt' ? 'Trimestral' : 'Quarterly',
+            '1s': '1S',
+            '2s': '2S',
+            'trimestral': currentLang === 'pt' ? 'Trim' : 'Qtr',
             'mensal': currentLang === 'pt' ? 'Mensal' : 'Monthly'
-        }[UNIFEDSystem.selectedPeriodo] || UNIFEDSystem.selectedPeriodo;
+        }[UNIFEDSystem.selectedPeriodo] || '';
 
+        // Parecer completamente bilíngue
         const parecerHTML = `
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">I. ANÁLISE PERICIAL (${periodoTexto}):</strong><br>
+                <strong style="color: var(--accent-primary);">I. ${currentLang === 'pt' ? 'ANÁLISE PERICIAL' : 'EXPERT ANALYSIS'} (${periodoTexto}):</strong><br>
                 <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'Duas discrepâncias fundamentais detetadas:' : 'Two fundamental discrepancies detected:'}</span><br>
                 <span style="color: var(--warn-primary);">1. ${currentLang === 'pt' ? 'Despesas/Comissões (Extrato) vs Faturas' : 'Expenses/Commissions (Statement) vs Invoices'}: ${formatCurrency(cross.discrepanciaCritica)} (${cross.percentagemOmissao.toFixed(2)}%)</span><br>
-                <span style="color: var(--warn-secondary);">2. ${currentLang === 'pt' ? 'SAF-T vs DAC7' : 'SAF-T vs DAC7'}: ${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
+                <span style="color: var(--warn-secondary);">2. SAF-T vs DAC7: ${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">II. FACTOS CONSTATADOS:</strong><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'Ganhos (Extrato): ' : 'Earnings (Statement): '}${formatCurrency(totals.ganhos)}</span><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'Despesas (Extrato): ' : 'Expenses (Statement): '}${formatCurrency(totals.despesas)}</span><br>
-                <span style="color: var(--success-primary);">${currentLang === 'pt' ? 'Ganhos Líquidos (Extrato): ' : 'Net Earnings (Statement): '}${formatCurrency(totals.ganhosLiquidos)}</span><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'Valor Faturado (Fatura): ' : 'Invoiced Amount: '}${formatCurrency(totals.faturaPlataforma || 0)}.</span><br>
-                <span style="color: var(--warn-primary); font-weight: 700;">${currentLang === 'pt' ? 'Diferencial de Base em Análise (Despesas/Comissões vs Fatura): ' : 'Base Differential Under Analysis (Expenses/Commissions vs Invoice): '}${formatCurrency(cross.discrepanciaCritica)} (${cross.percentagemOmissao.toFixed(2)}%)</span><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'SAF-T Bruto: ' : 'SAF-T Gross: '}${formatCurrency(totals.saftBruto || 0)}.</span><br>
-                <span style="color: var(--text-secondary);">DAC7 (${periodoTexto}): ${formatCurrency(totals.dac7TotalPeriodo)}.</span><br>
-                <span style="color: var(--warn-secondary); font-weight: 700;">${currentLang === 'pt' ? 'Diferença SAF-T vs DAC7: ' : 'SAF-T vs DAC7 Difference: '}${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
+                <strong style="color: var(--accent-primary);">II. ${currentLang === 'pt' ? 'FACTOS CONSTATADOS' : 'ESTABLISHED FACTS'}:</strong><br>
+                <span style="color: var(--text-secondary);">Earnings (Statement): ${formatCurrency(totals.ganhos)}</span><br>
+                <span style="color: var(--text-secondary);">Expenses (Statement): ${formatCurrency(totals.despesas)}</span><br>
+                <span style="color: var(--success-primary);">Net Earnings (Statement): ${formatCurrency(totals.ganhosLiquidos)}</span><br>
+                <span style="color: var(--text-secondary);">Invoiced Amount: ${formatCurrency(totals.faturaPlataforma || 0)}</span><br>
+                <span style="color: var(--warn-primary); font-weight: 700;">Base Differential Under Analysis (Expenses/Commissions vs Invoice): ${formatCurrency(cross.discrepanciaCritica)} (${cross.percentagemOmissao.toFixed(2)}%)</span><br>
+                <span style="color: var(--text-secondary);">SAF-T Gross: ${formatCurrency(totals.saftBruto || 0)}</span><br>
+                <span style="color: var(--text-secondary);">DAC7 (${periodoTexto}): ${formatCurrency(totals.dac7TotalPeriodo)}</span><br>
+                <span style="color: var(--warn-secondary); font-weight: 700;">SAF-T vs DAC7 Difference: ${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">III. ENQUADRAMENTO LEGAL:</strong><br>
-                <span style="color: var(--text-secondary);">Artigo 2.º, n.º 1, alínea i) do CIVA (Autoliquidação). Artigo 108.º do CIVA (Infrações).</span><br>
-                <span style="color: var(--text-secondary);">Decreto-Lei n.º 28/2019 - Integridade do processamento de dados e validade de documentos eletrónicos.</span>
+                <strong style="color: var(--accent-primary);">III. LEGAL FRAMEWORK:</strong><br>
+                <span style="color: var(--text-secondary);">Art. 2(1)(i) VAT Code (Self‑liquidation). Art. 108 VAT Code (Offences).</span><br>
+                <span style="color: var(--text-secondary);">Decree‑Law No. 28/2019 - Data processing integrity and validity of electronic documents.</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">IV. IMPACTO FISCAL E AGRAVAMENTO DE GESTÃO:</strong><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'IVA em falta (23% sobre diferencial de base): ' : 'Missing VAT (23% on base differential): '}${formatCurrency(cross.ivaFalta)}</span><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'IVA em falta (6% sobre transporte): ' : 'Missing VAT (6% on transport): '}${formatCurrency(cross.ivaFalta6)}</span><br>
-                <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'Discrepância SAF-T vs DAC7 (base tributável em análise): ' : 'SAF-T vs DAC7 discrepancy (taxable base under analysis): '}${formatCurrency(cross.discrepanciaSaftVsDac7)}</span>
+                <strong style="color: var(--accent-primary);">IV. TAX IMPACT AND MANAGEMENT AGGRAVATION:</strong><br>
+                <span style="color: var(--text-secondary);">Missing VAT (23% on base differential): ${formatCurrency(cross.ivaFalta)}</span><br>
+                <span style="color: var(--text-secondary);">Missing VAT (6% on transport): ${formatCurrency(cross.ivaFalta6)}</span><br>
+                <span style="color: var(--text-secondary);">SAF-T vs DAC7 discrepancy (taxable base under analysis): ${formatCurrency(cross.discrepanciaSaftVsDac7)}</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">V. CADEIA DE CUSTÓDIA:</strong><br>
+                <strong style="color: var(--accent-primary);">V. CHAIN OF CUSTODY:</strong><br>
                 <span style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.7rem;">Master Hash SHA-256:</span><br>
-                <span style="color: var(--accent-secondary); font-family: var(--font-mono); font-size: 0.7rem; word-break: break-all;">${UNIFEDSystem.masterHash || 'A calcular...'}</span><br>
-                <span style="color: var(--text-secondary); font-size: 0.7rem;">${UNIFEDSystem.analysis.evidenceIntegrity.length} evidências processadas (clique no QR Code para verificar)</span>
+                <span style="color: var(--accent-secondary); font-family: var(--font-mono); font-size: 0.7rem; word-break: break-all;">${UNIFEDSystem.masterHash || 'Calculating...'}</span><br>
+                <span style="color: var(--text-secondary); font-size: 0.7rem;">${UNIFEDSystem.analysis.evidenceIntegrity.length} evidence(s) processed (click QR Code to verify)</span>
             </div>
             <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
-                <strong style="color: var(--warn-primary);">VI. CONCLUSÃO:</strong><br>
-                <span style="color: var(--text-secondary);">${
-                    currentLang === 'pt'
-                        ? (UNIFEDSystem.analysis.verdict?.description?.pt || 'Indícios de infração ao Artigo 108.º do Código do IVA e não conformidade com o Decreto-Lei n.º 28/2019.')
-                        : (UNIFEDSystem.analysis.verdict?.description?.en || 'Evidence of violation of Article 108 of the VAT Code and non-compliance with Decree-Law No. 28/2019.')
-                }</span>
+                <strong style="color: var(--warn-primary);">VI. CONCLUSION:</strong><br>
+                <span style="color: var(--text-secondary);">${UNIFEDSystem.analysis.verdict?.description?.en || 'Evidence of significant tax non-compliance.'}</span>
             </div>
         `;
 
@@ -7261,7 +7302,7 @@ async function exportPDF() {
             doc.setDrawColor(0, 229, 255);
             doc.setLineWidth(0.5);
             doc.setFillColor(240, 253, 255);
-            doc.rect(left, y - 3, dac7UseW, 9, 'F');
+            doc.rect(left, y - 3, dac7UseW, 9, 'FD');
             doc.rect(left, y - 3, dac7UseW, 9);
             doc.setFont('courier', 'bold');
             doc.setFontSize(8);
@@ -7855,7 +7896,7 @@ function injectAuxiliaryHelperBoxes() {
     wrapper.innerHTML = `
         <div class="aux-section-header">
             <i class="fas fa-layer-group"></i>
-            <span>${currentLang === 'pt' ? 'INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO' : 'FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION'}</span>
+            <span data-pt="INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO" data-en="FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION">${currentLang === 'pt' ? 'INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO' : 'FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION'}</span>
         </div>
 
         <div class="aux-boxes-grid">
@@ -7865,11 +7906,11 @@ function injectAuxiliaryHelperBoxes() {
                  title="${currentLang === 'pt' ? 'Extraído de: \'Ganhos da campanha\' — PDF Ganhos da Empresa' : 'Extracted from: \'Campaign earnings\' — PDF Company Earnings'}">
                 <div class="aux-box-icon"><i class="fas fa-bullhorn"></i></div>
                 <div class="aux-box-body">
-                    <h5 class="aux-box-label">${currentLang === 'pt' ? 'CAMPANHAS' : 'CAMPAIGNS'}</h5>
+                    <h5 class="aux-box-label" data-pt="CAMPANHAS" data-en="CAMPAIGNS">${currentLang === 'pt' ? 'CAMPANHAS' : 'CAMPAIGNS'}</h5>
                     <p class="aux-box-value" id="auxBoxCampanhasValue">0,00 €</p>
-                    <span class="aux-box-desc">${currentLang === 'pt' ? 'Ganhos da campanha' : 'Campaign earnings'}</span>
+                    <span class="aux-box-desc" data-pt="Ganhos da campanha" data-en="Campaign earnings">${currentLang === 'pt' ? 'Ganhos da campanha' : 'Campaign earnings'}</span>
                 </div>
-                <div class="aux-box-legal-tag">${currentLang === 'pt' ? 'Isento comissão · 0%' : 'Commission exempt · 0%'}</div>
+                <div class="aux-box-legal-tag" data-pt="Isento comissão · 0%" data-en="Commission exempt · 0%">${currentLang === 'pt' ? 'Isento comissão · 0%' : 'Commission exempt · 0%'}</div>
             </div>
 
             <div class="small-info-box aux-box-tolls info-box-refunds" id="auxBoxPortagens"
@@ -7883,7 +7924,7 @@ function injectAuxiliaryHelperBoxes() {
                     <p class="aux-box-value" id="auxBoxPortagensValue">0,00 €</p>
                     <span class="aux-box-desc" id="auxBoxPortagensDesc">${currentLang === 'pt' ? 'Reembolso operacional' : 'Operational reimbursement'}</span>
                 </div>
-                <div class="aux-box-legal-tag">${currentLang === 'pt' ? 'Custo reembolsado · 0%' : 'Reimbursed cost · 0%'}</div>
+                <div class="aux-box-legal-tag" data-pt="Custo reembolsado · 0%" data-en="Reimbursed cost · 0%">${currentLang === 'pt' ? 'Custo reembolsado · 0%' : 'Reimbursed cost · 0%'}</div>
             </div>
 
             <div class="small-info-box aux-box-tips" id="auxBoxGorjetas"
@@ -7891,11 +7932,11 @@ function injectAuxiliaryHelperBoxes() {
                  title="${currentLang === 'pt' ? 'Extraído de: \'Gorjetas dos passageiros\' — transferência P2P direta' : 'Extracted from: \'Passenger tips\' — direct P2P transfer'}">
                 <div class="aux-box-icon"><i class="fas fa-hand-holding-heart"></i></div>
                 <div class="aux-box-body">
-                    <h5 class="aux-box-label">${currentLang === 'pt' ? 'GORJETAS' : 'TIPS'}</h5>
+                    <h5 class="aux-box-label" data-pt="GORJETAS" data-en="TIPS">${currentLang === 'pt' ? 'GORJETAS' : 'TIPS'}</h5>
                     <p class="aux-box-value" id="auxBoxGorjetasValue">0,00 €</p>
-                    <span class="aux-box-desc">${currentLang === 'pt' ? 'Gorjetas dos passageiros' : 'Passenger tips'}</span>
+                    <span class="aux-box-desc" data-pt="Gorjetas dos passageiros" data-en="Passenger tips">${currentLang === 'pt' ? 'Gorjetas dos passageiros' : 'Passenger tips'}</span>
                 </div>
-                <div class="aux-box-legal-tag">${currentLang === 'pt' ? 'Transferência P2P · 0%' : 'P2P Transfer · 0%'}</div>
+                <div class="aux-box-legal-tag" data-pt="Transferência P2P · 0%" data-en="P2P Transfer · 0%">${currentLang === 'pt' ? 'Transferência P2P · 0%' : 'P2P Transfer · 0%'}</div>
             </div>
 
             <div class="small-info-box aux-box-total-ns highlighted" id="auxBoxTotalNS"
@@ -7903,11 +7944,11 @@ function injectAuxiliaryHelperBoxes() {
                  title="${currentLang === 'pt' ? 'Soma: Campanhas + Portagens + Gorjetas — fluxos isentos de comissão' : 'Sum: Campaigns + Tolls + Tips — commission-exempt flows'}">
                 <div class="aux-box-icon"><i class="fas fa-sigma"></i></div>
                 <div class="aux-box-body">
-                    <h5 class="aux-box-label">${currentLang === 'pt' ? 'TOTAL NÃO SUJEITOS' : 'TOTAL NOT SUBJECT'}</h5>
+                    <h5 class="aux-box-label" data-pt="TOTAL NÃO SUJEITOS" data-en="TOTAL NOT SUBJECT">${currentLang === 'pt' ? 'TOTAL NÃO SUJEITOS' : 'TOTAL NOT SUBJECT'}</h5>
                     <p class="aux-box-value highlighted" id="auxBoxTotalNSValue">0,00 €</p>
-                    <span class="aux-box-desc">Σ ${currentLang === 'pt' ? 'Campanhas + Portagens + Gorjetas' : 'Campaigns + Tolls + Tips'}</span>
+                    <span class="aux-box-desc" data-pt="Σ Campanhas + Portagens + Gorjetas" data-en="Σ Campaigns + Tolls + Tips">${currentLang === 'pt' ? 'Σ Campanhas + Portagens + Gorjetas' : 'Σ Campaigns + Tolls + Tips'}</span>
                 </div>
-                <div class="aux-box-legal-tag">${currentLang === 'pt' ? 'Fora da base tributável' : 'Outside the taxable base'}</div>
+                <div class="aux-box-legal-tag" data-pt="Fora da base tributável" data-en="Outside the taxable base">${currentLang === 'pt' ? 'Fora da base tributável' : 'Outside the taxable base'}</div>
             </div>
 
             <div class="small-info-box aux-box-cancel" id="auxBoxCancel"
@@ -7915,13 +7956,13 @@ function injectAuxiliaryHelperBoxes() {
                  title="${currentLang === 'pt' ? 'Taxas de cancelamento — comissão já incluída nas Despesas/Comissões' : 'Cancellation fees — commission already included in Expenses/Commissions'}">
                 <div class="aux-box-icon"><i class="fas fa-ban"></i></div>
                 <div class="aux-box-body">
-                    <h5 class="aux-box-label">${currentLang === 'pt' ? 'TAXAS CANCELAMENTO' : 'CANCELLATION FEES'}</h5>
+                    <h5 class="aux-box-label" data-pt="TAXAS CANCELAMENTO" data-en="CANCELLATION FEES">${currentLang === 'pt' ? 'TAXAS CANCELAMENTO' : 'CANCELLATION FEES'}</h5>
                     <p class="aux-box-value" id="auxBoxCancelValue">0,00 €</p>
-                    <span class="aux-box-desc">${currentLang === 'pt' ? 'Cancelamentos (já em Despesas)' : 'Cancellations (already in Expenses)'}</span>
+                    <span class="aux-box-desc" data-pt="Cancelamentos (já em Despesas)" data-en="Cancellations (already in Expenses)">${currentLang === 'pt' ? 'Cancelamentos (já em Despesas)' : 'Cancellations (already in Expenses)'}</span>
                 </div>
                 <div class="aux-box-legal-tag aux-tag-warning">
                     <i class="fas fa-exclamation-triangle"></i>
-                    ${currentLang === 'pt' ? 'Comissão incluída nos −Despesas' : 'Commission included in −Expenses'}
+                    <span data-pt="Comissão incluída nos −Despesas" data-en="Commission included in −Expenses">${currentLang === 'pt' ? 'Comissão incluída nos −Despesas' : 'Commission included in −Expenses'}</span>
                 </div>
             </div>
 
@@ -7930,7 +7971,7 @@ function injectAuxiliaryHelperBoxes() {
         <div class="aux-dac7-reconciliation-note" id="auxDac7ReconciliationNote" style="display:none;">
             <div class="dac7-note-header">
                 <i class="fas fa-balance-scale-right"></i>
-                <strong>${currentLang === 'pt' ? 'NOTA DE RECONCILIAÇÃO DAC7 — ZONA CINZENTA IDENTIFICADA' : 'DAC7 RECONCILIATION NOTE — GREY ZONE IDENTIFIED'}</strong>
+                <strong data-pt="NOTA DE RECONCILIAÇÃO DAC7 — ZONA CINZENTA IDENTIFICADA" data-en="DAC7 RECONCILIATION NOTE — GREY ZONE IDENTIFIED">${currentLang === 'pt' ? 'NOTA DE RECONCILIAÇÃO DAC7 — ZONA CINZENTA IDENTIFICADA' : 'DAC7 RECONCILIATION NOTE — GREY ZONE IDENTIFIED'}</strong>
             </div>
             <p>
                 ${currentLang === 'pt' ? 'O sistema UNIFED-PROBATUM isolou' : 'The UNIFED-PROBATUM system isolated'}
@@ -7940,7 +7981,7 @@ function injectAuxiliaryHelperBoxes() {
                 ${currentLang === 'pt' ? 'reportado à Autoridade Tributária (DAC7) e o valor líquido recebido pelo motorista.' : 'reported to the Tax Authority (DAC7) and the net amount received by the driver.'}
             </p>
             <div class="dac7-question-contraditorio">
-                <p class="dac7-q-label"><i class="fas fa-gavel"></i> ${currentLang === 'pt' ? 'QUESTIONÁRIO ESTRATÉGICO AO ADVOGADO (CONTRADITÓRIO)' : 'STRATEGIC QUESTIONNAIRE TO THE LAWYER (CONTRADICTION)'}</p>
+                <p class="dac7-q-label"><i class="fas fa-gavel"></i> <span data-pt="QUESTIONÁRIO ESTRATÉGICO AO ADVOGADO (CONTRADITÓRIO)" data-en="STRATEGIC QUESTIONNAIRE TO THE LAWYER (CONTRADICTION)">${currentLang === 'pt' ? 'QUESTIONÁRIO ESTRATÉGICO AO ADVOGADO (CONTRADITÓRIO)' : 'STRATEGIC QUESTIONNAIRE TO THE LAWYER (CONTRADICTION)'}</span></p>
                 <p class="dac7-q-text">
                     <em>"${currentLang === 'pt' ? 'Considerando que o sistema UNIFED-PROBATUM isolou' : 'Considering that the UNIFED-PROBATUM system isolated'}
                     <strong id="auxDac7NoteValueQ" class="dac7-highlight"></strong> ${currentLang === 'pt' ? 'em Gorjetas e Campanhas,' : 'in Tips and Campaigns,'}
@@ -8467,6 +8508,7 @@ window.filterDAC7ByPeriod = filterDAC7ByPeriod;
 window.processAuxiliaryPlatformData = processAuxiliaryPlatformData;
 window.injectAuxiliaryHelperBoxes = injectAuxiliaryHelperBoxes;
 window.resetAuxiliaryData = resetAuxiliaryData;
+window.translateDataLangElements = translateDataLangElements;
 
 (function _registerPUREModule() {
     if (typeof UNIFEDSystem === 'undefined') {
