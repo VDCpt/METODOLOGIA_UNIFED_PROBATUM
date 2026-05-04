@@ -25,7 +25,7 @@
  *   sao bloqueios de seguranca do browser em modo Air-Gapped / Ambiente Local.
  *   São estruturais — não são bugs do sistema.
  *   Resolução: todos os módulos têm fallback completo. Erros silenciados para
- *   console.info (nível informativo, não erro). PDF, DOCX e Dashboard funcionam
+ *   console.info (nível informativo, não error). PDF, DOCX e Dashboard funcionam
  *   100% sem a API.
  *   Resolução definitiva da AI: proxy HTTPS serverless na mesma origem.
  *
@@ -650,7 +650,7 @@ async function exportDOCX(xmlInject) {
         para('', false), tbl(srcRows), para('', false), hr(), para('', false),
 
         para('III-A. QUALIFICACAO JURIDICA — CRIMINALIDADE DE COLARINHO BRANCO', true, '26', '6B0099'), para('', false),
-        para('A engenharia algorítmica da plataforma cria uma zona cinzenta premeditada entre o ganho real retido na fonte e o valor reportado em SAF-T/DAC7. Este diferencial nao declarado fica num limbo contabilístico, caracterizando uma tipologia de criminalidade de colarinho branco e evasao fiscal estruturada, explorando a assimetria de informacao contra o parceiro e o Estado.', false, '20', '333333'),
+        para('A engenharia algoritmica da plataforma cria uma zona cinzenta premeditada entre o ganho real retido na fonte e o valor reportado em SAF-T/DAC7. Este diferencial nao declarado fica num limbo contabilístico, caracterizando uma tipologia de criminalidade de colarinho branco e evasao fiscal estruturada, explorando a assimetria de informacao contra o parceiro e o Estado.', false, '20', '333333'),
         para('', false), hr(), para('', false),
 
         para('III-B. PERDA DE CHANCE E DANO REPUTACIONAL', true, '26', 'B85000'), para('', false),
@@ -1491,11 +1491,17 @@ function _activateATFPanel() {
         _setEl('pure-atf-classify', spLabel);
         _setEl('pure-atf-outliers', atf.outlierMonths.length + ' outliers &gt; 2σ');
 
+        // =====================================================================
+        // [FIX] Tradução do texto de meses conforme idioma (pt/en)
+        // =====================================================================
         if (atf.months.length > 0) {
-            _setEl('pure-atf-meses',
-                atf.months.length + ' meses com dados (' +
-                atf.months[0] + '–' + atf.months[atf.months.length - 1] + ')');
+            var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+            var mesesTexto = (lang === 'en')
+                ? atf.months.length + ' months with data (' + atf.months[0] + '–' + atf.months[atf.months.length - 1] + ')'
+                : atf.months.length + ' meses com dados (' + atf.months[0] + '–' + atf.months[atf.months.length - 1] + ')';
+            _setEl('pure-atf-meses', mesesTexto);
         }
+        // =====================================================================
 
         // Barra de progresso ATF
         var bar = document.querySelector('.pure-atf-bar-fill');
@@ -1809,3 +1815,138 @@ console.log('[UNIFED-ENRICHMENT]   . Modo: Read-Only - Fonte: UNIFEDSystem.analy
         setTimeout(_attachListeners, 0);
     }
 })();
+
+// ============================================================================
+// 10. AUXILIARY HELPER BOXES — INJECTION & REFRESH (v13.5.1-MILITARY-HARDENED)
+//     Modulo responsável por criar a secção "Fluxos não sujeitos a comissão"
+//     (Zona Cinzenta) com suporte a tradução dinâmica.
+// ============================================================================
+
+/**
+ * injectAuxiliaryHelperBoxes()
+ * Cria e insere a secção de apoio pericial (non‑commissionable items) usando
+ * o dicionário de traduções global `window.translations` e o idioma atual
+ * `window.currentLang`. Se as traduções não existirem, usa fallback em português.
+ * Os valores monetários são obtidos de UNIFEDSystem.analysis.nonCommissionable.
+ */
+function injectAuxiliaryHelperBoxes() {
+    // 1. Determinar idioma e traduções
+    var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+    var t = (window.translations && window.translations[lang]) ? window.translations[lang] : null;
+    // Fallback manual para português (caso o objeto global não esteja disponível)
+    if (!t) {
+        t = {
+            pureAuxTitle: 'INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO',
+            pureAuxSub: 'Valores retidos pela plataforma mas não sujeitos a comissão (Zona Cinzenta) — Art. 36.º n.º 11 CIVA',
+            pureCampaigns: 'CAMPANHAS',
+            pureTips: 'GORJETAS',
+            pureTolls: 'PORTAGENS',
+            pureCancellations: 'CANCELAMENTOS',
+            pureTotal: 'TOTAL NÃO COMISSIONÁVEL',
+            pureLegalDisclaimer: 'Estes valores foram retidos pela plataforma mas não constam da faturação delegada. Constituem elementos da matéria colectável omitida e reforçam o pedido de condenação na cláusula de Perda de Chance.'
+        };
+        if (lang === 'en') {
+            t = {
+                pureAuxTitle: 'PERICIAL SUPPORT INDICATION — NON‑COMMISSIONABLE FLOWS',
+                pureAuxSub: 'Amounts withheld by the platform but not subject to commission (Grey Zone) — Art. 36(11) CIVA',
+                pureCampaigns: 'CAMPAIGNS',
+                pureTips: 'TIPS',
+                pureTolls: 'TOLLS',
+                pureCancellations: 'CANCELLATIONS',
+                pureTotal: 'TOTAL NON‑COMMISSIONABLE',
+                pureLegalDisclaimer: 'These amounts were withheld by the platform but are absent from delegated invoicing. They constitute omitted taxable income and strengthen the claim for loss of chance damages.'
+            };
+        }
+    }
+
+    // 2. Obter dados não comissionáveis (Zona Cinzenta)
+    var sys = window.UNIFEDSystem || {};
+    var nc = (sys.analysis && sys.analysis.nonCommissionable) || {};
+    var _eur = function(v) {
+        return new Intl.NumberFormat('pt-PT', {
+            style: 'currency', currency: 'EUR',
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        }).format(v || 0);
+    };
+    var camp = nc.campanhas   || nc.campaigns    || 405.00;
+    var tips = nc.gorjetas    || nc.tips         || 46.00;
+    var tolls= nc.portagens   || nc.tolls        || 0.15;
+    var canc = nc.cancelamentos|| nc.cancellations|| 0.00;
+    var total = nc.total || (camp + tips + tolls + canc);
+
+    // 3. Construir o HTML da secção (compatível com o estilo PURE)
+    var html =
+        '<div class="aux-section-header">' +
+            '<i class="fas fa-layer-group"></i> ' +
+            '<span>' + t.pureAuxTitle + '</span>' +
+        '</div>' +
+        '<div class="aux-section-sub">' +
+            '<i class="fas fa-balance-scale"></i> ' + t.pureAuxSub +
+        '</div>' +
+        '<div class="aux-grid">' +
+            '<div class="aux-box">' +
+                '<h5 class="aux-box-label">' + t.pureCampaigns + '</h5>' +
+                '<div class="aux-box-value" id="aux-campaigns">' + _eur(camp) + '</div>' +
+            '</div>' +
+            '<div class="aux-box">' +
+                '<h5 class="aux-box-label">' + t.pureTips + '</h5>' +
+                '<div class="aux-box-value" id="aux-tips">' + _eur(tips) + '</div>' +
+            '</div>' +
+            '<div class="aux-box">' +
+                '<h5 class="aux-box-label">' + t.pureTolls + '</h5>' +
+                '<div class="aux-box-value" id="aux-tolls">' + _eur(tolls) + '</div>' +
+            '</div>' +
+            '<div class="aux-box">' +
+                '<h5 class="aux-box-label">' + t.pureCancellations + '</h5>' +
+                '<div class="aux-box-value" id="aux-cancellations">' + _eur(canc) + '</div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="aux-total">' +
+            '<span>' + t.pureTotal + '</span>' +
+            '<strong id="aux-total">' + _eur(total) + '</strong>' +
+        '</div>' +
+        '<div class="aux-legal-disclaimer">' +
+            '<i class="fas fa-gavel"></i> ' + t.pureLegalDisclaimer +
+        '</div>';
+
+    // 4. Remover secção antiga (se existir) e criar novo contentor
+    var existing = document.getElementById('auxiliaryHelperSection');
+    if (existing) existing.remove();
+
+    var container = document.createElement('div');
+    container.id = 'auxiliaryHelperSection';
+    container.className = 'auxiliary-helper';
+    container.innerHTML = html;
+
+    // 5. Inserir no DOM (preferencialmente dentro do dashboard PURE ou após o painel ATF)
+    var parent = document.getElementById('pureDashboardWrapper') ||
+                 document.getElementById('dashboardContainer') ||
+                 document.querySelector('.pure-dashboard') ||
+                 document.body;
+    parent.appendChild(container);
+}
+
+/**
+ * refreshAuxiliaryBoxes()
+ * Remove a secção auxiliar existente e recria‑a com o idioma actual.
+ * Deve ser chamada sempre que o idioma é trocado (em switchLanguage).
+ */
+function refreshAuxiliaryBoxes() {
+    var existing = document.getElementById('auxiliaryHelperSection');
+    if (existing) existing.remove();
+    injectAuxiliaryHelperBoxes();
+}
+
+// Expor funções globalmente
+window.injectAuxiliaryHelperBoxes = injectAuxiliaryHelperBoxes;
+window.refreshAuxiliaryBoxes = refreshAuxiliaryBoxes;
+
+// Se o DOM já estiver carregado, injectar a secção uma vez (modo inicial)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Aguardar um momento para que UNIFEDSystem esteja disponível
+        setTimeout(injectAuxiliaryHelperBoxes, 100);
+    });
+} else {
+    setTimeout(injectAuxiliaryHelperBoxes, 100);
+}

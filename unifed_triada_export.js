@@ -3,11 +3,13 @@
  * UNIFED - PROBATUM · v13.5.1-PURE · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
- * Versão        : 1.2.0-TRIADA (CORREÇÃO DE TRADUÇÃO)
+ * Versão        : 1.3.0-TRIADA (DINAMIZAÇÃO DE IDIOMA)
  * 
- * RETIFICAÇÃO v1.2.0:
- *   - Adicionados atributos data-pt/data-en aos botões injetados.
- *   - Garantia de que o Pacote Advogado NÃO gera "Perícia" (apenas Relatório, Anexo, Matriz + JSON)
+ * RETIFICAÇÃO v1.3.0:
+ *   - Adicionada função updateTriadaButtonsLanguage() para atualizar texto dos botões
+ *     com base em window.currentLang (pt/en), preservando os ícones.
+ *   - Os botões passam a exibir o texto correto após mudança de idioma.
+ *   - Compatível com a chamada a partir do script.js em switchLanguage().
  * ============================================================================
  */
 
@@ -645,18 +647,41 @@
     }
     
     // =========================================================================
-    // CRIAÇÃO DOS BOTÕES (COM SUPORTE DE TRADUÇÃO)
+    // CRIAÇÃO DOS BOTÕES (COM SUPORTE DE TRADUÇÃO DINÂMICA)
     // =========================================================================
+    
+    // Função auxiliar para definir o texto do botão com base no idioma atual
+    function _setButtonText(btn) {
+        var pt = btn.getAttribute('data-pt');
+        var en = btn.getAttribute('data-en');
+        if (!pt || !en) return;
+        
+        var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+        var label = (lang === 'en') ? en : pt;
+        
+        // Preservar o ícone (se existir)
+        var iconHtml = btn.querySelector('i') ? btn.querySelector('i').outerHTML : '';
+        // Se o botão não tiver ícone (caso do PACOTE ADVOGADO), não forçar
+        if (iconHtml) {
+            btn.innerHTML = iconHtml + ' ' + label;
+        } else {
+            // Para botões sem ícone (ex: PACOTE ADVOGADO), apenas atualizar texto
+            // mas manter qualquer outro conteúdo (ex: span)
+            var span = btn.querySelector('span');
+            if (span) {
+                span.innerText = label;
+            } else {
+                btn.innerHTML = label;
+            }
+        }
+    }
+    
     function criarBotao(id, iconClass, labelPt, labelEn, cor, handler) {
         var btn = document.createElement('button');
         btn.id = id;
         btn.className = 'btn-tool';
-        btn.innerHTML = '<i class="fas ' + iconClass + '"></i> ' + labelPt;
-        btn.title = labelPt;
         btn.setAttribute('data-pt', labelPt);
         btn.setAttribute('data-en', labelEn);
-        btn.onclick = handler;
-        
         btn.style.cssText = [
             'display: inline-flex !important',
             'align-items: center',
@@ -675,8 +700,29 @@
             'transition: all 0.2s ease'
         ].join(';');
         
+        // Criar ícone
+        var icon = document.createElement('i');
+        icon.className = 'fas ' + iconClass;
+        btn.appendChild(icon);
+        
+        // Definir texto inicial baseado no idioma actual
+        var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+        var initialLabel = (lang === 'en') ? labelEn : labelPt;
+        var textNode = document.createTextNode(' ' + initialLabel);
+        btn.appendChild(textNode);
+        
+        btn.onclick = handler;
         return btn;
     }
+    
+    // Função pública para actualizar todos os botões da tríade após mudança de idioma
+    window.updateTriadaButtonsLanguage = function() {
+        var btns = document.querySelectorAll('#triadaContainer .btn-tool, #downloadPacoteAdvogadoBtn');
+        btns.forEach(function(btn) {
+            _setButtonText(btn);
+        });
+        _log('[LANG] Botões da tríade actualizados para: ' + (window.currentLang || 'pt'));
+    };
     
     window.descarregarPacoteAdvogado = function() {
         console.log('[UNIFED-TRIADA] Botão PACOTE ADVOGADO clicado — a chamar _executarPacoteAdvogado()');
@@ -708,9 +754,15 @@
             var btnPacote = document.createElement('button');
             btnPacote.id = 'downloadPacoteAdvogadoBtn';
             btnPacote.className = 'pure-btn-led led-cyan';
-            btnPacote.innerHTML = '<span>📦 PACOTE ADVOGADO</span>';
             btnPacote.setAttribute('data-pt', '📦 PACOTE ADVOGADO');
             btnPacote.setAttribute('data-en', '📦 LAWYER BUNDLE');
+            
+            // Adicionar um span para o texto (permite actualização fácil)
+            var span = document.createElement('span');
+            var lang = (window.currentLang === 'en') ? 'en' : 'pt';
+            span.innerText = (lang === 'en') ? '📦 LAWYER BUNDLE' : '📦 PACOTE ADVOGADO';
+            btnPacote.appendChild(span);
+            
             btnPacote.addEventListener('click', function() {
                 if (typeof window.descarregarPacoteAdvogado === 'function') {
                     window.descarregarPacoteAdvogado();
@@ -733,7 +785,7 @@
         if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
             _rightWrapper.style.display = 'flex';
         }
-        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (PACOTE ADVOGADO CORRIGIDO)!');
+        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (PACOTE ADVOGADO CORRIGIDO + LANG DINÂMICO)!');
         return true;
     }
     

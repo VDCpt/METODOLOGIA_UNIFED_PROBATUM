@@ -21,7 +21,8 @@
  *        - Aumento de retry mechanism para 30 tentativas / 200ms
  *        - Injeção imediata de dados antes da sincronização
  *        - Integridade mantida via deepFreeze e sessionStorage
- *
+ *   · RETIFICAÇÃO BILINGUE (2026-05-04):
+ *        - Veredicto agora suporta window.currentLang (pt/en)
  * PRINCÍPIO DE INTEGRIDADE (Core Freeze):
  *   · Todos os valores injetados provêm diretamente do JSON verificado.
  *   · Nenhum valor é estimado, simulado ou extrapolado nesta função.
@@ -317,7 +318,8 @@ function _syncPureDashboard(sys) {
     _set('pure-nc-total',          _eur(nc.totalNaoSujeitos));
 
     // ── Painel V – Veredicto e Integridade ──────────────────────────────
-    const verdictLevel = v.level?.pt ?? 'RISCO ELEVADO';
+    // RETIFICAÇÃO BILINGUE: suporta window.currentLang (pt/en)
+    const verdictLevel = v.level?.[window.currentLang] || (window.currentLang === 'en' ? 'HIGH RISK' : 'RISCO ELEVADO');
     const verdictPct   = _pctC2.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
     _set('pure-verdict',     verdictLevel);
     _set('pure-verdict-pct', verdictPct);
@@ -600,14 +602,15 @@ setTimeout(function() {
 // VERSION INFO
 // ============================================================================
 window.SCRIPT_INJECTION_VERSION = '13.5.1-MILITARY-HARDENED';
-window.SCRIPT_INJECTION_DATE = '2026-05-03';
-window.SCRIPT_INJECTION_STATUS = 'FINAL_RETIFIED';
+window.SCRIPT_INJECTION_DATE = '2026-05-04'; // Actualizado para reflectir retificação bilingue
+window.SCRIPT_INJECTION_STATUS = 'FINAL_RETIFIED_BILINGUE';
 
 console.info('[UNIFED-PURE] v13.5.1-MILITARY-HARDENED · Módulo de caso real anonimizado registado.');
 console.info('[UNIFED-PURE] Chamar UNIFEDSystem.loadAnonymizedRealCase() para activar.');
 console.info('[UNIFED-SECURITY] Deep Freeze: IMPLEMENTADO | Chain of Custody: ACTIVO | RFC 3161: CONFORME');
 console.info('[UNIFED-PURE] 📆 monthlyData reconstituído (Set–Dez 2024) – ATF completamente operacional.');
 console.info('[UNIFED-PURE] 🔄 Fallback síncrono para _REAL_CASE_MMLADX8Q activado. Retry mechanism: 30 tentativas / 200ms.');
+console.info('[UNIFED-PURE] 🌐 Veredicto bilingue (pt/en) activado via window.currentLang.');
 
 // ============================================================================
 // FIM DO FICHEIRO - TODAS AS CHAVES FECHADAS ✅

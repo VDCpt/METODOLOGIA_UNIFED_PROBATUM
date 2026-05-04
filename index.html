@@ -415,7 +415,7 @@
 
                 <!-- NOVOS SELOS DE CONFORMIDADE E PRIVACY BY DESIGN -->
                 <div class="conformity-seals">
-                    <h4><i class="fas fa-certificate"></i> CERTIFICAÇÕES & CONFORMIDADE</h4>
+                    <h4><i class="fas fa-certificate"></i> <span data-pt="CERTIFICAÇÕES & CONFORMIDADE" data-en="CERTIFICATIONS & COMPLIANCE">CERTIFICAÇÕES & CONFORMIDADE</span></h4>
                     <div class="seals-grid">
                         <div class="seal-item" title="Segue as diretrizes da norma ISO/IEC 27001"><i class="fas fa-shield-alt"></i> ISO 27001</div>
                         <div class="seal-item" title="Segue as diretrizes da norma ISO/IEC 27035"><i class="fas fa-shield-virus"></i> ISO 27035</div>
@@ -607,35 +607,35 @@
                         <span class="stat-desc">Despesas/Comissões Extrato vs Fatura</span>
                     </div>
                     
-                    <!-- NOVAS BOXES DE ALERTA -->
+                    <!-- NOVAS BOXES DE ALERTA (COM data-pt/en) -->
                     <div class="stat-card alert" id="discrepancy5Card" style="display: none;">
-                        <h4><i class="fas fa-exclamation-triangle"></i> DISCREPÂNCIA SAF-T vs DAC7</h4>
+                        <h4><i class="fas fa-exclamation-triangle"></i> <span data-pt="DISCREPÂNCIA SAF-T vs DAC7" data-en="SAF-T vs DAC7 DISCREPANCY">DISCREPÂNCIA SAF-T vs DAC7</span></h4>
                         <p id="discrepancy5Value">0,00 €</p>
-                        <span class="stat-desc">Valores omitidos no reporte DAC7</span>
+                        <span class="stat-desc" data-pt="Valores omitidos no reporte DAC7" data-en="Values omitted in DAC7 report">Valores omitidos no reporte DAC7</span>
                     </div>
                     
                     <div class="stat-card alert" id="agravamentoBrutoCard" style="display: none;">
-                        <h4><i class="fas fa-chart-line"></i> AGRAVAMENTO BRUTO/IRC</h4>
+                        <h4><i class="fas fa-chart-line"></i> <span data-pt="AGRAVAMENTO BRUTO/IRC" data-en="GROSS TAXABLE ENHANCEMENT">AGRAVAMENTO BRUTO/IRC</span></h4>
                         <p id="agravamentoBrutoValue">0,00 €</p>
-                        <span class="stat-desc">Impacto no lucro tributável</span>
+                        <span class="stat-desc" data-pt="Impacto no lucro tributável" data-en="Impact on taxable income">Impacto no lucro tributável</span>
                     </div>
                     
                     <div class="stat-card alert" id="ircCard" style="display: none;">
-                        <h4><i class="fas fa-percent"></i> IRC (21% + Derrama)</h4>
+                        <h4><i class="fas fa-percent"></i> <span data-pt="IRC (21% + Derrama)" data-en="CIT (21% + Surcharge)">IRC (21% + Derrama)</span></h4>
                         <p id="ircValue">0,00 €</p>
-                        <span class="stat-desc">Estimativa de imposto</span>
+                        <span class="stat-desc" data-pt="Estimativa de imposto" data-en="Estimated tax">Estimativa de imposto</span>
                     </div>
                     
                     <div class="stat-card alert" id="iva6Card" style="display: none;">
-                        <h4><i class="fas fa-percent"></i> IVA 6% OMITIDO</h4>
+                        <h4><i class="fas fa-percent"></i> <span data-pt="IVA 6% OMITIDO" data-en="VAT 6% OMITTED">IVA 6% OMITIDO</span></h4>
                         <p id="iva6Value">0,00 €</p>
-                        <span class="stat-desc">Valor não pago pelo sujeito passivo</span>
+                        <span class="stat-desc" data-pt="Valor não pago pelo sujeito passivo" data-en="Amount not paid by the taxable person">Valor não pago pelo sujeito passivo</span>
                     </div>
                     
                     <div class="stat-card alert" id="iva23Card" style="display: none;">
-                        <h4><i class="fas fa-percent"></i> IVA 23% OMITIDO</h4>
+                        <h4><i class="fas fa-percent"></i> <span data-pt="IVA 23% OMITIDO" data-en="VAT 23% OMITTED">IVA 23% OMITIDO</span></h4>
                         <p id="iva23Value">0,00 €</p>
-                        <span class="stat-desc">Valor não pago pelo sujeito passivo</span>
+                        <span class="stat-desc" data-pt="Valor não pago pelo sujeito passivo" data-en="Amount not paid by the taxable person">Valor não pago pelo sujeito passivo</span>
                     </div>
                 </div>
 
@@ -709,7 +709,7 @@
                         <!-- ── Acesso à Cadeia de Custódia ── -->
                         <div style="margin-top: 0.8rem; display: flex; justify-content: center;">
                             <button id="custodyChainTriggerBtn" onclick="openCustodyChainModal()" title="Visualizar Cadeia de Custódia Forense">
-                                <i class="fas fa-link"></i> CADEIA DE CUSTÓDIA
+                                <i class="fas fa-link"></i> <span data-pt="CADEIA DE CUSTÓDIA" data-en="CHAIN OF CUSTODY">CADEIA DE CUSTÓDIA</span>
                             </button>
                         </div>
                     </div>
@@ -1019,6 +1019,11 @@
                 if (wrapper) {
                     wrapper.innerHTML = html;
                     wrapper.style.display = 'block';
+                }
+                
+                // ▲ PATCH CIRÚRGICO: Tradução imediata dos elementos data-lang após injecção
+                if (typeof window.translateDataLangElements === 'function') {
+                    window.translateDataLangElements(window.currentLang || 'pt');
                 }
                 
                 // 1. Carrega os dados reais (incluindo o monthlyData que corrigimos acima)
