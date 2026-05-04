@@ -23,6 +23,9 @@
  *        - Integridade mantida via deepFreeze e sessionStorage
  *   · RETIFICAÇÃO BILINGUE (2026-05-04):
  *        - Veredicto agora suporta window.currentLang (pt/en)
+ *   · RETIFICAÇÃO CIRÚRGICA (2026-05-04):
+ *        - pure-atf-meses condicional (pt/en)
+ *        - pure-c2-pct / pure-c1-pct com parênteses e % (ex: (89.26%))
  * PRINCÍPIO DE INTEGRIDADE (Core Freeze):
  *   · Todos os valores injetados provêm diretamente do JSON verificado.
  *   · Nenhum valor é estimado, simulado ou extrapolado nesta função.
@@ -294,19 +297,22 @@ function _syncPureDashboard(sys) {
 
     // ── Painel II – Smoking Guns ────────────────────────────────────────
     _set('pure-c2-delta',   _eur(c.discrepanciaCritica));
-    _set('pure-c2-pct',     `${(_pctC2).toFixed(2)}%`);
+    _set('pure-c2-pct',     `(${(_pctC2).toFixed(2)}%)`);
     _set('pure-c1-delta',   _eur(c.discrepanciaSaftVsDac7));
-    _set('pure-c1-pct',     `${(c.percentagemSaftVsDac7 ?? 0).toFixed(2)}%`);
+    _set('pure-c1-pct',     `(${(c.percentagemSaftVsDac7 ?? 0).toFixed(2)}%)`);
     _set('pure-iva-falta',  _eur(c.ivaFalta));
     _set('pure-irc-estim',  _eur(c.ircEstimado));
     _set('pure-impact-anual',   _eur(c.impactoAnualMercado));
     _set('pure-impact-total',   _eur(c.impactoSeteAnosMercado ?? 1743598080));
 
     // ── Painel III – ATF (valores estáticos iniciais) ───────────────────
+    const atfText = (window.currentLang === 'en')
+        ? '2nd Half 2024 — 4 months with data (Sep–Dec)'
+        : '2.º Semestre 2024 — 4 meses com dados (Set–Dez)';
     _set('pure-atf-sp',         '40<span style="font-size:1rem;opacity:0.6">/100</span>');
     _set('pure-atf-trend',      '📉 DESCENDENTE');
     _set('pure-atf-status',     'OMISSÃO PONTUAL / RISCO MODERADO');
-    _set('pure-atf-meses',      '2.º Semestre 2024 — 4 meses com dados (Set–Dez)');
+    _set('pure-atf-meses',      atfText);
     _set('pure-atf-outliers',   '0 outliers &gt; 2σ');
 
     // ── Painel IV – Zona Cinzenta ───────────────────────────────────────
@@ -611,6 +617,7 @@ console.info('[UNIFED-SECURITY] Deep Freeze: IMPLEMENTADO | Chain of Custody: AC
 console.info('[UNIFED-PURE] 📆 monthlyData reconstituído (Set–Dez 2024) – ATF completamente operacional.');
 console.info('[UNIFED-PURE] 🔄 Fallback síncrono para _REAL_CASE_MMLADX8Q activado. Retry mechanism: 30 tentativas / 200ms.');
 console.info('[UNIFED-PURE] 🌐 Veredicto bilingue (pt/en) activado via window.currentLang.');
+console.info('[UNIFED-PURE] 🔧 Retificação cirúrgica (2026-05-04): pure-atf-meses condicional, pure-c[12]-pct com parênteses.');
 
 // ============================================================================
 // FIM DO FICHEIRO - TODAS AS CHAVES FECHADAS ✅

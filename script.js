@@ -6,6 +6,7 @@
  * 1. Sistema de Tradução Completo PT/EN - 100% de cobertura
  * 2. Todos os elementos da interface traduzidos dinamicamente
  * 3. Fallback seguro para strings não mapeadas
+ * 4. Retificações específicas: UI Localizer, ATF History, Chart labels, Cards, Percentagem, Veredicto
  * ====================================================================
  */
 
@@ -20,12 +21,6 @@ console.log('UNIFED - PROBATUM SCRIPT v13.5.1-MILITARY-HARDENED · DORA COMPLIAN
 // 0. HANDSHAKE DE INFRAESTRUTURA — Verificação da Biblioteca OpenTimestamps
 // ============================================================================
 (function initOTSHandshake() {
-    /**
-     * Verifica a presença da biblioteca javascript-opentimestamps.
-     * A verificação só ocorre após o evento 'load' da página (todos os
-     * scripts externos já foram descarregados e executados).
-     * Só emite alerta se a biblioteca estiver genuinamente ausente.
-     */
     function detectOTSLibrary() {
         if (typeof window.OpenTimestamps === 'undefined') {
             if (typeof window.opentimestamps !== 'undefined') {
@@ -140,6 +135,7 @@ const QUESTIONS_CACHE = [
     { id: 39, text: "Apresente os metadados completos (incluindo 'timestamps' de criação e modificação) de todos os registos de faturação do período para auditoria de integridade temporal.", type: "high" },
     { id: 40, text: "Liste todos os acessos de administrador à base de dados que resultaram em alterações de registos financeiros já finalizados, incluindo o 'before' e 'after' dos dados.", type: "med" }
 ];
+
 // ============================================================================
 // 4. UTILITÁRIOS FORENSES
 // ============================================================================
@@ -148,98 +144,60 @@ const forensicRound = (num) => {
     return Math.round((num + Number.EPSILON) * 100) / 100;
 };
 
-// ============================================================================
-// 4.1 FUNÇÃO DE NORMALIZAÇÃO INVARIANTE (CORREÇÃO CRÍTICA - v13.5.1-MILITARY-HARDENED)
-// ============================================================================
 const normalizeNumericValue = (input) => {
     if (!input) return 0;
 
     let str = input.toString().trim();
 
-    // ── NORMALIZAÇÃO UNIVERSAL v13.1.2-GOLD ──────────────────────────────────
-    // Aceita os dois padrões Bolt detetados em produção:
-    //   Padrão Bolt 2024: 7755.16€   (ponto como decimal, símbolo no fim)
-    //   Padrão Bolt 2025: € 18.738,00 (vírgula decimal, ponto milhar, símbolo no início)
-    // Algoritmo (por ordem de prioridade):
-    //   1. Remover símbolo € e espaços
-    //   2. Se existir vírgula E ponto → remover ponto e trocar vírgula por ponto (formato europeu)
-    //   3. Se existir apenas ponto com duas casas decimais → tratar como decimal
-    //   4. Devolver float limpo
-    // -------------------------------------------────────────────────────────
-
-    // Passo 1: Remover caracteres de controlo
     str = str.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '');
-
-    // Passo 1a: Remover símbolo € (com ou sem espaço adjacente) e texto monetário
     str = str.replace(/€/g, '');
     str = str.replace(/[\$£]/g, '');
     str = str.replace(/EUR/gi, '');
     str = str.replace(/euros?/gi, '');
-
-    // Passo 1b: Remover todos os espaços restantes
     str = str.replace(/\s+/g, '');
-
-    // Remover todos os caracteres não numéricos exceto . , e -
     str = str.replace(/[^-0-9.,]/g, '');
 
-    // Caso especial: string vazia ou só sinal
     if (str === '' || str === '-') return 0;
 
-    // CONTAR PONTOS E VÍRGULAS
     const dots = (str.match(/\./g) || []).length;
     const commas = (str.match(/,/g) || []).length;
 
-    // Passo 2: Vírgula E ponto presentes → formato europeu (ponto=milhar, vírgula=decimal)
-    //   Ex: 18.738,00 → remover ponto → 18738,00 → trocar vírgula por ponto → 18738.00
     if (commas >= 1 && dots >= 1) {
         const dotIndex   = str.indexOf('.');
         const commaIndex = str.indexOf(',');
         if (commaIndex > dotIndex) {
-            // Formato europeu confirmado: 1.234,56 ou 18.738,00
             str = str.replace(/\./g, '').replace(',', '.');
         } else {
-            // Vírgula antes do ponto — remover vírgulas (separador milhar americano)
             str = str.replace(/,/g, '');
         }
     }
-    // Passo 3: Apenas ponto — verificar se é decimal (duas casas) ou milhar
     else if (dots === 1 && commas === 0) {
-        // Ex: 7755.16 → decimal direto; 7.755 → milhar sem decimal
         const afterDot = str.split('.')[1] || '';
         if (afterDot.length === 3) {
-            // Provavelmente milhar sem casas decimais: 7.755 → 7755
             str = str.replace('.', '');
         }
-        // Se 1 ou 2 casas → decimal legítimo: 7755.16, 0.25 — manter
     }
     else if (dots > 1 && commas === 0) {
-        // Múltiplos pontos: 1.234.567 → milhar; 1.234.56 → tratar último como decimal
         const parts = str.split('.');
         const lastPart = parts[parts.length - 1];
         if (lastPart.length <= 2) {
-            // Último segmento é decimal
             str = parts.slice(0, -1).join('') + '.' + lastPart;
         } else {
-            // Tudo milhar
             str = parts.join('');
         }
     }
     else if (dots === 0 && commas === 1) {
-        // Apenas vírgula: 1234,56 ou 7755,16 → decimal
         str = str.replace(',', '.');
     }
     else if (dots === 0 && commas > 1) {
-        // Múltiplas vírgulas: 1,234,56 → último segmento decimal
         const parts = str.split(',');
         const lastPart = parts.pop();
         str = parts.join('') + '.' + lastPart;
     }
     else if (dots > 1 && commas === 1) {
-        // 1.234.567,89
         str = str.replace(/\./g, '').replace(',', '.');
     }
 
-    // Sanitização final
     str = str.replace(/[^\d.-]/g, '');
     const parts = str.split('.');
     if (parts.length > 2) {
@@ -250,9 +208,6 @@ const normalizeNumericValue = (input) => {
     return isNaN(result) ? 0 : result;
 };
 
-// ============================================================================
-// 4.2 TESTE DE PARSING COM DADOS REAIS
-// ============================================================================
 const testParsing = () => {
     const testCases = [
         { input: "2.849,49", expected: 2849.49 },
@@ -267,12 +222,11 @@ const testParsing = () => {
         { input: "1.038,78", expected: 1038.78 },
         { input: "€ 1.234,56", expected: 1234.56 },
         { input: "1.234,56 €", expected: 1234.56 },
-        // Padrões Bolt v13.1.2-GOLD
-        { input: "7755.16€", expected: 7755.16 },      // Bolt 2024: ponto decimal, € no fim
-        { input: "€ 18.738,00", expected: 18738.00 },  // Bolt 2025: vírgula decimal, € no início
-        { input: "18.738,00", expected: 18738.00 },     // Bolt 2025 sem símbolo
-        { input: "€ 7.731,22", expected: 7731.22 },     // DAC7 4.º Trimestre
-        { input: "4.178,32", expected: 4178.32 }        // SAF-T Outubro
+        { input: "7755.16€", expected: 7755.16 },
+        { input: "€ 18.738,00", expected: 18738.00 },
+        { input: "18.738,00", expected: 18738.00 },
+        { input: "€ 7.731,22", expected: 7731.22 },
+        { input: "4.178,32", expected: 4178.32 }
     ];
 
     console.log('🔬 TESTE DE PARSING v13.5.1-MILITARY-HARDENED:');
@@ -285,9 +239,6 @@ const testParsing = () => {
 
 testParsing();
 
-// ============================================================================
-// 4.3 TESTE DE VALORES SAF-T
-// ============================================================================
 const testSAFTValues = () => {
     console.log('🔬 TESTE DE NORMALIZAÇÃO COM VALORES SAF-T:');
     const testCases = [
@@ -308,11 +259,7 @@ const testSAFTValues = () => {
 
 testSAFTValues();
 
-// ============================================================================
-// 4.4 ROBUST SAFT PARSER v13.1.6-GOLD — HEADER-BASED CSV MAPPING (DORA COMPLIANT)
-// ============================================================================
 function robustSAFTParser(csvText) {
-    // --- Utilitário RFC-4180: parse de uma linha CSV respeitando campos entre aspas ---
     const parseCSVLine = (line) => {
         const result = [];
         let current = '';
@@ -337,15 +284,11 @@ function robustSAFTParser(csvText) {
         return result;
     };
 
-    // --- Sanitização de String para Float (Data Normalization) ---
-    // Trata separadores de milhar e decimais (vírgula/ponto) antes da acumulação.
     const sanitizeToFloat = (val) => {
         if (val === undefined || val === null) return 0;
         let str = String(val).trim().replace(/"/g, '');
-        // Remove símbolos de moeda e espaços
         str = str.replace(/[€$£]/g, '').replace(/EUR/gi, '').replace(/\s+/g, '');
         if (str === '' || str === '-') return 0;
-        // Delegar na função de normalização invariante já certificada
         return normalizeNumericValue(str);
     };
 
@@ -355,12 +298,9 @@ function robustSAFTParser(csvText) {
         return;
     }
 
-    // --- FASE 1: Mapeamento Dinâmico por Label de Cabeçalho ---
-    // Normaliza o cabeçalho removendo BOM e espaços laterais.
     const rawHeader = lines[0].replace(/^\uFEFF/, '').trim();
     const headers = parseCSVLine(rawHeader).map(h => h.trim().replace(/"/g, ''));
 
-    // Labels exatas conforme especificação do ficheiro CSV
     const LABEL_ILIQUIDO = 'Preço da viagem (sem IVA)';
     const LABEL_IVA      = 'IVA';
     const LABEL_BRUTO    = 'Preço da viagem';
@@ -369,7 +309,6 @@ function robustSAFTParser(csvText) {
     const idxIVA      = headers.indexOf(LABEL_IVA);
     const idxBruto    = headers.indexOf(LABEL_BRUTO);
 
-    // Log de diagnóstico de mapeamento
     console.log(`🗂️ HEADER-MAPPING v13.1.6-GOLD | "${LABEL_ILIQUIDO}" → col[${idxIliquido}] | "${LABEL_IVA}" → col[${idxIVA}] | "${LABEL_BRUTO}" → col[${idxBruto}]`);
 
     if (idxIliquido === -1 || idxIVA === -1 || idxBruto === -1) {
@@ -384,7 +323,6 @@ function robustSAFTParser(csvText) {
         return;
     }
 
-    // --- FASE 2: Acumulação com Sanitização por Linha ---
     let totalIliquido = 0;
     let totalIVA      = 0;
     let totalBruto    = 0;
@@ -396,27 +334,22 @@ function robustSAFTParser(csvText) {
         if (!line) continue;
 
         const cols = parseCSVLine(line);
-
-        // Validação mínima: a linha deve ter colunas suficientes para os índices mapeados
         const minRequired = Math.max(idxIliquido, idxIVA, idxBruto) + 1;
         if (cols.length < minRequired) {
             linhasIgnoradas++;
             continue;
         }
 
-        // Sanitização de strings para float em cada iteração (Data Normalization)
         totalIliquido += sanitizeToFloat(cols[idxIliquido]);
         totalIVA      += sanitizeToFloat(cols[idxIVA]);
         totalBruto    += sanitizeToFloat(cols[idxBruto]);
         linhasProcessadas++;
     }
 
-    // --- FASE 3: Persistência — estrutura de saída inalterada ---
     UNIFEDSystem.documents.saft.totals.iliquido = totalIliquido;
     UNIFEDSystem.documents.saft.totals.iva      = totalIVA;
     UNIFEDSystem.documents.saft.totals.bruto    = totalBruto;
 
-    // --- FASE 4: Actualização da UI — lógica de formatação inalterada ---
     const setUI = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.textContent = formatCurrency(value);
@@ -446,7 +379,6 @@ function robustSAFTParser(csvText) {
 
 const validateNIF = (nif) => {
     const nifLimpo = (nif || '').replace(/\D/g, '');
-    // BYPASS: NIFs especiais de caso real / demonstração — excepção explícita ao algoritmo módulo 11
     if (nifLimpo === '999999990' || nifLimpo === '123456789') return true;
     if (!nifLimpo || !/^\d{9}$/.test(nifLimpo)) return false;
     const first = parseInt(nifLimpo[0]);
@@ -537,7 +469,6 @@ const readFileAsText = (file) => {
 };
 
 function getForensicMetadata() {
-    // Anonimização RGPD: Mantém a família mas oculta a versão exata e OS detalhado
     const ua = navigator.userAgent;
     let browserFamily = 'Unknown-Forensic-Agent';
     if (ua.includes('Chrome') || ua.includes('Chromium')) browserFamily = 'Browser::Chromium-family';
@@ -545,7 +476,7 @@ function getForensicMetadata() {
     else if (ua.includes('Safari') && !ua.includes('Chrome')) browserFamily = 'Browser::WebKit-family';
 
     return {
-        userAgent:    browserFamily, // Anonimizado — RGPD minimização de dados
+        userAgent:    browserFamily,
         screenRes:    `${window.screen.width}x${window.screen.height}`,
         language:     navigator.language,
         timestampUnix: Math.floor(Date.now() / 1000),
@@ -553,18 +484,12 @@ function getForensicMetadata() {
         timezone:     Intl.DateTimeFormat().resolvedOptions().timeZone,
         platform:     'UNIFED-PROBATUM-ENCRYPTED-NODE'
     };
-};
+}
+
 // ============================================================================
 // 5. SISTEMA DE LOGS FORENSES (ART. 30 RGPD)
 // ============================================================================
 
-// ============================================================================
-// 5.1–5.5  MÓDULO DE CUSTÓDIA PROBATUM — PROTOCOLO DE SELAGEM NÍVEL 1
-//           SHA-256 (Web Crypto API nativa) + PROBATUM INTERNAL SEAL
-//           DORA (UE) 2022/2554 · Art. 30.º RGPD · ISO/IEC 27037:2012
-// ============================================================================
-
-// ── 5.1 PROBATUM INTERNAL SEAL — estrutura do carimbo temporal Nível 1 ───────
 function mockRFC3161Timestamp(hashHex) {
     const now = new Date();
     return {
@@ -585,7 +510,6 @@ function mockRFC3161Timestamp(hashHex) {
     };
 }
 
-// ── 5.2 generateForensicHash — Web Crypto API nativa (SHA-256 real) ──────────
 async function generateForensicHash(content) {
     const encoder = new TextEncoder();
     const data = encoder.encode(content + 'IFDE_PROBATUM_SALT_2024');
@@ -594,7 +518,6 @@ async function generateForensicHash(content) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
 
-// ── 5.3 generateForensicLog — async, Web Crypto + persistência RGPD ──────────
 async function generateForensicLog(action, fileName, hash) {
     const finalHash = (hash && hash.length === 64)
         ? hash.toUpperCase()
@@ -632,7 +555,6 @@ async function generateForensicLog(action, fileName, hash) {
     return entry;
 }
 
-// ── 5.4 showBlockchainExplain — painel de info Nível 2 ───────────────────────
 function showBlockchainExplain(hash) {
     const existing = document.getElementById('tsaProductionPanel');
     if (existing) { existing.remove(); return; }
@@ -676,8 +598,6 @@ function showBlockchainExplain(hash) {
     document.body.appendChild(el);
 }
 
-// ── 5.5 FUNÇÕES DO MODAL DE CADEIA DE CUSTÓDIA ───────────────────────────────
-
 function openCustodyChainModal() {
     const modal = document.getElementById('custodyModal');
     if (!modal) return;
@@ -697,7 +617,6 @@ function closeCustodyChainModal() {
     document.body.style.overflow = '';
 }
 
-// renderCustodyLog — usa classes .custody-entry / .custody-badge / .hash-text / .blockchain-btn
 function renderCustodyLog(logs) {
     const container = document.getElementById('custodyLogContainer');
     const countEl   = document.getElementById('custodyEntryCount');
@@ -776,15 +695,6 @@ function clearCustodyLogs() {
     renderCustodyLog([]);
 }
 
-// ============================================================================
-// IMPORTAÇÃO DE CONTROLO DE AUTENTICIDADE — importForensicControlCSV()
-// Lê o ficheiro 01_CONTROLO_AUTENTICIDADE.csv gerado localmente pelo motor
-// de selagem PowerShell/OpenSSL e sincroniza os metadados RFC 3161 com o
-// UNIFEDSystem.analysis.evidenceIntegrity existente.
-//
-// Colunas esperadas (separador ponto-e-vírgula):
-//   Data;Nome_Ficheiro;Hash_SHA256;Status_Selo;Caminho_TSR
-// ============================================================================
 async function importForensicControlCSV(file) {
     if (!file) {
         showToast('Nenhum ficheiro CSV selecionado.', 'warning');
@@ -802,7 +712,6 @@ async function importForensicControlCSV(file) {
                     return resolve([]);
                 }
 
-                // ── Mapeamento de colunas por cabeçalho (robusto a reordenação) ──
                 const headerRaw = lines[0].split(';').map(h => h.trim().replace(/^["']|["']$/g, ''));
                 const COL = {
                     data:       headerRaw.indexOf('Data'),
@@ -836,20 +745,17 @@ async function importForensicControlCSV(file) {
 
                     importedEntries.push(entry);
 
-                    // Sincronizar com evidenceIntegrity existente (match por hash SHA-256)
                     const existing = UNIFEDSystem.analysis.evidenceIntegrity.find(
                         ev => ev.hash && ev.hash.toLowerCase() === entry.hash.toLowerCase()
                     );
 
                     if (existing) {
-                        // Atualizar metadados de selagem sem substituir os dados originais
                         existing.sealType    = entry.status === 'Granted' ? 'RFC3161' : 'PENDING';
                         existing.tsrPath     = entry.caminhoTsr;
                         existing.sealDate    = entry.data;
                         existing.sealStatus  = entry.status;
                         matchCount++;
                     } else {
-                        // Registar entrada nova proveniente do CSV (ficheiro fora do sistema)
                         UNIFEDSystem.analysis.evidenceIntegrity.push({
                             filename:   entry.nome,
                             type:       'control',
@@ -893,7 +799,6 @@ async function importForensicControlCSV(file) {
     });
 }
 
-// Trigger de UI para importação do CSV de controlo (chamado por botão ou drop)
 function triggerImportCSV() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -910,9 +815,6 @@ function triggerImportCSV() {
 }
 window.triggerImportCSV = triggerImportCSV;
 
-// ============================================================================
-// ============================================================================
-// BLOCKCHAIN OTS: OpenTimestamps — submitToOpenTimestamps()
 async function submitToOpenTimestamps() {
     const btn = document.getElementById('otsSealBtn');
     const masterHash = UNIFEDSystem.masterHash;
@@ -985,7 +887,6 @@ async function submitToOpenTimestamps() {
         return;
     }
 
-    // Spinner
     if (btn) {
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A CERTIFICAR NA BLOCKCHAIN...';
@@ -1142,7 +1043,6 @@ async function submitToOpenTimestamps() {
     }
 }
 
-// downloadBlob — aciona o download de qualquer Blob/ArrayBuffer no browser
 function downloadBlob(blob, filename, mimeType) {
     const blobObj = (blob instanceof Blob) ? blob : new Blob([blob], { type: mimeType });
     const url = URL.createObjectURL(blobObj);
@@ -1155,7 +1055,6 @@ function downloadBlob(blob, filename, mimeType) {
     URL.revokeObjectURL(url);
 }
 
-// ── Modal de resultado OTS -------------------------------------------───────
 function _showOTSSuccessModal(filename, masterHash, isPendingStub = false, upgradeStatus = '') {
     const existing = document.getElementById('otsSuccessModal');
     if (existing) existing.remove();
@@ -1271,8 +1170,6 @@ function _showOTSSuccessModal(filename, masterHash, isPendingStub = false, upgra
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
-
-// ── NÍVEL 2: SELAGEM EXTERNA RFC 3161 — anchorMasterHashExternal()
 async function anchorMasterHashExternal() {
     const masterHash = UNIFEDSystem.masterHash;
 
@@ -1914,6 +1811,10 @@ const translations = {
         btnPDF: "PARECER TÉCNICO",
         btnDOCX: "MINUTA WORD",
         btnATF: "TENDÊNCIA ATF",
+        btnExecute: "EXECUTAR PERÍCIA",
+        btnExportJson: "EXPORTAR JSON",
+        btnReset: "REINICIAR",
+        btnLawyerBundle: "📦 PACOTE ADVOGADO",
         
         // Dashboard - Cards
         cardNet: "VALOR LÍQUIDO RECONSTRUÍDO",
@@ -2056,7 +1957,11 @@ const translations = {
         
         clausulaNormativoISO: "REFERENCIAL NORMATIVO:\nA recolha, preservação e análise das evidências digitais seguiram as diretrizes estabelecidas pela norma ISO/IEC 27037 (Linhas de orientação para identificação, recolha, aquisição e preservação de prova digital), em conformidade com o Decreto-Lei n.º 28/2019.",
         
-        clausulaAssinaturaDigital: "VALIDAÇÃO TÉCNICA DE CONSULTORIA:\nO presente relatorio e selado com o Master Hash SHA-256 completo e o QR Code anexo, garantindo a sua integridade e não-repúdio. A sua validação pode ser efetuada através de qualquer ferramenta de verificação de hash ou leitura de QR Code, que remete para o hash completo do documento."
+        clausulaAssinaturaDigital: "VALIDAÇÃO TÉCNICA DE CONSULTORIA:\nO presente relatorio e selado com o Master Hash SHA-256 completo e o QR Code anexo, garantindo a sua integridade e não-repúdio. A sua validação pode ser efetuada através de qualquer ferramenta de verificação de hash ou leitura de QR Code, que remete para o hash completo do documento.",
+        
+        // Adições solicitadas (PT)
+        pureAuxTitle: "INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO",
+        pureAuxSub: "Valores retidos pela plataforma mas não sujeitos a comissão (Zona Cinzenta) — Art. 36.º n.º 11 CIVA"
     },
     en: {
         // Splash Screen Buttons
@@ -2090,6 +1995,10 @@ const translations = {
         btnPDF: "EXPERT OPINION",
         btnDOCX: "WORD DRAFT",
         btnATF: "ATF TREND",
+        btnExecute: "RUN FORENSIC ANALYSIS",
+        btnExportJson: "EXPORT JSON",
+        btnReset: "RESET SYSTEM",
+        btnLawyerBundle: "📦 LAWYER BUNDLE",
         
         // Dashboard - Cards
         cardNet: "RECONSTRUCTED NET VALUE",
@@ -2234,25 +2143,9 @@ const translations = {
         
         clausulaAssinaturaDigital: "TECHNICAL CONSULTANCY VALIDATION:\nThis report is sealed with the complete Master Hash SHA-256 and the attached QR Code, ensuring its integrity and non-repudiation. Its validation can be performed using any hash verification tool or QR Code reader, which redirects to the document's complete hash.",
         
-        // ========== ADIÇÕES SOLICITADAS (EN) ==========
-        expertOpinionNo: "EXPERT OPINION No.",
-        certifications: "CERTIFICATIONS & COMPLIANCE",
-        custodyChainBtn: "CHAIN OF CUSTODY",
-        taxCalcTitle: "TAX CALCULATION · SMOKING GUN",
-        monthlyAvg: "Monthly average",
-        marketMonthlyImpact: "Monthly Market Impact (38k)",
-        marketAnnualImpact: "Annual Market Impact",
-        market7yImpact: "7-YEAR IMPACT",
-        saftVsDac7Discrepancy: "SAF-T vs DAC7 DISCREPANCY",
-        pureAuxTitle: "FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION",
-        pureCampaigns: "CAMPAIGNS",
-        pureTolls: "TOLLS",
-        pureTips: "TIPS",
-        pureTotalNotSubject: "TOTAL NOT SUBJECT",
-        pureCancellationFees: "CANCELLATION FEES",
-        pureDac7ReconNote: "DAC7 RECONCILIATION NOTE — GREY ZONE IDENTIFIED",
-        pureStrategicQuestion: "STRATEGIC QUESTIONNAIRE TO THE LAWYER (CONTRADICTION)",
-        pureQuestionText: "Considering that the UNIFED-PROBATUM system isolated {amount} in Tips and Campaigns, can the opposing party confirm whether these values (commission-exempt) were improperly included in the calculation basis for determining gross income reported in SAF-T? If so, why was a presumption of income applied to values that legally do not suffer withholding or commission by the platform (Terms and Conditions)?"
+        // Adições solicitadas (EN)
+        pureAuxTitle: "EXPERT SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION",
+        pureAuxSub: "Amounts withheld by the platform but not subject to commission (Grey Zone) — Art. 36(11) CIVA"
     }
 };
 
@@ -2305,11 +2198,9 @@ function updateDynamicContent() {
     const verdictPercentLabel = document.getElementById('verdictPercentLabel');
     if (verdictPercentLabel) verdictPercentLabel.textContent = translations[currentLang].verdictPercent;
     
-    // Atualizar labels dos gráficos
     if (UNIFEDSystem.chart) renderChart();
     if (UNIFEDSystem.discrepancyChart) renderDiscrepancyChart();
     
-    // Atualizar módulo ATF se presente
     if (window._syncPureDashboard) window._syncPureDashboard(UNIFEDSystem);
 }
 
@@ -2325,14 +2216,12 @@ function switchLanguage() {
 
     const t = translations[currentLang];
     
-    // Atualizar texto do botão de idioma
     const langBtn = document.getElementById('langToggleBtn');
     if (langBtn) {
         const span = langBtn.querySelector('span');
         if (span) span.textContent = t.langBtn;
     }
 
-    // Atualizar elementos da Splash Screen
     const startBtn = document.getElementById('startSessionBtn');
     if (startBtn) {
         const span = startBtn.querySelector('span');
@@ -2345,18 +2234,15 @@ function switchLanguage() {
         if (span) span.textContent = t.splashLogsBtn;
     }
     
-    // Botão Demo
     const demoBtn = document.getElementById('demoModeBtn');
     if (demoBtn) {
         const span = demoBtn.querySelector('span');
         if (span) span.textContent = t.navDemo;
     }
     
-    // Header Subtitle
     const headerSubtitle = document.getElementById('headerSubtitle');
     if (headerSubtitle) headerSubtitle.textContent = t.headerSubtitle;
     
-    // Sidebar - Identificação
     const sidebarIdTitle = document.getElementById('sidebarIdTitle');
     if (sidebarIdTitle) {
         const span = sidebarIdTitle.querySelector('span');
@@ -2385,7 +2271,6 @@ function switchLanguage() {
         else btnRegister.innerHTML = `<i class="fas fa-check-double"></i> ${t.btnRegister}`;
     }
     
-    // Sidebar - Parâmetros
     const sidebarParamTitle = document.getElementById('sidebarParamTitle');
     if (sidebarParamTitle) {
         const span = sidebarParamTitle.querySelector('span');
@@ -2414,7 +2299,6 @@ function switchLanguage() {
         else lblPlatform.innerHTML = `<i class="fas fa-mobile-alt"></i> ${t.lblPlatform}`;
     }
     
-    // Botão Evidências
     const btnEvidence = document.getElementById('btnEvidence');
     if (btnEvidence) {
         const span = btnEvidence.querySelector('span');
@@ -2422,7 +2306,6 @@ function switchLanguage() {
         else btnEvidence.innerHTML = `<span><i class="fas fa-folder-open"></i> ${t.btnEvidence}</span>`;
     }
     
-    // Botão Analisar
     const btnAnalyze = document.getElementById('btnAnalyze');
     if (btnAnalyze) {
         const span = btnAnalyze.querySelector('span');
@@ -2430,7 +2313,6 @@ function switchLanguage() {
         else btnAnalyze.innerHTML = `<i class="fas fa-search-dollar"></i> ${t.btnAnalyze}`;
     }
     
-    // Toolbar Buttons
     const btnPDF = document.getElementById('btnPDF');
     if (btnPDF) {
         const span = btnPDF.querySelector('span');
@@ -2438,7 +2320,6 @@ function switchLanguage() {
         else btnPDF.innerHTML = `<i class="fas fa-file-pdf"></i> ${t.btnPDF}`;
     }
     
-    // DOCX Export Button
     const exportDOCXBtn = document.getElementById('exportDOCXBtn');
     if (exportDOCXBtn) {
         const textSpan = exportDOCXBtn.querySelector('span');
@@ -2449,13 +2330,26 @@ function switchLanguage() {
         }
     }
     
-    // ATF Button
-    const atfModalBtn = document.getElementById('atfModalBtn');
-    if (atfModalBtn) {
-        atfModalBtn.innerHTML = `<i class="fas fa-chart-line"></i> &#x23F3; ${t.btnATF}`;
+    const atfBtn = document.getElementById('atfModalBtn');
+    if (atfBtn) {
+        atfBtn.innerHTML = `<i class="fas fa-chart-line"></i> &#x23F3; ${t.btnATF}`;
     }
     
-    // Botão Limpar Console
+    const resetBtn = document.getElementById('resetBtn');
+    if (resetBtn) {
+        resetBtn.innerHTML = `<i class="fas fa-trash-alt"></i> ${t.btnReset}`;
+    }
+    
+    // Novos botões
+    const executeBtn = document.getElementById('btnExecute');
+    if (executeBtn) executeBtn.textContent = t.btnExecute;
+    
+    const exportJsonBtn = document.getElementById('btnExportJson');
+    if (exportJsonBtn) exportJsonBtn.textContent = t.btnExportJson;
+    
+    const lawyerBundleBtn = document.getElementById('btnLawyerBundle');
+    if (lawyerBundleBtn) lawyerBundleBtn.textContent = t.btnLawyerBundle;
+    
     const clearConsoleBtn = document.getElementById('clearConsoleBtn');
     if (clearConsoleBtn) {
         const span = clearConsoleBtn.querySelector('span');
@@ -2463,11 +2357,9 @@ function switchLanguage() {
         else clearConsoleBtn.innerHTML = `<i class="fas fa-trash-alt"></i> ${t.clearConsoleBtn}`;
     }
     
-    // Botão Purga Total
     const wipeBtnText = document.getElementById('wipeBtnText');
     if (wipeBtnText) wipeBtnText.textContent = t.wipeBtnText;
     
-    // Dashboard Cards
     const cardNet = document.getElementById('cardNet');
     if (cardNet) {
         const span = cardNet.querySelector('span');
@@ -2489,7 +2381,6 @@ function switchLanguage() {
         else cardJuros.innerHTML = `<i class="fas fa-chart-line"></i> ${t.cardJuros}`;
     }
     
-    // KPI Section
     const kpiTitle = document.getElementById('kpiTitle');
     if (kpiTitle) {
         const span = kpiTitle.querySelector('span');
@@ -2509,7 +2400,6 @@ function switchLanguage() {
     const kpiInvText = document.getElementById('kpiInvText');
     if (kpiInvText) kpiInvText.textContent = t.kpiInvText;
     
-    // Chart Titles
     const chartTitle = document.getElementById('chartTitle');
     if (chartTitle) {
         const span = chartTitle.querySelector('span');
@@ -2524,7 +2414,6 @@ function switchLanguage() {
         else chartTitle2.innerHTML = `<i class="fas fa-chart-bar"></i> ${t.chartTitle2}`;
     }
     
-    // Console Title
     const consoleTitle = document.getElementById('consoleTitle');
     if (consoleTitle) {
         const span = consoleTitle.querySelector('span');
@@ -2532,11 +2421,9 @@ function switchLanguage() {
         else consoleTitle.innerHTML = `<i class="fas fa-terminal"></i> ${t.consoleTitle}`;
     }
     
-    // Footer
     const footerHashTitle = document.getElementById('footerHashTitle');
     if (footerHashTitle) footerHashTitle.textContent = t.footerHashTitle;
     
-    // Modal Titles
     const modalTitle = document.getElementById('modalTitle');
     if (modalTitle) modalTitle.textContent = t.modalTitle;
     
@@ -2569,7 +2456,6 @@ function switchLanguage() {
         else modalSaveBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${t.modalSaveBtn}`;
     }
     
-    // Module Titles
     const moduleSaftTitle = document.getElementById('moduleSaftTitle');
     if (moduleSaftTitle) {
         const span = moduleSaftTitle.querySelector('span');
@@ -2591,7 +2477,6 @@ function switchLanguage() {
         else moduleDac7Title.innerHTML = `<i class="fas fa-envelope-open-text"></i> ${t.moduleDac7Title}`;
     }
     
-    // Module Labels
     const saftIliquidoLabel = document.getElementById('saftIliquidoLabel');
     if (saftIliquidoLabel) saftIliquidoLabel.textContent = t.saftIliquido;
     
@@ -2622,7 +2507,6 @@ function switchLanguage() {
     const dac7Q4Label = document.getElementById('dac7Q4Label');
     if (dac7Q4Label) dac7Q4Label.textContent = t.dac7Q4;
     
-    // Quantum Box
     const quantumTitle = document.getElementById('quantumTitle');
     if (quantumTitle) {
         const span = quantumTitle.querySelector('span');
@@ -2636,11 +2520,9 @@ function switchLanguage() {
     const quantumNote = document.getElementById('quantumNote');
     if (quantumNote) quantumNote.textContent = t.quantumNote;
     
-    // Verdict
     const verdictPercentLabel = document.getElementById('verdictPercentLabel');
     if (verdictPercentLabel) verdictPercentLabel.textContent = t.verdictPercent;
     
-    // Alerts
     const alertCriticalTitle = document.getElementById('alertCriticalTitle');
     if (alertCriticalTitle) alertCriticalTitle.textContent = t.alertCriticalTitle;
     
@@ -2650,7 +2532,6 @@ function switchLanguage() {
     const alertAccumulatedNote = document.getElementById('alertAccumulatedNote');
     if (alertAccumulatedNote) alertAccumulatedNote.textContent = t.alertAccumulatedNote;
     
-    // Two-Axis Alerts
     const revenueGapTitle = document.getElementById('revenueGapTitle');
     if (revenueGapTitle) revenueGapTitle.textContent = t.revenueGapTitle;
     
@@ -2666,7 +2547,6 @@ function switchLanguage() {
     const omissaoDespesasPctTitle = document.getElementById('omissaoDespesasPctTitle');
     if (omissaoDespesasPctTitle) omissaoDespesasPctTitle.textContent = t.omissaoDespesasPctTitle;
     
-    // Logs Modal
     const logsModalTitle = document.getElementById('logsModalTitle');
     if (logsModalTitle) logsModalTitle.textContent = t.logsModalTitle;
     
@@ -2679,31 +2559,27 @@ function switchLanguage() {
     const closeLogsBtnText = document.getElementById('closeLogsBtnText');
     if (closeLogsBtnText) closeLogsBtnText.textContent = t.closeLogsBtn;
     
-    // Hash Modal
     const hashModalTitle = document.getElementById('hashModalTitle');
     if (hashModalTitle) hashModalTitle.textContent = t.hashModalTitle;
     
     const closeHashBtnText = document.getElementById('closeHashBtnText');
     if (closeHashBtnText) closeHashBtnText.textContent = t.closeHashBtnText;
     
-    // Atualizar valores numéricos da dashboard se existirem
     if (UNIFEDSystem.analysis.totals) {
         updateDashboard();
         updateModulesUI();
     }
     
-    // Atualizar data e hora com novo locale
     startClockAndDate();
-    
-    // NOVO: Atualizar conteúdo dinâmico (gráficos, cards, etc.)
     updateDynamicContent();
-    
-    // Traduzir elementos com data-pt/data-en
     translateDataLangElements();
     
-    // Atualizar caixas auxiliares se o módulo existir
     if (typeof window.refreshAuxiliaryBoxes === 'function') {
         window.refreshAuxiliaryBoxes();
+    }
+    
+    if (typeof window.updateTriadaButtonsLanguage === 'function') {
+        window.updateTriadaButtonsLanguage();
     }
     
     logAudit(`Idioma alterado para: ${currentLang.toUpperCase()}`, 'info');
@@ -2712,17 +2588,14 @@ function switchLanguage() {
     console.log('[UNIFED-LANG] Tradução concluída com sucesso.');
 }
 
-// Função para traduzir elementos com data-pt / data-en
 function translateDataLangElements() {
     const elements = document.querySelectorAll('[data-pt][data-en]');
     elements.forEach(el => {
         const translation = el.getAttribute(`data-${currentLang}`);
         if (translation) {
-            // Preserva conteúdo que não seja apenas texto (ex: innerHTML com ícones)
             if (el.childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
                 el.textContent = translation;
             } else {
-                // Se tiver filhos, tenta traduzir apenas o nó de texto principal
                 const original = el.innerHTML;
                 const ptText = el.getAttribute('data-pt') || '';
                 const enText = el.getAttribute('data-en') || '';
@@ -4459,7 +4332,7 @@ function simulateUpload(type, count) {
 // 22. MOTOR DE PERÍCIA FORENSE (v13.5.1-MILITARY-HARDENED) COM CORREÇÕES
 // ============================================================================
 function performAudit() {
-    window._unifedAnalysisPending = true;  // Sinaliza análise em curso aos módulos externos
+    window._unifedAnalysisPending = true;
     if (!UNIFEDSystem.client) return showToast('Registe o sujeito passivo primeiro.', 'error');
 
     ForensicLogger.addEntry('AUDIT_STARTED');
@@ -4897,7 +4770,7 @@ function showTwoAxisAlerts() {
     if (omissaoCard && omissaoValue) {
         const despesas = totals.despesas || 0;
         const ganhos   = totals.ganhos   || 0;
-        const pct      = (ganhos > 0) ? (despesas / ganhos) * 100 : 0;
+        const pct = (ganhos > 0) ? ((despesas / ganhos) * 100) : 0;
         if (ganhos > 0 && despesas > 0) {
             omissaoCard.style.display = 'block';
             omissaoValue.textContent = pct.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
@@ -4945,7 +4818,6 @@ function updateDashboard() {
 
     setElementText('quantumValue', formatCurrency(cross.impactoSeteAnosMercado || 0));
 
-    // Atualizar labels estáticos que podem ter sido alterados
     const kpiCommText = document.getElementById('kpiCommText');
     if (kpiCommText) kpiCommText.textContent = t.kpiCommText;
     const kpiNetText = document.getElementById('kpiNetText');
@@ -5197,16 +5069,22 @@ function showAlerts() {
             'mensal': currentLang === 'pt' ? 'Mensal' : 'Monthly'
         }[UNIFEDSystem.selectedPeriodo] || '';
 
-        // Parecer completamente bilíngue
+        // Tradução dos cabeçalhos do veredicto
+        const sectionI = currentLang === 'pt' ? 'I. ANÁLISE PERICIAL' : 'I. FORENSIC ANALYSIS';
+        const sectionII = currentLang === 'pt' ? 'II. FACTOS CONSTATADOS' : 'II. ESTABLISHED FACTS';
+        const sectionIII = currentLang === 'pt' ? 'III. QUADRO LEGAL' : 'III. LEGAL FRAMEWORK';
+        const sectionIV = currentLang === 'pt' ? 'IV. IMPACTO FISCAL' : 'IV. TAX IMPACT';
+        const sectionV = currentLang === 'pt' ? 'V. CADEIA DE CUSTÓDIA' : 'V. CHAIN OF CUSTODY';
+
         const parecerHTML = `
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">I. ${currentLang === 'pt' ? 'ANÁLISE PERICIAL' : 'EXPERT ANALYSIS'} (${periodoTexto}):</strong><br>
+                <strong style="color: var(--accent-primary);">${sectionI} (${periodoTexto}):</strong><br>
                 <span style="color: var(--text-secondary);">${currentLang === 'pt' ? 'Duas discrepâncias fundamentais detetadas:' : 'Two fundamental discrepancies detected:'}</span><br>
                 <span style="color: var(--warn-primary);">1. ${currentLang === 'pt' ? 'Despesas/Comissões (Extrato) vs Faturas' : 'Expenses/Commissions (Statement) vs Invoices'}: ${formatCurrency(cross.discrepanciaCritica)} (${cross.percentagemOmissao.toFixed(2)}%)</span><br>
                 <span style="color: var(--warn-secondary);">2. SAF-T vs DAC7: ${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">II. ${currentLang === 'pt' ? 'FACTOS CONSTATADOS' : 'ESTABLISHED FACTS'}:</strong><br>
+                <strong style="color: var(--accent-primary);">${sectionII}:</strong><br>
                 <span style="color: var(--text-secondary);">Earnings (Statement): ${formatCurrency(totals.ganhos)}</span><br>
                 <span style="color: var(--text-secondary);">Expenses (Statement): ${formatCurrency(totals.despesas)}</span><br>
                 <span style="color: var(--success-primary);">Net Earnings (Statement): ${formatCurrency(totals.ganhosLiquidos)}</span><br>
@@ -5217,24 +5095,24 @@ function showAlerts() {
                 <span style="color: var(--warn-secondary); font-weight: 700;">SAF-T vs DAC7 Difference: ${formatCurrency(cross.discrepanciaSaftVsDac7)} (${cross.percentagemSaftVsDac7.toFixed(2)}%)</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">III. LEGAL FRAMEWORK:</strong><br>
+                <strong style="color: var(--accent-primary);">${sectionIII}:</strong><br>
                 <span style="color: var(--text-secondary);">Art. 2(1)(i) VAT Code (Self‑liquidation). Art. 108 VAT Code (Offences).</span><br>
                 <span style="color: var(--text-secondary);">Decree‑Law No. 28/2019 - Data processing integrity and validity of electronic documents.</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">IV. TAX IMPACT AND MANAGEMENT AGGRAVATION:</strong><br>
+                <strong style="color: var(--accent-primary);">${sectionIV}:</strong><br>
                 <span style="color: var(--text-secondary);">Missing VAT (23% on base differential): ${formatCurrency(cross.ivaFalta)}</span><br>
                 <span style="color: var(--text-secondary);">Missing VAT (6% on transport): ${formatCurrency(cross.ivaFalta6)}</span><br>
                 <span style="color: var(--text-secondary);">SAF-T vs DAC7 discrepancy (taxable base under analysis): ${formatCurrency(cross.discrepanciaSaftVsDac7)}</span>
             </div>
             <div style="margin-bottom: 1rem;">
-                <strong style="color: var(--accent-primary);">V. CHAIN OF CUSTODY:</strong><br>
+                <strong style="color: var(--accent-primary);">${sectionV}:</strong><br>
                 <span style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.7rem;">Master Hash SHA-256:</span><br>
                 <span style="color: var(--accent-secondary); font-family: var(--font-mono); font-size: 0.7rem; word-break: break-all;">${UNIFEDSystem.masterHash || 'Calculating...'}</span><br>
                 <span style="color: var(--text-secondary); font-size: 0.7rem;">${UNIFEDSystem.analysis.evidenceIntegrity.length} evidence(s) processed (click QR Code to verify)</span>
             </div>
             <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
-                <strong style="color: var(--warn-primary);">VI. CONCLUSION:</strong><br>
+                <strong style="color: var(--warn-primary);">VI. ${currentLang === 'pt' ? 'CONCLUSÃO' : 'CONCLUSION'}:</strong><br>
                 <span style="color: var(--text-secondary);">${UNIFEDSystem.analysis.verdict?.description?.en || 'Evidence of significant tax non-compliance.'}</span>
             </div>
         `;
@@ -5281,6 +5159,7 @@ function renderChart() {
         'mensal': currentLang === 'pt' ? 'Mensal' : 'Monthly'
     }[UNIFEDSystem.selectedPeriodo] || '';
 
+    // Labels dos datasets com tradução
     const labels = [
         t.saftBruto || 'SAF-T Bruto',
         t.stmtGanhos || 'Ganhos',
@@ -5473,7 +5352,6 @@ async function exportDataJSON() {
         forensicLogs: ForensicLogger.getLogs().slice(-20)
     };
 
-    // Sobrescrever twoAxis com os valores reais das discrepâncias
     exportData.analysis.twoAxis = {
         revenueGap: exportData.analysis.crossings.discrepanciaSaftVsDac7 || 0,
         revenueGapActive: (exportData.analysis.crossings.discrepanciaSaftVsDac7 > 0.01),
@@ -7900,74 +7778,80 @@ function injectAuxiliaryHelperBoxes() {
     wrapper.setAttribute('data-unifed-module', 'AUXILIARY_PERICIAL_v1');
     wrapper.setAttribute('data-legal', 'Lei TVDE · Art. 125.º CPP · ISO/IEC 27037:2012');
 
+    const t = translations[currentLang];
+    const pureAuxTitle = t.pureAuxTitle || (currentLang === 'pt' ? 'INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO' : 'EXPERT SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION');
+    const pureAuxSub = t.pureAuxSub || (currentLang === 'pt' ? 'Valores retidos pela plataforma mas não sujeitos a comissão (Zona Cinzenta) — Art. 36.º n.º 11 CIVA' : 'Amounts withheld by the platform but not subject to commission (Grey Zone) — Art. 36(11) CIVA');
+
+    // Restaurar estrutura com pure-card-mini
     wrapper.innerHTML = `
         <div class="aux-section-header">
             <i class="fas fa-layer-group"></i>
-            <span data-pt="INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO" data-en="FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION">${currentLang === 'pt' ? 'INDICAÇÃO DE APOIO PERICIAL — FLUXOS NÃO SUJEITOS A COMISSÃO' : 'FORENSIC SUPPORT INDICATION — FLOWS NOT SUBJECT TO COMMISSION'}</span>
+            <span>${pureAuxTitle}</span>
+            <small>${pureAuxSub}</small>
         </div>
 
         <div class="aux-boxes-grid">
 
-            <div class="small-info-box aux-box-campaigns" id="auxBoxCampanhas"
+            <div class="pure-card-mini aux-box-campaigns" id="auxBoxCampanhas"
                  data-field="${currentLang === 'pt' ? 'Ganhos da campanha' : 'Campaign earnings'}"
                  title="${currentLang === 'pt' ? 'Extraído de: \'Ganhos da campanha\' — PDF Ganhos da Empresa' : 'Extracted from: \'Campaign earnings\' — PDF Company Earnings'}">
-                <div class="aux-box-icon"><i class="fas fa-bullhorn"></i></div>
-                <div class="aux-box-body">
-                    <h5 class="aux-box-label" data-pt="CAMPANHAS" data-en="CAMPAIGNS">${currentLang === 'pt' ? 'CAMPANHAS' : 'CAMPAIGNS'}</h5>
-                    <p class="aux-box-value" id="auxBoxCampanhasValue">0,00 €</p>
-                    <span class="aux-box-desc" data-pt="Ganhos da campanha" data-en="Campaign earnings">${currentLang === 'pt' ? 'Ganhos da campanha' : 'Campaign earnings'}</span>
+                <div class="pure-card-icon"><i class="fas fa-bullhorn"></i></div>
+                <div class="pure-card-content">
+                    <h5 class="pure-card-label" data-pt="CAMPANHAS" data-en="CAMPAIGNS">${currentLang === 'pt' ? 'CAMPANHAS' : 'CAMPAIGNS'}</h5>
+                    <p class="pure-card-value" id="auxBoxCampanhasValue">0,00 €</p>
+                    <span class="pure-card-desc" data-pt="Ganhos da campanha" data-en="Campaign earnings">${currentLang === 'pt' ? 'Ganhos da campanha' : 'Campaign earnings'}</span>
                 </div>
-                <div class="aux-box-legal-tag" data-pt="Isento comissão · 0%" data-en="Commission exempt · 0%">${currentLang === 'pt' ? 'Isento comissão · 0%' : 'Commission exempt · 0%'}</div>
+                <div class="pure-card-tag" data-pt="Isento comissão · 0%" data-en="Commission exempt · 0%">${currentLang === 'pt' ? 'Isento comissão · 0%' : 'Commission exempt · 0%'}</div>
             </div>
 
-            <div class="small-info-box aux-box-tolls info-box-refunds" id="auxBoxPortagens"
+            <div class="pure-card-mini aux-box-tolls info-box-refunds" id="auxBoxPortagens"
                  data-field="${currentLang === 'pt' ? 'Portagens|Reembolsos de despesas' : 'Tolls|Expense reimbursements'}"
                  data-year-label-2024="${currentLang === 'pt' ? 'PORTAGENS (2024)' : 'TOLLS (2024)'}"
                  data-year-label-2025="${currentLang === 'pt' ? 'REEMBOLSOS / PORTAGENS (2025+)' : 'REIMBURSEMENTS / TOLLS (2025+)'}"
                  title="${currentLang === 'pt' ? 'Extraído de: \'Portagens\' (2024) ou \'Reembolsos de despesas\' (2025+) — reembolso operacional' : 'Extracted from: \'Tolls\' (2024) or \'Expense reimbursements\' (2025+) — operational reimbursement'}">
-                <div class="aux-box-icon"><i class="fas fa-road"></i></div>
-                <div class="aux-box-body">
-                    <h5 class="aux-box-label" id="auxBoxPortagensLabel">${currentLang === 'pt' ? 'PORTAGENS' : 'TOLLS'}</h5>
-                    <p class="aux-box-value" id="auxBoxPortagensValue">0,00 €</p>
-                    <span class="aux-box-desc" id="auxBoxPortagensDesc">${currentLang === 'pt' ? 'Reembolso operacional' : 'Operational reimbursement'}</span>
+                <div class="pure-card-icon"><i class="fas fa-road"></i></div>
+                <div class="pure-card-content">
+                    <h5 class="pure-card-label" id="auxBoxPortagensLabel">${currentLang === 'pt' ? 'PORTAGENS' : 'TOLLS'}</h5>
+                    <p class="pure-card-value" id="auxBoxPortagensValue">0,00 €</p>
+                    <span class="pure-card-desc" id="auxBoxPortagensDesc">${currentLang === 'pt' ? 'Reembolso operacional' : 'Operational reimbursement'}</span>
                 </div>
-                <div class="aux-box-legal-tag" data-pt="Custo reembolsado · 0%" data-en="Reimbursed cost · 0%">${currentLang === 'pt' ? 'Custo reembolsado · 0%' : 'Reimbursed cost · 0%'}</div>
+                <div class="pure-card-tag" data-pt="Custo reembolsado · 0%" data-en="Reimbursed cost · 0%">${currentLang === 'pt' ? 'Custo reembolsado · 0%' : 'Reimbursed cost · 0%'}</div>
             </div>
 
-            <div class="small-info-box aux-box-tips" id="auxBoxGorjetas"
+            <div class="pure-card-mini aux-box-tips" id="auxBoxGorjetas"
                  data-field="${currentLang === 'pt' ? 'Gorjetas dos passageiros' : 'Passenger tips'}"
                  title="${currentLang === 'pt' ? 'Extraído de: \'Gorjetas dos passageiros\' — transferência P2P direta' : 'Extracted from: \'Passenger tips\' — direct P2P transfer'}">
-                <div class="aux-box-icon"><i class="fas fa-hand-holding-heart"></i></div>
-                <div class="aux-box-body">
-                    <h5 class="aux-box-label" data-pt="GORJETAS" data-en="TIPS">${currentLang === 'pt' ? 'GORJETAS' : 'TIPS'}</h5>
-                    <p class="aux-box-value" id="auxBoxGorjetasValue">0,00 €</p>
-                    <span class="aux-box-desc" data-pt="Gorjetas dos passageiros" data-en="Passenger tips">${currentLang === 'pt' ? 'Gorjetas dos passageiros' : 'Passenger tips'}</span>
+                <div class="pure-card-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                <div class="pure-card-content">
+                    <h5 class="pure-card-label" data-pt="GORJETAS" data-en="TIPS">${currentLang === 'pt' ? 'GORJETAS' : 'TIPS'}</h5>
+                    <p class="pure-card-value" id="auxBoxGorjetasValue">0,00 €</p>
+                    <span class="pure-card-desc" data-pt="Gorjetas dos passageiros" data-en="Passenger tips">${currentLang === 'pt' ? 'Gorjetas dos passageiros' : 'Passenger tips'}</span>
                 </div>
-                <div class="aux-box-legal-tag" data-pt="Transferência P2P · 0%" data-en="P2P Transfer · 0%">${currentLang === 'pt' ? 'Transferência P2P · 0%' : 'P2P Transfer · 0%'}</div>
+                <div class="pure-card-tag" data-pt="Transferência P2P · 0%" data-en="P2P Transfer · 0%">${currentLang === 'pt' ? 'Transferência P2P · 0%' : 'P2P Transfer · 0%'}</div>
             </div>
 
-            <div class="small-info-box aux-box-total-ns highlighted" id="auxBoxTotalNS"
+            <div class="pure-card-mini aux-box-total-ns highlighted" id="auxBoxTotalNS"
                  data-field="${currentLang === 'pt' ? 'Total Não Sujeitos' : 'Total Not Subject'}"
                  title="${currentLang === 'pt' ? 'Soma: Campanhas + Portagens + Gorjetas — fluxos isentos de comissão' : 'Sum: Campaigns + Tolls + Tips — commission-exempt flows'}">
-                <div class="aux-box-icon"><i class="fas fa-sigma"></i></div>
-                <div class="aux-box-body">
-                    <h5 class="aux-box-label" data-pt="TOTAL NÃO SUJEITOS" data-en="TOTAL NOT SUBJECT">${currentLang === 'pt' ? 'TOTAL NÃO SUJEITOS' : 'TOTAL NOT SUBJECT'}</h5>
-                    <p class="aux-box-value highlighted" id="auxBoxTotalNSValue">0,00 €</p>
-                    <span class="aux-box-desc" data-pt="Σ Campanhas + Portagens + Gorjetas" data-en="Σ Campaigns + Tolls + Tips">${currentLang === 'pt' ? 'Σ Campanhas + Portagens + Gorjetas' : 'Σ Campaigns + Tolls + Tips'}</span>
+                <div class="pure-card-icon"><i class="fas fa-sigma"></i></div>
+                <div class="pure-card-content">
+                    <h5 class="pure-card-label" data-pt="TOTAL NÃO SUJEITOS" data-en="TOTAL NOT SUBJECT">${currentLang === 'pt' ? 'TOTAL NÃO SUJEITOS' : 'TOTAL NOT SUBJECT'}</h5>
+                    <p class="pure-card-value highlighted" id="auxBoxTotalNSValue">0,00 €</p>
+                    <span class="pure-card-desc" data-pt="Σ Campanhas + Portagens + Gorjetas" data-en="Σ Campaigns + Tolls + Tips">${currentLang === 'pt' ? 'Σ Campanhas + Portagens + Gorjetas' : 'Σ Campaigns + Tolls + Tips'}</span>
                 </div>
-                <div class="aux-box-legal-tag" data-pt="Fora da base tributável" data-en="Outside the taxable base">${currentLang === 'pt' ? 'Fora da base tributável' : 'Outside the taxable base'}</div>
+                <div class="pure-card-tag" data-pt="Fora da base tributável" data-en="Outside the taxable base">${currentLang === 'pt' ? 'Fora da base tributável' : 'Outside the taxable base'}</div>
             </div>
 
-            <div class="small-info-box aux-box-cancel" id="auxBoxCancel"
+            <div class="pure-card-mini aux-box-cancel" id="auxBoxCancel"
                  data-field="${currentLang === 'pt' ? 'Cancelamentos' : 'Cancellations'}"
                  title="${currentLang === 'pt' ? 'Taxas de cancelamento — comissão já incluída nas Despesas/Comissões' : 'Cancellation fees — commission already included in Expenses/Commissions'}">
-                <div class="aux-box-icon"><i class="fas fa-ban"></i></div>
-                <div class="aux-box-body">
-                    <h5 class="aux-box-label" data-pt="TAXAS CANCELAMENTO" data-en="CANCELLATION FEES">${currentLang === 'pt' ? 'TAXAS CANCELAMENTO' : 'CANCELLATION FEES'}</h5>
-                    <p class="aux-box-value" id="auxBoxCancelValue">0,00 €</p>
-                    <span class="aux-box-desc" data-pt="Cancelamentos (já em Despesas)" data-en="Cancellations (already in Expenses)">${currentLang === 'pt' ? 'Cancelamentos (já em Despesas)' : 'Cancellations (already in Expenses)'}</span>
+                <div class="pure-card-icon"><i class="fas fa-ban"></i></div>
+                <div class="pure-card-content">
+                    <h5 class="pure-card-label" data-pt="TAXAS CANCELAMENTO" data-en="CANCELLATION FEES">${currentLang === 'pt' ? 'TAXAS CANCELAMENTO' : 'CANCELLATION FEES'}</h5>
+                    <p class="pure-card-value" id="auxBoxCancelValue">0,00 €</p>
+                    <span class="pure-card-desc" data-pt="Cancelamentos (já em Despesas)" data-en="Cancellations (already in Expenses)">${currentLang === 'pt' ? 'Cancelamentos (já em Despesas)' : 'Cancellations (already in Expenses)'}</span>
                 </div>
-                <div class="aux-box-legal-tag aux-tag-warning">
+                <div class="pure-card-tag aux-tag-warning">
                     <i class="fas fa-exclamation-triangle"></i>
                     <span data-pt="Comissão incluída nos −Despesas" data-en="Commission included in −Expenses">${currentLang === 'pt' ? 'Comissão incluída nos −Despesas' : 'Commission included in −Expenses'}</span>
                 </div>
@@ -8549,19 +8433,10 @@ console.log('UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · DORA COMPLIANT · AT
 // 31. FUNÇÕES ADICIONAIS DE SUPORTE
 // ============================================================================
 
-/**
- * Atualiza o botão de análise e sinais de disponibilidade
- * @deprecated Usar updateAnalysisButton() em vez desta
- */
 function updateAnalyzeButton() {
     updateAnalysisButton();
 }
 
-/**
- * Exibe mensagem no painel de console com timestamp
- * @param {string} message - Mensagem a exibir
- * @param {string} type - Tipo: info, success, warning, error
- */
 function addConsoleMessage(message, type = 'info') {
     const consoleOutput = document.getElementById('consoleOutput');
     if (!consoleOutput) return;
@@ -8573,38 +8448,22 @@ function addConsoleMessage(message, type = 'info') {
     consoleOutput.appendChild(logEntry);
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
 
-    // Limitar a 500 entradas para performance
     while (consoleOutput.children.length > 500) {
         consoleOutput.removeChild(consoleOutput.firstChild);
     }
 }
 
-/**
- * Normaliza um valor percentual para exibição
- * @param {number} value - Valor decimal (ex: 0.25 = 25%)
- * @returns {string} String formatada com duas casas decimais e símbolo %
- */
 function formatPercent(value) {
     if (isNaN(value)) return '0,00%';
     return (value * 100).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
 }
 
-/**
- * Calcula a média de um array de números
- * @param {number[]} arr - Array de números
- * @returns {number} Média aritmética
- */
 function arrayAverage(arr) {
     if (!arr || arr.length === 0) return 0;
     const sum = arr.reduce((a, b) => a + b, 0);
     return sum / arr.length;
 }
 
-/**
- * Calcula o desvio padrão de um array de números
- * @param {number[]} arr - Array de números
- * @returns {number} Desvio padrão populacional
- */
 function arrayStdDev(arr) {
     if (!arr || arr.length < 2) return 0;
     const avg = arrayAverage(arr);
@@ -8613,12 +8472,6 @@ function arrayStdDev(arr) {
     return Math.sqrt(avgSquareDiff);
 }
 
-/**
- * Identifica outliers num array (valores > 2 desvios padrão)
- * @param {number[]} arr - Array de números
- * @param {number} threshold - Número de desvios padrão (padrão: 2)
- * @returns {number[]} Array com os índices dos outliers
- */
 function findOutliers(arr, threshold = 2) {
     if (!arr || arr.length === 0) return [];
     const mean = arrayAverage(arr);
@@ -8633,20 +8486,10 @@ function findOutliers(arr, threshold = 2) {
     }, []);
 }
 
-/**
- * Simula um atraso (útil para animações ou rate limiting)
- * @param {number} ms - Milissegundos para aguardar
- * @returns {Promise<void>}
- */
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Copia texto para a área de transferência
- * @param {string} text - Texto a copiar
- * @returns {Promise<boolean>}
- */
 async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
@@ -8663,9 +8506,6 @@ async function copyToClipboard(text) {
 // 32. GERENCIAMENTO DE SESSÃO E PERSISTÊNCIA
 // ============================================================================
 
-/**
- * Salva o estado atual da sessão no sessionStorage
- */
 function persistSession() {
     try {
         const sessionState = {
@@ -8684,16 +8524,11 @@ function persistSession() {
     }
 }
 
-/**
- * Recupera o estado da sessão do sessionStorage
- * @returns {object|null}
- */
 function restoreSession() {
     try {
         const saved = sessionStorage.getItem('unifed_session_state');
         if (!saved) return null;
         const state = JSON.parse(saved);
-        // Verificar se a sessão não expirou (limite de 24 horas)
         if (Date.now() - state.timestamp > 24 * 60 * 60 * 1000) {
             sessionStorage.removeItem('unifed_session_state');
             return null;
@@ -8704,15 +8539,11 @@ function restoreSession() {
     }
 }
 
-/**
- * Encerra a sessão atual e limpa dados temporários
- */
 function endSession() {
     if (confirm(currentLang === 'pt' ? 'Deseja encerrar a sessão atual? Os dados não salvos serão perdidos.' : 'Do you want to end the current session? Unsaved data will be lost.')) {
         sessionStorage.removeItem('unifed_session_state');
         sessionStorage.removeItem('currentSession');
         ForensicLogger.addEntry('SESSION_ENDED', { sessionId: UNIFEDSystem.sessionId });
-        // Recarregar a página para reiniciar
         location.reload();
     }
 }
@@ -8721,9 +8552,6 @@ function endSession() {
 // 33. FUNÇÕES DE RELATÓRIO ADICIONAIS
 // ============================================================================
 
-/**
- * Exporta apenas o resumo executivo em formato TXT
- */
 function exportExecutiveSummary() {
     if (!UNIFEDSystem.client) {
         showToast(currentLang === 'pt' ? 'Registe o sujeito passivo primeiro.' : 'Register the taxpayer first.', 'error');
@@ -8774,9 +8602,6 @@ function exportExecutiveSummary() {
     ForensicLogger.addEntry('EXECUTIVE_SUMMARY_EXPORTED');
 }
 
-/**
- * Exporta os dados de evidências em formato JSON puro (sem análise)
- */
 function exportEvidenceOnly() {
     const evidenceData = {
         exportedAt: new Date().toISOString(),
@@ -8807,9 +8632,6 @@ function exportEvidenceOnly() {
 // 34. INICIALIZAÇÃO DE COMPONENTES ADICIONAIS
 // ============================================================================
 
-/**
- * Configura os tooltips dinâmicos (usando atributo data-tooltip)
- */
 function setupDynamicTooltips() {
     const elements = document.querySelectorAll('[data-tooltip]');
     elements.forEach(el => {
@@ -8822,9 +8644,6 @@ function setupDynamicTooltips() {
     });
 }
 
-/**
- * Atualiza dinamicamente os textos dos cards com base no idioma
- */
 function updateCardLabels() {
     const t = translations[currentLang];
     const cardMappings = [
@@ -8841,7 +8660,6 @@ function updateCardLabels() {
     cardMappings.forEach(({ id, text }) => {
         const el = document.getElementById(id);
         if (el && text) {
-            // Preservar ícone se existir
             const icon = el.querySelector('i');
             if (icon) {
                 el.innerHTML = '';
@@ -8854,17 +8672,10 @@ function updateCardLabels() {
     });
 }
 
-/**
- * Reaplica todos os estilos dinâmicos após mudança de idioma
- */
 function reapplyDynamicStyles() {
-    // Reaplicar classes de alerta intermitente
     activateIntermittentAlerts();
-    // Reaplicar classes de omissão
     showTwoAxisAlerts();
-    // Reaplicar tooltips
     setupDynamicTooltips();
-    // Reaplicar labels dos cards
     updateCardLabels();
 }
 
@@ -8872,10 +8683,6 @@ function reapplyDynamicStyles() {
 // 35. VALIDAÇÃO DE INTEGRIDADE DOS MÓDULOS EXTERNOS
 // ============================================================================
 
-/**
- * Verifica se todos os módulos externos necessários estão carregados
- * @returns {object} Status de cada módulo
- */
 function checkExternalModules() {
     const modules = {
         pdfjs: typeof pdfjsLib !== 'undefined',
@@ -8904,10 +8711,6 @@ function checkExternalModules() {
 // 36. FUNÇÕES DE RELATÓRIO TEMPORAL (ATF) - INTEGRAÇÃO
 // ============================================================================
 
-/**
- * Prepara os dados mensais para o gráfico ATF
- * @returns {object} Dados formatados para o gráfico
- */
 function prepareATFData() {
     const monthlyData = UNIFEDSystem.monthlyData;
     const months = Object.keys(monthlyData).sort();
@@ -8922,18 +8725,12 @@ function prepareATFData() {
         ganhos.push(data.ganhos || 0);
         despesas.push(data.despesas || 0);
         liquidos.push(data.ganhosLiq || 0);
-        // Formatar label: YYYY-MM
         labels.push(month.substring(0, 4) + '-' + month.substring(4, 6));
     });
 
     return { months, labels, ganhos, despesas, liquidos };
 }
 
-/**
- * Calcula a tendência (crescimento/decrescimento) da série
- * @param {number[]} series - Série numérica
- * @returns {string} 'ascending', 'descending' ou 'stable'
- */
 function calculateTrend(series) {
     if (series.length < 2) return 'stable';
     
@@ -8948,11 +8745,6 @@ function calculateTrend(series) {
     return 'stable';
 }
 
-/**
- * Calcula o Score de Persistência (SP) - 0 a 100
- * Quanto maior, mais consistente é a discrepância ao longo do tempo
- * @returns {number} Score de persistência
- */
 function calculatePersistenceScore() {
     const monthlyData = UNIFEDSystem.monthlyData;
     const months = Object.keys(monthlyData).sort();
@@ -8968,8 +8760,6 @@ function calculatePersistenceScore() {
     const avg = arrayAverage(discrepancies);
     const stdDev = arrayStdDev(discrepancies);
     
-    // SP = 100 - (coeficiente de variação normalizado)
-    // Quanto menor a variação relativa, maior o score
     const cv = avg > 0 ? stdDev / avg : 1;
     const score = Math.max(0, Math.min(100, 100 * (1 - Math.min(1, cv))));
     
@@ -8980,9 +8770,6 @@ function calculatePersistenceScore() {
 // 37. GERENCIAMENTO DE ERROS GLOBAIS
 // ============================================================================
 
-/**
- * Configura o handler global de erros não capturados
- */
 function setupGlobalErrorHandler() {
     window.addEventListener('error', (event) => {
         console.error('[UNIFED] Erro global:', event.error || event.message);
@@ -8994,9 +8781,7 @@ function setupGlobalErrorHandler() {
             error: event.error ? event.error.stack : null
         });
         
-        // Não mostrar toast para erros de rede ou CORS para não incomodar
         if (event.message && !event.message.includes('CORS') && !event.message.includes('NetworkError')) {
-            // Limitar a um erro por segundo para não spam
             if (Date.now() - (window._lastErrorToast || 0) > 1000) {
                 showToast(currentLang === 'pt' ? `Erro: ${event.message.substring(0, 80)}` : `Error: ${event.message.substring(0, 80)}`, 'error');
                 window._lastErrorToast = Date.now();
@@ -9016,11 +8801,7 @@ function setupGlobalErrorHandler() {
 // 38. FUNÇÃO DE PRÉ-CARREGAMENTO (OTIMIZAÇÃO)
 // ============================================================================
 
-/**
- * Pré-carrega recursos pesados (ex: bibliotecas de terceiros)
- */
 function preloadResources() {
-    // Pré-conexão a CDNs comuns
     const preconnectUrls = [
         'https://cdnjs.cloudflare.com',
         'https://cdn.jsdelivr.net',
@@ -9041,9 +8822,6 @@ function preloadResources() {
 // 39. GERENCIAMENTO DE ESTADO DO DASHBOARD (SINCRONIZAÇÃO)
 // ============================================================================
 
-/**
- * Sincroniza o dashboard externo (PURE Dashboard) se disponível
- */
 function syncExternalDashboard() {
     if (typeof window._syncPureDashboard === 'function') {
         try {
@@ -9059,9 +8837,6 @@ function syncExternalDashboard() {
 // 40. EXPOSIÇÃO DE CONSTANTES PARA MÓDULOS EXTERNOS
 // ============================================================================
 
-/**
- * Registra constantes e configurações no objeto global UNIFED_CONFIG
- */
 function registerGlobalConfig() {
     window.UNIFED_CONFIG = {
         version: UNIFEDSystem.version,
@@ -9087,29 +8862,14 @@ function registerGlobalConfig() {
 // 41. INICIALIZAÇÃO TARDIA (APÓS DOM)
 // ============================================================================
 
-/**
- * Inicializa componentes que dependem do DOM completamente carregado
- */
 function initializeLateComponents() {
-    // Configurar tooltips dinâmicos
     setupDynamicTooltips();
-    
-    // Atualizar labels dos cards com base no idioma
     updateCardLabels();
-    
-    // Registrar configuração global
     registerGlobalConfig();
-    
-    // Verificar módulos externos
     checkExternalModules();
-    
-    // Configurar handler de erros global
     setupGlobalErrorHandler();
-    
-    // Pré-carregar recursos
     preloadResources();
     
-    // Restaurar sessão se disponível
     const savedSession = restoreSession();
     if (savedSession && !UNIFEDSystem.client) {
         if (savedSession.client) {
@@ -9119,7 +8879,6 @@ function initializeLateComponents() {
             UNIFEDSystem.selectedPlatform = savedSession.selectedPlatform || 'bolt';
             UNIFEDSystem.demoMode = savedSession.demoMode || false;
             
-            // Atualizar UI
             const clientStatusEl = document.getElementById('clientStatusFixed');
             if (clientStatusEl) clientStatusEl.style.display = 'flex';
             setElementText('clientNameDisplayFixed', savedSession.client.name);
@@ -9139,10 +8898,8 @@ function initializeLateComponents() {
         }
     }
     
-    // Sincronizar dashboard externo
     syncExternalDashboard();
     
-    // Emitir evento de inicialização completa
     window.dispatchEvent(new CustomEvent('UNIFED_INITIALIZED', {
         detail: { version: UNIFEDSystem.version, sessionId: UNIFEDSystem.sessionId }
     }));
@@ -9152,7 +8909,6 @@ function initializeLateComponents() {
 // 42. EXPOSIÇÃO GLOBAL ADICIONAL
 // ============================================================================
 
-// Exportar funções utilitárias adicionais
 window.exportExecutiveSummary = exportExecutiveSummary;
 window.exportEvidenceOnly = exportEvidenceOnly;
 window.endSession = endSession;
@@ -9165,7 +8921,6 @@ window.arrayAverage = arrayAverage;
 window.arrayStdDev = arrayStdDev;
 window.findOutliers = findOutliers;
 
-// Adicionar aliases para compatibilidade com versões anteriores
 window.updateDashboardLabels = updateCardLabels;
 window.refreshTooltips = setupDynamicTooltips;
 
@@ -9173,14 +8928,10 @@ window.refreshTooltips = setupDynamicTooltips;
 // 43. INICIALIZAÇÃO AUTOMÁTICA (APÓS DOMContentLoaded)
 // ============================================================================
 
-// Já existe um DOMContentLoaded no início do script, mas este é para componentes tardios
-// Usamos um segundo listener que será executado após o primeiro
 document.addEventListener('DOMContentLoaded', function() {
-    // Pequeno atraso para garantir que o DOM principal já foi processado
     setTimeout(initializeLateComponents, 250);
 });
 
-// Também inicializar quando o mainContainer for mostrado (em caso de splash screen)
 const mainObserver = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
@@ -9202,10 +8953,6 @@ if (mainContainer) {
 // 44. GARANTIA DE INTEGRIDADE DO SCRIPT (FINAL)
 // ============================================================================
 
-/**
- * Verifica se todas as funções críticas estão definidas
- * @returns {boolean} True se tudo estiver ok
- */
 function validateScriptIntegrity() {
     const criticalFunctions = [
         'performAudit', 'exportPDF', 'exportDataJSON', 'switchLanguage',
@@ -9226,7 +8973,6 @@ function validateScriptIntegrity() {
     return true;
 }
 
-// Executar verificação de integridade após carregamento completo
 window.addEventListener('load', function() {
     validateScriptIntegrity();
 });
@@ -9237,10 +8983,6 @@ console.log('UNIFED - PROBATUM v13.5.1-MILITARY-HARDENED · Todos os módulos ca
 // 45. METADADOS FINAIS DO SISTEMA
 // ============================================================================
 
-/**
- * Retorna informações detalhadas da versão do sistema
- * @returns {object} Metadados da versão
- */
 function getSystemMetadata() {
     return {
         version: UNIFEDSystem.version,
@@ -9282,22 +9024,13 @@ function getSystemMetadata() {
     };
 }
 
-// Expor metadados do sistema
 window.getSystemMetadata = getSystemMetadata;
 
 // ============================================================================
 // 46. ASSINATURA DIGITAL DO SCRIPT (INTEGRIDADE DO CÓDIGO)
 // ============================================================================
 
-/**
- * Gera um hash SHA-256 do próprio código deste script para verificação de integridade
- * (útil para auditoria de que o script não foi adulterado após a entrega)
- * @returns {Promise<string>}
- */
 async function generateSelfIntegrityHash() {
-    // Esta função obtém o conteúdo do script atual (se disponível) e gera seu hash
-    // Nota: Em ambiente browser, a recuperação do código fonte pode ser limitada por CORS.
-    // Esta é uma funcionalidade opcional para ambientes controlados.
     try {
         const scripts = document.getElementsByTagName('script');
         let currentScript = null;
@@ -9321,7 +9054,6 @@ async function generateSelfIntegrityHash() {
     return null;
 }
 
-// Calcular hash de integridade do script em segundo plano (não bloqueante)
 if (window.crypto && window.crypto.subtle) {
     setTimeout(() => generateSelfIntegrityHash(), 3000);
 }
@@ -9330,16 +9062,12 @@ if (window.crypto && window.crypto.subtle) {
 // 47. REGISTRO DE EVENTOS DE SAÍDA (BEFOREUNLOAD)
 // ============================================================================
 
-/**
- * Registra o encerramento da página para fins de auditoria
- */
 function registerPageUnload() {
     window.addEventListener('beforeunload', () => {
         ForensicLogger.addEntry('PAGE_UNLOAD', {
             sessionId: UNIFEDSystem.sessionId,
             timestamp: new Date().toISOString()
         });
-        // Persistir logs antes de sair
         ForensicLogger._persist();
         persistSession();
     });
@@ -9351,9 +9079,6 @@ registerPageUnload();
 // 48. FUNÇÃO DE RESET PARCIAL (SEM RECARREGAR PÁGINA)
 // ============================================================================
 
-/**
- * Reseta apenas os dados de evidências e análise, mantendo o cliente se existir
- */
 function resetEvidenceOnly() {
     if (!confirm(currentLang === 'pt' ? 'Deseja limpar apenas as evidências carregadas? O sujeito passivo será mantido.' : 'Do you want to clear only the loaded evidence? The taxpayer will be kept.')) {
         return;
@@ -9361,7 +9086,6 @@ function resetEvidenceOnly() {
     
     ForensicLogger.addEntry('EVIDENCE_ONLY_RESET');
     
-    // Limpar documentos
     UNIFEDSystem.documents = {
         control: { files: [], hashes: {}, totals: { records: 0 } },
         saft: { files: [], hashes: {}, totals: { records: 0, iliquido: 0, iva: 0, bruto: 0 } },

@@ -220,6 +220,9 @@ function _buildLegalContext() {
     }).join('\n\n');
 }
 
+// ============================================================================
+// _fallbackNarrative com a retificação solicitada
+// ============================================================================
 function _fallbackNarrative(reason) {
     return [
         'SINTESE JURIDICA - MODO DE SEGURANCA FORENSE',
@@ -259,7 +262,10 @@ function _fallbackNarrative(reason) {
         'Argumento da Defesa: "O contribuinte nao tinha conhecimento tecnico das obrigacoes DAC7."',
         'Resposta Pericial: O regime DAC7 esta em vigor em Portugal desde 1 de janeiro de 2023 ' +
         '(Lei n.o 17/2023) e a plataforma tem obrigacao de informar o prestador nos termos do Art. 8.o ' +
-        'da Diretiva. A ignorancia da lei nao aproveita (Art. 6.o CC).'
+        'da Diretiva. A ignorancia da lei nao aproveita (Art. 6.o CC).',
+        '',
+        'Questão para contraditório (Art. 327.º CPP):',
+        'Pode a plataforma confirmar se os €451,15 em Gorjetas, Campanhas e Portagens (acumulado Set-Dez 2024) (isentos de comissão nos termos da plataforma) foram incluídos na base de cálculo do reporte DAC7? Se sim, qual o fundamento legal?'
     ].join('\n');
 }
 
