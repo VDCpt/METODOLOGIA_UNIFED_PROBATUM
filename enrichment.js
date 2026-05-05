@@ -1393,18 +1393,15 @@ function _revealPureCards(analysis) {
     _setEl('pure-sg1-dac7-val', _eur(totals.dac7TotalPeriodo  || 0));
 
     console.log('[UNIFED-REVEAL] \u2705 Painéis PURE revelados — disc.C2:', _eur(_discC2), '| SG2 IDs sincronizados');
-    // ── FIX ZC: sincronizar Zona Cinzenta com valores do caso real ─────────
-    // Valores fixos do caso UNIFED-MMLADX8Q-CV69L (Set–Dez 2024):
-    //   Campanhas : €405,00 | Portagens: €0,15 | Gorjetas: €46,00 | Total: €451,15
-    // Fonte dinâmica: UNIFEDSystem.analysis.nonCommissionable (se disponível)
-    // Fallback: constantes verificadas do lote real
-    var _nc = (window.UNIFEDSystem && window.UNIFEDSystem.analysis &&
-               window.UNIFEDSystem.analysis.nonCommissionable) || {};
-    var _zcCamp  = _nc.campanhas    || _nc.campaigns    || 405.00;
-    var _zcGorj  = _nc.gorjetas     || _nc.tips         || 46.00;
-    var _zcPort  = _nc.portagens    || _nc.tolls        || 0.15;
-    var _zcCanc  = _nc.cancelamentos|| _nc.cancellations|| 0.00;
-    var _zcTotal = _nc.total        || (_zcCamp + _zcGorj + _zcPort + _zcCanc) || 451.15;
+    // ── FIX ZC: sincronizar Zona Cinzenta com valores de auxiliaryData (SEM FALLBACKS HARDCODED) ─────────
+    // Fonte única: UNIFEDSystem.auxiliaryData (sempre atualizado pelo sistema)
+    // Sem fallbacks hardcoded — valores vêm APENAS do objeto de estado
+    var _aux = (window.UNIFEDSystem && window.UNIFEDSystem.auxiliaryData) || {};
+    var _zcCamp  = _aux.campanhas     || 0;
+    var _zcGorj  = _aux.gorjetas      || 0;
+    var _zcPort  = _aux.portagens     || 0;
+    var _zcCanc  = _aux.cancelamentos || 0;
+    var _zcTotal = _aux.totalNaoSujeitos || (_zcCamp + _zcGorj + _zcPort + _zcCanc);
 
     _setEl('pure-nc-campanhas',    _eur(_zcCamp));
     _setEl('pure-nc-gorjetas',     _eur(_zcGorj));
@@ -1833,7 +1830,7 @@ console.log('[UNIFED-ENRICHMENT]   . Modo: Read-Only - Fonte: UNIFEDSystem.analy
  * Cria e insere a secção de apoio pericial (non‑commissionable items) usando
  * o dicionário de traduções global `window.translations` e o idioma atual
  * `window.currentLang`. Se as traduções não existirem, usa fallback em português.
- * Os valores monetários são obtidos de UNIFEDSystem.analysis.nonCommissionable.
+ * Os valores monetários são obtidos de UNIFEDSystem.auxiliaryData (Zona Cinzenta — valores não sujeitos a comissão).
  */
 function injectAuxiliaryHelperBoxes() {
     // 1. Determinar idioma e traduções
@@ -1865,20 +1862,21 @@ function injectAuxiliaryHelperBoxes() {
         }
     }
 
-    // 2. Obter dados não comissionáveis (Zona Cinzenta)
+    // 2. Obter dados não comissionáveis (Zona Cinzenta) — APENAS de auxiliaryData, SEM FALLBACKS HARDCODED
     var sys = window.UNIFEDSystem || {};
-    var nc = (sys.analysis && sys.analysis.nonCommissionable) || {};
+    var aux = (sys.auxiliaryData) || {};
     var _eur = function(v) {
         return new Intl.NumberFormat('pt-PT', {
             style: 'currency', currency: 'EUR',
             minimumFractionDigits: 2, maximumFractionDigits: 2
         }).format(v || 0);
     };
-    var camp = nc.campanhas   || nc.campaigns    || 405.00;
-    var tips = nc.gorjetas    || nc.tips         || 46.00;
-    var tolls= nc.portagens   || nc.tolls        || 0.15;
-    var canc = nc.cancelamentos|| nc.cancellations|| 0.00;
-    var total = nc.total || (camp + tips + tolls + canc);
+    // CORREÇÃO CRÍTICA: Sem fallbacks hardcoded. Valores vêm APENAS de auxiliaryData
+    var camp = aux.campanhas    || 0;
+    var tips = aux.gorjetas     || 0;
+    var tolls= aux.portagens    || 0;
+    var canc = aux.cancelamentos|| 0;
+    var total = aux.totalNaoSujeitos || (camp + tips + tolls + canc);
 
     // 3. Construir o HTML da secção (compatível com o estilo PURE)
     var html =
