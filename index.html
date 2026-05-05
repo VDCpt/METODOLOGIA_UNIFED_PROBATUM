@@ -10,31 +10,25 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔬</text></svg>">
 
     <!-- CARGA DIRECTA DO OPENTIMESTAMPS (CDN SEGURA) -->
-
     <script src="https://unpkg.com/javascript-opentimestamps@0.4.5/dist/opentimestamps.js"></script>
 <script>
   (function() {
     if (typeof window.OpenTimestamps === 'undefined' && typeof window.opentimestamps === 'undefined') {
-      // Silenciado: O fallback é executado em segundo plano sem registo na consola
       var script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/javascript-opentimestamps@0.4.5/dist/opentimestamps.min.js';
-      
       var timeout = setTimeout(function() {
         if (typeof window.OpenTimestamps === 'undefined' && typeof window.opentimestamps === 'undefined') {
           window._otsStatus = 'OFFLINE_LEVEL1';
         }
       }, 5000);
-      
       script.onload = function() {
         clearTimeout(timeout);
         window._otsStatus = 'LOADED_FALLBACK';
       };
-      
       script.onerror = function() {
         clearTimeout(timeout);
         window._otsStatus = 'OFFLINE_LEVEL1';
       };
-      
       document.head.appendChild(script);
     } else {
       window._otsStatus = 'LOADED_PRIMARY';
