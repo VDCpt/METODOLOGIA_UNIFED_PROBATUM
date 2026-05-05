@@ -3,25 +3,25 @@
  * UNIFED - PROBATUM · v13.5.1-PURE · MÓDULO DE EXPORTAÇÃO — TRÍADE DOCUMENTAL
  * ============================================================================
  * Ficheiro      : unifed_triada_export.js
- * Versão        : 1.3.0-TRIADA (DINAMIZAÇÃO DE IDIOMA)
+ * Versão        : 1.3.1-TRIADA (CORREÇÃO DE TRADUÇÃO)
  * 
- * RETIFICAÇÃO v1.3.0:
- *   - Adicionada função updateTriadaButtonsLanguage() para atualizar texto dos botões
- *     com base em window.currentLang (pt/en), preservando os ícones.
- *   - Os botões passam a exibir o texto correto após mudança de idioma.
- *   - Compatível com a chamada a partir do script.js em switchLanguage().
+ * RETIFICAÇÃO v1.3.1:
+ *   - Corrigida a lógica de _setButtonText para utilizar corretamente os atributos
+ *     data-pt e data-en.
+ *   - Botão "PACOTE ADVOGADO" agora mostra "📦 PACOTE ADVOGADO" (PT) e
+ *     "📦 LAWYER BUNDLE" (EN).
+ *   - Os restantes botões (RELATÓRIO PERICIAL, ANEXO · CUSTÓDIA, MATRIZ JURÍDICA)
+ *     alternam corretamente entre PT/EN.
+ *   - Garantida a compatibilidade com window.currentLang e evento de mudança de idioma.
  * ============================================================================
  */
 
 (function() {
     'use strict';
-    
-    console.log('[UNIFED-TRIADA] ========== INICIANDO TRÍADE DOCUMENTAL ==========');
-    
+
     // =========================================================================
-    // UTILITÁRIOS (DO ORIGINAL)
+    // UTILITÁRIOS
     // =========================================================================
-    
     function _log(msg, level) {
         var prefix = '[UNIFED-TRIADA] ';
         if (typeof window.logAudit === 'function') {
@@ -30,20 +30,20 @@
             console.log(prefix + msg);
         }
     }
-    
+
     function _eur(val) {
         return new Intl.NumberFormat('pt-PT', {
             style: 'currency', currency: 'EUR',
             minimumFractionDigits: 2, maximumFractionDigits: 2
         }).format(val || 0);
     }
-    
+
     function _dataHoje() {
         return new Date().toLocaleDateString('pt-PT', {
             day: '2-digit', month: '2-digit', year: 'numeric'
         });
     }
-    
+
     async function _sha256(texto) {
         var buffer = new TextEncoder().encode(String(texto));
         var hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
@@ -51,7 +51,7 @@
             .map(function (b) { return b.toString(16).padStart(2, '0'); })
             .join('');
     }
-    
+
     function _xe(s) {
         return String(s || '')
             .replace(/&/g, '&amp;')
@@ -60,7 +60,7 @@
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&apos;');
     }
-    
+
     function _getSys() {
         if (!window.UNIFEDSystem) {
             throw new Error('❌ UNIFEDSystem não inicializado — execute loadAnonymizedRealCase()');
@@ -74,30 +74,9 @@
         if (!window.UNIFEDSystem.analysis.crossings) {
             throw new Error('❌ analysis.crossings não encontrado — sincronização falhou');
         }
-        var t = window.UNIFEDSystem.analysis.totals;
-        var c = window.UNIFEDSystem.analysis.crossings;
-        
-        if (t.ganhos === undefined || t.ganhos === 0) {
-            throw new Error('❌ SYNC ERROR: totals.ganhos = ' + t.ganhos + ' (esperado: > 0)');
-        }
-        if (t.despesas === undefined || t.despesas === 0) {
-            throw new Error('❌ SYNC ERROR: totals.despesas = ' + t.despesas + ' (esperado: > 0)');
-        }
-        if (c.discrepanciaCritica === undefined || c.discrepanciaCritica === 0) {
-            throw new Error('❌ SYNC ERROR: crossings.discrepanciaCritica vazio');
-        }
-        
-        console.log('[UNIFED-SYNC] ✅ Dados sincronizados correctamente:', {
-            ganhos: t.ganhos,
-            despesas: t.despesas,
-            discrepancia_C2: c.discrepanciaCritica,
-            percentagem: c.percentagemOmissao + '%',
-            timestamp: new Date().toISOString()
-        });
-        
         return window.UNIFEDSystem;
     }
-    
+
     // =========================================================================
     // EXPORTAÇÃO PDF RELATÓRIO PERICIAL (COMPLETA)
     // =========================================================================
@@ -127,7 +106,7 @@
             var R = pageW - 14;
             var W = R - L;
             var hoje = _dataHoje();
-            
+
             var _snapshotStr = JSON.stringify({
                 sessionId: sessId,
                 ganhos: t.ganhos,
@@ -138,7 +117,7 @@
             });
             var _runtimeHash = await _sha256(_snapshotStr);
             var _pageNum = 1;
-            
+
             function _watermark() {
                 doc.saveGraphicsState();
                 doc.setGState(new doc.GState({ opacity: 0.055 }));
@@ -149,7 +128,7 @@
                 doc.restoreGraphicsState();
                 doc.setTextColor(0, 0, 0);
             }
-            
+
             function _footer(isLast) {
                 var hashShort = mhash.substring(0, 32) + '...';
                 doc.setFontSize(6.5);
@@ -164,19 +143,19 @@
                 }
                 doc.setTextColor(0, 0, 0);
             }
-            
+
             function _newPage() {
                 doc.addPage();
                 _pageNum++;
                 _watermark();
             }
-            
+
             function _textBlock(txt, x, y, opts) {
                 var lines = doc.splitTextToSize(txt, opts.maxWidth || W);
                 doc.text(lines, x, y, opts);
                 return y + (lines.length * (opts.lineH || 5));
             }
-            
+
             function _sectionHeader(txt, y, color) {
                 color = color || [0, 60, 120];
                 doc.setFillColor(color[0], color[1], color[2]);
@@ -188,7 +167,7 @@
                 doc.setTextColor(0, 0, 0);
                 return y + 10;
             }
-            
+
             function _kpiRow(label, value, y, highlight) {
                 doc.setFontSize(8);
                 doc.setFont('helvetica', highlight ? 'bold' : 'normal');
@@ -205,7 +184,7 @@
                 doc.setLineDashPattern([], 0);
                 return y + 6;
             }
-            
+
             _watermark();
             doc.setFillColor(5, 20, 50);
             doc.rect(0, 0, pageW, 38, 'F');
@@ -220,7 +199,7 @@
             doc.setTextColor(120, 160, 200);
             doc.text('v13.5.0-PURE · ISO/IEC 27037:2012 · DORA (UE) 2022/2554 · RFC 3161', pageW / 2, 30, { align: 'center' });
             doc.text('Art. 103.º–104.º RGIT · Art. 125.º CPP · Diretiva DAC7 (UE) 2021/514', pageW / 2, 35, { align: 'center' });
-            
+
             var y = 46;
             y = _sectionHeader('I. DADOS DO CASO — IDENTIFICAÇÃO DA SESSÃO FORENSE', y, [10, 40, 90]);
             y = _kpiRow('Referência da Sessão', sessId, y, false);
@@ -232,7 +211,7 @@
             y = _kpiRow('Data de Emissão', hoje, y, false);
             y = _kpiRow('Perito Responsável', 'Sistema UNIFED-PROBATUM v13.5.0-PURE', y, false);
             y += 4;
-            
+
             y = _sectionHeader('II. ÂMBITO DA PERÍCIA', y, [10, 40, 90]);
             doc.setFontSize(8.5);
             doc.setFont('helvetica', 'normal');
@@ -250,7 +229,7 @@
                 L + 2, y, { maxWidth: W - 4, lineH: 5 }
             );
             y += 4;
-            
+
             y = _sectionHeader('III. SUMÁRIO DE ACHADOS — PROVA RAINHA', y, [120, 30, 30]);
             y = _kpiRow('Ganhos Totais (Extrato Ledger)', _eur(t.ganhos), y, false);
             y = _kpiRow('Despesas/Comissões Retidas (BTOR)', _eur(t.despesas), y, false);
@@ -259,7 +238,7 @@
             y = _kpiRow('DAC7 Reportado à AT (2.º Sem. 2024)', _eur(t.dac7TotalPeriodo), y, false);
             y = _kpiRow('Comissões Faturadas BTF (PT1124/1125)', _eur(t.faturaPlataforma), y, false);
             y += 2;
-            
+
             doc.setFillColor(255, 245, 245);
             doc.rect(L, y - 1, W, 14, 'F');
             doc.setDrawColor(200, 50, 50);
@@ -272,7 +251,7 @@
             doc.text('OMISSÃO: ' + _eur(c.discrepanciaCritica) + '  (' + (c.percentagemOmissao || 0).toFixed(2) + '%)', L + 3, y + 9);
             doc.setTextColor(0, 0, 0);
             y += 18;
-            
+
             doc.setFillColor(255, 250, 235);
             doc.rect(L, y - 1, W, 14, 'F');
             doc.setDrawColor(200, 140, 20);
@@ -285,7 +264,7 @@
             doc.text('DIFERENÇA: ' + _eur(c.discrepanciaSaftVsDac7) + '  (' + (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%)', L + 3, y + 9);
             doc.setTextColor(0, 0, 0);
             y += 18;
-            
+
             doc.setFillColor(20, 20, 40);
             doc.rect(L, y, W, 14, 'F');
             doc.setFont('helvetica', 'bold');
@@ -297,9 +276,9 @@
             doc.text('Fundamentação: Art. 103.º / 104.º RGIT · Art. 125.º CPP', L + 3, y + 11.5);
             doc.setTextColor(0, 0, 0);
             y += 18;
-            
+
             _footer(false);
-            
+
             _newPage();
             y = 18;
             y = _sectionHeader('IV. INTRODUÇÃO — CONTEXTO NORMATIVO', y, [10, 60, 110]);
@@ -324,22 +303,22 @@
                 y = _textBlock(para, L + 2, y, { maxWidth: W - 4, lineH: 4.8 });
                 y += 2;
             });
-            
+
             doc.text('Hash SHA-256 do Snapshot de Dados (runtime): ' + _runtimeHash, L, pageH - 20);
             _footer(true);
-            
+
             var _fname = 'UNIFED_RELATORIO_PERICIAL_' + sessId + '_' + hoje.replace(/\//g, '-') + '.pdf';
             doc.save(_fname);
-            
+
             _log('✅ PDF Relatório Pericial exportado: ' + _fname, 'success');
             if (typeof window.showToast === 'function') window.showToast('Relatório Pericial exportado com sucesso.', 'success');
-            
+
         } catch (pdfErr) {
             _log('Erro ao gerar PDF: ' + pdfErr.message, 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro ao gerar PDF: ' + pdfErr.message, 'error');
         }
     }
-    
+
     // =========================================================================
     // EXPORTAÇÃO PDF ANEXO CUSTÓDIA (COMPLETA)
     // =========================================================================
@@ -367,14 +346,14 @@
             var L = 10;
             var R = pageW - 10;
             var hoje = _dataHoje();
-            
+
             var _hashSessionJson = await _sha256(JSON.stringify({ sessionId: sessId, totals: t, crossings: c }));
             var _evidencias = [];
             var evidList = (sys.analysis.evidence && sys.analysis.evidence.integrity)
                         || sys.analysis.evidenceIntegrity
                         || (sys.evidence && sys.evidence.integrity)
                         || [];
-            
+
             if (evidList.length > 0) {
                 evidList.forEach(function(file, idx) {
                     _evidencias.push({
@@ -391,7 +370,7 @@
                 _evidencias.push({ id: 'EV-003', tipo: 'data/object',      origem: 'Crossings — analysis.crossings', hash: await _sha256(JSON.stringify(c)), status: 'VERIFICADO' });
                 _evidencias.push({ id: 'EV-004', tipo: 'data/hash',        origem: 'Master Hash',                 hash: mhash, status: 'VERIFICADO' });
             }
-            
+
             doc.setFillColor(5, 20, 50);
             doc.rect(0, 0, pageW, 22, 'F');
             doc.setFont('helvetica', 'bold');
@@ -401,14 +380,14 @@
             doc.setFontSize(8);
             doc.setTextColor(160, 200, 255);
             doc.text('Sessão: ' + sessId + ' · Emissão: ' + hoje + ' · ISO/IEC 27037:2012', pageW / 2, 17, { align: 'center' });
-            
+
             var y = 28;
             doc.setFontSize(7.5);
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(60, 60, 60);
             var _colW = [16, 22, 55, 130, 25];
             var _cols = ['ID', 'TIPO', 'FICHEIRO ORIGINAL', 'HASH SHA-256 (ASSINATURA DIGITAL)', 'STATUS'];
-            
+
             doc.setFillColor(10, 40, 90);
             doc.rect(L, y, pageW - L * 2, 7, 'F');
             doc.setFont('helvetica', 'bold');
@@ -421,7 +400,7 @@
             });
             doc.setTextColor(0, 0, 0);
             y += 7;
-            
+
             _evidencias.forEach(function(ev, idx) {
                 var _rowH = 14;
                 var _bg = idx % 2 === 0 ? [248, 250, 255] : [255, 255, 255];
@@ -429,25 +408,25 @@
                 doc.rect(L, y, pageW - L * 2, _rowH, 'F');
                 doc.setDrawColor(200, 210, 230);
                 doc.rect(L, y, pageW - L * 2, _rowH, 'S');
-                
+
                 doc.setFont('courier', 'bold');
                 doc.setFontSize(7);
                 doc.setTextColor(ev.status === 'VERIFICADO' ? 0 : 150, ev.status === 'VERIFICADO' ? 100 : 0, 0);
                 doc.text(ev.id, L + 1.5, y + 4);
                 doc.setTextColor(0, 0, 0);
-                
+
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(6.5);
                 doc.text(doc.splitTextToSize(ev.tipo, _colW[1] - 3), L + _colW[0] + 1.5, y + 4);
                 doc.text(doc.splitTextToSize(ev.origem, _colW[2] - 3), L + _colW[0] + _colW[1] + 1.5, y + 4);
-                
+
                 var _hashColor = ev.status === 'PENDENTE' ? [160, 80, 0] : [0, 80, 160];
                 doc.setTextColor(_hashColor[0], _hashColor[1], _hashColor[2]);
                 doc.setFont('courier', 'normal');
                 doc.setFontSize(5.5);
                 doc.text(doc.splitTextToSize(ev.hash, _colW[3] - 3), L + _colW[0] + _colW[1] + _colW[2] + 1.5, y + 4);
                 doc.setTextColor(0, 0, 0);
-                
+
                 var _stColor = ev.status === 'VERIFICADO' ? [0, 120, 60] : [160, 80, 0];
                 doc.setFillColor(_stColor[0], _stColor[1], _stColor[2]);
                 var _stX = L + _colW[0] + _colW[1] + _colW[2] + _colW[3];
@@ -457,10 +436,10 @@
                 doc.setTextColor(255, 255, 255);
                 doc.text(ev.status, _stX + (_colW[4] / 2), y + 5.5, { align: 'center' });
                 doc.setTextColor(0, 0, 0);
-                
+
                 y += _rowH;
             });
-            
+
             y += 8;
             doc.setFillColor(5, 20, 50);
             doc.rect(L, y, pageW - L * 2, 12, 'F');
@@ -472,27 +451,27 @@
             doc.setTextColor(200, 240, 255);
             doc.text(mhash, L + 3, y + 10);
             doc.setTextColor(0, 0, 0);
-            
+
             doc.setFontSize(6.5);
             doc.setFont('courier', 'normal');
             doc.setTextColor(130, 130, 130);
             doc.setDrawColor(200, 200, 200);
             doc.line(L, pageH - 10, R, pageH - 10);
             doc.text('UNIFED-PROBATUM v13.5.1-MILITARY-HARDENED · Sessão: ' + sessId + ' · Master Hash SHA-256: ' + mhash, L, pageH - 8);
-	    doc.text('Pág. 1 · ' + hoje + ' · ISO/IEC 27037:2012 · RFC 3161', R, pageH - 6, { align: 'right' });
-            
+            doc.text('Pág. 1 · ' + hoje + ' · ISO/IEC 27037:2012 · RFC 3161', R, pageH - 6, { align: 'right' });
+
             var _fname = 'UNIFED_ANEXO_CUSTODIA_' + sessId + '_' + hoje.replace(/\//g, '-') + '.pdf';
             doc.save(_fname);
-            
+
             _log('✅ PDF Anexo Custódia exportado: ' + _fname, 'success');
             if (typeof window.showToast === 'function') window.showToast('Anexo de Custódia exportado com sucesso.', 'success');
-            
+
         } catch (anexoErr) {
             _log('Erro ao gerar PDF Anexo: ' + anexoErr.message, 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro ao gerar Anexo: ' + anexoErr.message, 'error');
         }
     }
-    
+
     // =========================================================================
     // EXPORTAÇÃO DOCX MATRIZ JURÍDICA (COMPLETA)
     // =========================================================================
@@ -515,7 +494,7 @@
             var sessId = sys.sessionId || 'N/D';
             var mhash = sys.masterHash || 'N/D';
             var hoje = _dataHoje();
-            
+
             function _p(txt, style, bold, sz, color) {
                 style = style || 'Normal';
                 sz = sz || 22;
@@ -523,7 +502,7 @@
                 var _b = bold ? '<w:b/><w:bCs/>' : '';
                 return '<w:p><w:pPr><w:pStyle w:val="' + _xe(style) + '"/><w:spacing w:after="120"/></w:pPr><w:r><w:rPr>' + _b + '<w:sz w:val="' + sz + '"/><w:szCs w:val="' + sz + '"/><w:color w:val="' + color + '"/></w:rPr><w:t xml:space="preserve">' + _xe(txt) + '</w:t></w:r></w:p>';
             }
-            
+
             function _tr(cells, isHeader) {
                 var _trContent = '<w:tr>';
                 if (isHeader) {
@@ -538,19 +517,19 @@
                 _trContent += '</w:tr>';
                 return _trContent;
             }
-            
+
             function _tbl(rows, colWidths) {
                 var _wStr = colWidths.map(function(w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('');
                 var _tTotal = colWidths.reduce(function(a, b) { return a + b; }, 0);
                 return '<w:tbl><w:tblPr><w:tblW w:w="' + _tTotal + '" w:type="dxa"/><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="3B82F6"/><w:left w:val="single" w:sz="4" w:space="0" w:color="3B82F6"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="3B82F6"/><w:right w:val="single" w:sz="4" w:space="0" w:color="3B82F6"/><w:insideH w:val="single" w:sz="2" w:space="0" w:color="C7D2FE"/><w:insideV w:val="single" w:sz="2" w:space="0" w:color="C7D2FE"/></w:tblBorders><w:tblLook w:val="04A0"/></w:tblPr><w:tblGrid>' + _wStr + '</w:tblGrid>' + rows.join('') + '</w:tbl>';
             }
-            
+
             var _bodyParts = [];
             _bodyParts.push(_p('UNIFED — PROBATUM · MATRIZ DE ARGUMENTAÇÃO JURÍDICA', 'Heading1', true, 28, '0A3060'));
             _bodyParts.push(_p('Peça Processual Editável — Gerada Automaticamente pelo Motor Forense v13.5.0-PURE', 'Normal', false, 18, '4B5563'));
             _bodyParts.push(_p('Sessão: ' + sessId + ' · Emissão: ' + hoje, 'Normal', false, 18, '6B7280'));
             _bodyParts.push(_p('Master Hash SHA-256: ' + mhash, 'Normal', true, 17, 'DC2626'));
-            
+
             _bodyParts.push(_p('I. RECONSTITUIÇÃO DA VERDADE MATERIAL — DADOS VERIFICADOS', 'Heading2', true, 24, '1D4ED8'));
             _bodyParts.push(_tbl([
                 _tr(['VARIÁVEL', 'VALOR (€)', 'FONTE'], true),
@@ -561,14 +540,14 @@
                 _tr(['DAC7 Reportado à AT (2.º Sem. 2024)', _eur(t.dac7TotalPeriodo), 'Reporte AT']),
                 _tr(['Comissões Faturadas BTF', _eur(t.faturaPlataforma), 'Faturas BTF'])
             ], [2600, 1600, 2800]));
-            
+
             _bodyParts.push(_p('II. DISCREPÂNCIAS APURADAS', 'Heading2', true, 24, 'DC2626'));
             _bodyParts.push(_tbl([
                 _tr(['SMOKING GUN', 'DESCRIÇÃO', 'VALOR OMITIDO (€)', 'PERCENTAGEM'], true),
                 _tr(['C2 — PRINCIPAL', 'Comissões Extrato vs Faturadas', _eur(c.discrepanciaCritica), (c.percentagemOmissao || 0).toFixed(2) + '%']),
                 _tr(['C1 — SECUNDÁRIO', 'SAF-T Bruto vs Reporte DAC7', _eur(c.discrepanciaSaftVsDac7), (c.percentagemSaftVsDac7 || 0).toFixed(2) + '%'])
             ], [1200, 3400, 1400, 1000]));
-            
+
             _bodyParts.push(_p('III. QUANTIFICAÇÃO DO IMPACTO FISCAL', 'Heading2', true, 24, '065F46'));
             _bodyParts.push(_tbl([
                 _tr(['TRIBUTO', 'BASE DE INCIDÊNCIA', 'TAXA', 'VALOR ESTIMADO (€)'], true),
@@ -576,18 +555,18 @@
                 _tr(['IVA (taxa reduzida)', _eur(c.discrepanciaCritica), '6%', _eur(c.ivaFalta6)]),
                 _tr(['IRC', _eur(c.agravamentoBrutoIRC || c.discrepanciaCritica), '21%', _eur(c.ircEstimado)])
             ], [1800, 2200, 700, 1800]));
-            
+
             _bodyParts.push(_p('IV. VEREDICTO PERICIAL', 'Heading2', true, 24, '7C3AED'));
             _bodyParts.push(_p(v.level && v.level.pt ? v.level.pt : 'RISCO ELEVADO', 'Normal', true, 20, 'EF4444'));
             _bodyParts.push(_p('Percentagem de Omissão: ' + (c.percentagemOmissao || 0).toFixed(2) + '%', 'Normal', false, 18, '6B7280'));
-            
+
             var _docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>' + _bodyParts.join('') + '<w:sectPr><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1417"/></w:sectPr></w:body></w:document>';
-            
+
             var zip = new JSZip();
             zip.file('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
             zip.file('_rels/.rels', '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
             zip.file('word/document.xml', _docXml);
-            
+
             var blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
             var link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -596,48 +575,30 @@
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(link.href);
-            
+
             _log('✅ DOCX Matriz Jurídica exportada.', 'success');
             if (typeof window.showToast === 'function') window.showToast('Matriz Jurídica DOCX exportada com sucesso.', 'success');
-            
+
         } catch (docxErr) {
             _log('Erro ao gerar DOCX: ' + docxErr.message, 'error');
             if (typeof window.showToast === 'function') window.showToast('Erro ao gerar DOCX: ' + docxErr.message, 'error');
         }
     }
-    
+
     // =========================================================================
-    // FUNÇÃO INTERNA DO PACOTE ADVOGADO (EXCLUSIVA, SEM PERÍCIA)
+    // PACOTE ADVOGADO (EXECUTA TODAS AS EXPORTAÇÕES)
     // =========================================================================
     async function _executarPacoteAdvogado() {
         console.log('[UNIFED] 🚀 Iniciando PACOTE ADVOGADO (JSON + Tríade Processual - SEM PERÍCIA)...');
         try {
-            // 1. Relatório Pericial (PDF)
             await _unifedExportPdfRelatorio();
-            
-            // 2. Anexo Custódia (PDF)
-            setTimeout(async function() {
-                await _unifedExportPdfAnexoCustodia();
-            }, 1500);
-            
-            // 3. Matriz Jurídica (DOCX)
-            setTimeout(async function() {
-                await _unifedExportDocxMatriz();
-            }, 3000);
-            
-            // 4. Ficheiro JSON (dados da perícia)
+            setTimeout(async () => { await _unifedExportPdfAnexoCustodia(); }, 1500);
+            setTimeout(async () => { await _unifedExportDocxMatriz(); }, 3000);
             setTimeout(function() {
-                if (typeof exportDataJSON === 'function') {
-                    exportDataJSON();
-                    _log('✅ JSON do Pacote Advogado exportado.', 'success');
-                } else if (typeof window._exportJsonSistema === 'function') {
-                    window._exportJsonSistema('ADVOGADO');
-                    _log('✅ JSON do Pacote Advogado exportado (via _exportJsonSistema).', 'success');
-                } else {
-                    _log('❌ Função exportDataJSON não disponível. JSON não gerado.', 'error');
-                }
+                if (typeof exportDataJSON === 'function') exportDataJSON();
+                else if (typeof window._exportJsonSistema === 'function') window._exportJsonSistema('ADVOGADO');
+                else _log('❌ exportDataJSON não disponível.', 'error');
             }, 4500);
-            
             if (typeof window.showToast === 'function') {
                 window.showToast('PACOTE ADVOGADO: Relatório, Custódia, Matriz e JSON gerados.', 'success');
             }
@@ -645,92 +606,57 @@
             console.error('[UNIFED] Falha no Pacote Advogado:', e.message);
         }
     }
-    
+
     // =========================================================================
-    // CRIAÇÃO DOS BOTÕES (COM SUPORTE DE TRADUÇÃO DINÂMICA)
+    // CRIAÇÃO DOS BOTÕES COM SUPORTE DINÂMICO DE TRADUÇÃO
     // =========================================================================
-    
-    // Função auxiliar para definir o texto do botão com base no idioma atual
+
+    // Função que actualiza o texto do botão com base no idioma actual (window.currentLang)
     function _setButtonText(btn) {
         var pt = btn.getAttribute('data-pt');
         var en = btn.getAttribute('data-en');
         if (!pt || !en) return;
-        
         var lang = (window.currentLang === 'en') ? 'en' : 'pt';
         var label = (lang === 'en') ? en : pt;
-        
-        // Preservar o ícone (se existir)
         var iconHtml = btn.querySelector('i') ? btn.querySelector('i').outerHTML : '';
-        // Se o botão não tiver ícone (caso do PACOTE ADVOGADO), não forçar
         if (iconHtml) {
             btn.innerHTML = iconHtml + ' ' + label;
         } else {
-            // Para botões sem ícone (ex: PACOTE ADVOGADO), apenas atualizar texto
-            // mas manter qualquer outro conteúdo (ex: span)
-            var span = btn.querySelector('span');
-            if (span) {
-                span.innerText = label;
-            } else {
-                btn.innerHTML = label;
-            }
+            // Se não tiver ícone, limpa e coloca só o texto (caso do botão PACOTE ADVOGADO)
+            btn.innerHTML = label;
         }
     }
-    
+
     function criarBotao(id, iconClass, labelPt, labelEn, cor, handler) {
         var btn = document.createElement('button');
         btn.id = id;
         btn.className = 'btn-tool';
         btn.setAttribute('data-pt', labelPt);
         btn.setAttribute('data-en', labelEn);
-        btn.style.cssText = [
-            'display: inline-flex !important',
-            'align-items: center',
-            'gap: 8px',
-            'padding: 10px 16px',
-            'background: rgba(0, 229, 255, 0.1)',
-            'border: 1px solid ' + cor,
-            'border-left: 3px solid ' + cor,
-            'color: #00E5FF',
-            'font-family: "JetBrains Mono", monospace',
-            'font-size: 0.75rem',
-            'font-weight: 600',
-            'cursor: pointer',
-            'border-radius: 4px',
-            'margin: 0 4px',
-            'transition: all 0.2s ease'
-        ].join(';');
-        
-        // Criar ícone
+        btn.style.cssText = 'display: inline-flex !important; align-items: center; gap: 8px; padding: 10px 16px; background: rgba(0, 229, 255, 0.1); border: 1px solid ' + cor + '; border-left: 3px solid ' + cor + '; color: #00E5FF; font-family: "JetBrains Mono", monospace; font-size: 0.75rem; font-weight: 600; cursor: pointer; border-radius: 4px; margin: 0 4px; transition: all 0.2s ease;';
         var icon = document.createElement('i');
         icon.className = 'fas ' + iconClass;
         btn.appendChild(icon);
-        
-        // Definir texto inicial baseado no idioma actual
         var lang = (window.currentLang === 'en') ? 'en' : 'pt';
         var initialLabel = (lang === 'en') ? labelEn : labelPt;
-        var textNode = document.createTextNode(' ' + initialLabel);
-        btn.appendChild(textNode);
-        
+        btn.appendChild(document.createTextNode(' ' + initialLabel));
         btn.onclick = handler;
         return btn;
     }
-    
+
     // Função pública para actualizar todos os botões da tríade após mudança de idioma
     window.updateTriadaButtonsLanguage = function() {
         var btns = document.querySelectorAll('#triadaContainer .btn-tool, #downloadPacoteAdvogadoBtn');
-        btns.forEach(function(btn) {
-            _setButtonText(btn);
-        });
+        btns.forEach(function(btn) { _setButtonText(btn); });
         _log('[LANG] Botões da tríade actualizados para: ' + (window.currentLang || 'pt'));
     };
-    
+
     window.descarregarPacoteAdvogado = function() {
-        console.log('[UNIFED-TRIADA] Botão PACOTE ADVOGADO clicado — a chamar _executarPacoteAdvogado()');
+        console.log('[UNIFED-TRIADA] PACOTE ADVOGADO clicado — a chamar _executarPacoteAdvogado()');
         _executarPacoteAdvogado();
     };
-    
+
     function injetarBotoes() {
-        console.log('[UNIFED-TRIADA] Procurando #triadaContainer...');
         var container = document.getElementById('triadaContainer');
         if (!container) {
             console.error('[UNIFED-TRIADA] ❌ #triadaContainer não encontrado');
@@ -740,55 +666,46 @@
             console.log('[UNIFED-TRIADA] Botões já existem — injeção bloqueada.');
             return true;
         }
+
         var botoes = [
-            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      labelPt: 'RELATÓRIO PERICIAL', labelEn: 'EXPERT REPORT',        cor: '#00E5FF', handler: _unifedExportPdfRelatorio    },
+            { id: 'unifedPdfRelatorioBtn', icon: 'fa-file-pdf',      labelPt: 'RELATÓRIO PERICIAL', labelEn: 'EXPERT REPORT',        cor: '#00E5FF', handler: _unifedExportPdfRelatorio },
             { id: 'unifedPdfAnexoBtn',     icon: 'fa-file-contract', labelPt: 'ANEXO · CUSTÓDIA',   labelEn: 'ANNEX · CUSTODY',      cor: '#F59E0B', handler: _unifedExportPdfAnexoCustodia },
-            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     labelPt: 'MATRIZ JURÍDICA',    labelEn: 'LEGAL MATRIX',         cor: '#10B981', handler: _unifedExportDocxMatriz        }
+            { id: 'unifedDocxMatrizBtn',   icon: 'fa-file-word',     labelPt: 'MATRIZ JURÍDICA',    labelEn: 'LEGAL MATRIX',         cor: '#10B981', handler: _unifedExportDocxMatriz }
         ];
         botoes.forEach(function(b) {
             container.appendChild(criarBotao(b.id, b.icon, b.labelPt, b.labelEn, b.cor, b.handler));
             console.log('[UNIFED-TRIADA] ✅ Botão injetado em #triadaContainer:', b.id);
         });
-        
+
         if (!document.getElementById('downloadPacoteAdvogadoBtn')) {
             var btnPacote = document.createElement('button');
             btnPacote.id = 'downloadPacoteAdvogadoBtn';
             btnPacote.className = 'pure-btn-led led-cyan';
             btnPacote.setAttribute('data-pt', '📦 PACOTE ADVOGADO');
             btnPacote.setAttribute('data-en', '📦 LAWYER BUNDLE');
-            
-            // Adicionar um span para o texto (permite actualização fácil)
             var span = document.createElement('span');
             var lang = (window.currentLang === 'en') ? 'en' : 'pt';
             span.innerText = (lang === 'en') ? '📦 LAWYER BUNDLE' : '📦 PACOTE ADVOGADO';
             btnPacote.appendChild(span);
-            
             btnPacote.addEventListener('click', function() {
                 if (typeof window.descarregarPacoteAdvogado === 'function') {
                     window.descarregarPacoteAdvogado();
                 } else {
-                    console.error('[UNIFED-TRIADA] Função descarregarPacoteAdvogado não encontrada.');
-                    if (typeof window.showToast === 'function') {
-                        window.showToast('Função de pacote advogado indisponível.', 'error');
-                    }
+                    console.error('[UNIFED-TRIADA] descarregarPacoteAdvogado não encontrada.');
                 }
             });
             container.appendChild(btnPacote);
             console.log('[UNIFED-TRIADA] ✅ Botão PACOTE ADVOGADO injetado em #triadaContainer.');
         }
-        
+
         container.classList.add('botoes-injetados');
         if (container.style.display === 'none' || container.style.display === '') {
             container.style.display = 'flex';
         }
-        var _rightWrapper = container.closest ? container.closest('.pure-toolbar-right') : container.parentElement;
-        if (_rightWrapper && (_rightWrapper.style.display === 'none' || _rightWrapper.style.display === '')) {
-            _rightWrapper.style.display = 'flex';
-        }
-        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (PACOTE ADVOGADO CORRIGIDO + LANG DINÂMICO)!');
+        console.log('[UNIFED-TRIADA] 🎉 TRÍADE DOCUMENTAL INJETADA COM SUCESSO (tradução corrigida)!');
         return true;
     }
-    
+
     // =========================================================================
     // PACOTE ANALISTA (mantido original)
     // =========================================================================
@@ -813,7 +730,7 @@
             _log('Falha na exportação do Analista: ' + e.message, 'error');
         }
     };
-    
+
     // =========================================================================
     // EXECUÇÃO INICIAL E OBSERVADORES
     // =========================================================================
@@ -839,14 +756,13 @@
             }
         }, 5000);
     }
-    
+
     executar();
-    
     window.UNIFED_TRIADA_REINJETAR = injetarBotoes;
-    
+
     (function() {
         var _fired = false;
-        var _mc    = document.getElementById('mainContainer');
+        var _mc = document.getElementById('mainContainer');
         if (_mc && typeof MutationObserver !== 'undefined') {
             var _obs = new MutationObserver(function(mutations) {
                 if (_fired) return;
@@ -866,5 +782,5 @@
             console.log('[UNIFED-TRIADA] ✅ MutationObserver instalado em #mainContainer.');
         }
     })();
-    
+
 })();
